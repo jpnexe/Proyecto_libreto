@@ -35,6 +35,10 @@ export const DesignModule: React.FC<DesignModuleProps> = ({ project, onChange })
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('Todos');
 
+  // Search filters for animation and icon libraries (20 items each)
+  const [animSearch, setAnimSearch] = useState('');
+  const [iconSearch, setIconSearch] = useState('');
+
   // New color input in custom palette
   const [newColorHex, setNewColorHex] = useState('#6366F1');
 
@@ -591,27 +595,51 @@ export const DesignModule: React.FC<DesignModuleProps> = ({ project, onChange })
 
       {/* 5. Animation Libraries with Repository Links */}
       <div className="bg-zinc-50 dark:bg-zinc-900/60 p-5 sm:p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-4">
-        <div className="flex items-center gap-2.5 pb-2 border-b border-zinc-200/80 dark:border-zinc-800">
-          <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
-            <Terminal className="w-4.5 h-4.5" />
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-zinc-200/80 dark:border-zinc-800">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+              <Terminal className="w-4.5 h-4.5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+                  5. Librerías de Animaciones JavaScript & Efectos
+                </h3>
+                <span className="px-2 py-0.5 text-[10px] font-mono font-bold rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                  {design.animationLibraries.length} seleccionadas
+                </span>
+              </div>
+              <p className="text-[11px] text-zinc-500">20 motores profesionales con comandos de instalación e importaciones para DESIGN.md</p>
+            </div>
           </div>
-          <div>
-            <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
-              5. Librerías de Animaciones JavaScript & Repositorios
-            </h3>
-            <p className="text-[11px] text-zinc-500">Se generarán comandos e importaciones en DESIGN.md</p>
+
+          {/* Quick Search */}
+          <div className="relative w-full sm:w-56 shrink-0">
+            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 pointer-events-none" />
+            <input
+              type="text"
+              value={animSearch}
+              onChange={(e) => setAnimSearch(e.target.value)}
+              placeholder="Buscar animación..."
+              className="w-full pl-8 pr-3 py-1.5 text-xs bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-xl text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 outline-none focus:ring-2 focus:ring-emerald-500/30"
+            />
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 pt-1">
-          {ANIMATION_LIBRARIES.map((anim) => {
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 pt-1 max-h-[520px] overflow-y-auto pr-1">
+          {ANIMATION_LIBRARIES.filter(
+            (a) =>
+              !animSearch ||
+              a.name.toLowerCase().includes(animSearch.toLowerCase()) ||
+              a.description.toLowerCase().includes(animSearch.toLowerCase())
+          ).map((anim) => {
             const isSelected = design.animationLibraries.includes(anim.name);
             return (
               <div
                 key={anim.name}
                 className={`p-4 rounded-xl border transition-all flex flex-col justify-between ${
                   isSelected
-                    ? 'border-emerald-500 bg-emerald-500/10 dark:bg-emerald-950/20 ring-1 ring-emerald-500/30'
+                    ? 'border-emerald-500 bg-emerald-500/10 dark:bg-emerald-950/20 ring-1 ring-emerald-500/30 shadow-xs'
                     : 'border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 hover:border-zinc-300 dark:hover:border-zinc-700'
                 }`}
               >
@@ -621,7 +649,7 @@ export const DesignModule: React.FC<DesignModuleProps> = ({ project, onChange })
                     <button
                       type="button"
                       onClick={() => toggleAnimationLib(anim.name)}
-                      className={`px-2.5 py-1 rounded-lg text-[10px] font-bold flex items-center gap-1 transition-colors ${
+                      className={`px-2.5 py-1 rounded-lg text-[10px] font-bold flex items-center gap-1 transition-colors cursor-pointer ${
                         isSelected
                           ? 'bg-emerald-600 text-white shadow-xs'
                           : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200'
@@ -631,18 +659,18 @@ export const DesignModule: React.FC<DesignModuleProps> = ({ project, onChange })
                       {isSelected ? 'Activo' : 'Añadir'}
                     </button>
                   </div>
-                  <p className="text-xs text-zinc-500 mb-3 leading-relaxed">{anim.description}</p>
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-3 leading-relaxed">{anim.description}</p>
                 </div>
 
                 <div className="space-y-1.5 pt-2.5 border-t border-zinc-100 dark:border-zinc-800 text-[11px]">
-                  <div className="text-zinc-400 font-mono text-[10px] truncate">
+                  <div className="text-zinc-400 font-mono text-[10px] truncate" title={anim.installCommand}>
                     {anim.installCommand}
                   </div>
                   <a
                     href={anim.repoUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 hover:underline font-medium"
+                    className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 hover:underline font-medium text-[11px]"
                   >
                     <span>Repositorio oficial</span>
                     <ExternalLink className="w-3 h-3" />
@@ -656,38 +684,65 @@ export const DesignModule: React.FC<DesignModuleProps> = ({ project, onChange })
 
       {/* 6. Icon Libraries */}
       <div className="bg-zinc-50 dark:bg-zinc-900/60 p-5 sm:p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-4">
-        <div className="flex items-center gap-2.5 pb-2 border-b border-zinc-200/80 dark:border-zinc-800">
-          <div className="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
-            <Code2 className="w-4.5 h-4.5" />
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-zinc-200/80 dark:border-zinc-800">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+              <Code2 className="w-4.5 h-4.5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+                  6. Librerías de Iconografía Sugeridas
+                </h3>
+                <span className="px-2 py-0.5 text-[10px] font-mono font-bold rounded-md bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
+                  {design.iconLibraries.length} seleccionadas
+                </span>
+              </div>
+              <p className="text-[11px] text-zinc-500">20 colecciones vectoriales consistentes para interfaces limpias</p>
+            </div>
           </div>
-          <div>
-            <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
-              6. Librerías de Iconografía Sugeridas
-            </h3>
-            <p className="text-[11px] text-zinc-500">Conjunto visual de iconos consistente</p>
+
+          {/* Quick Search */}
+          <div className="relative w-full sm:w-56 shrink-0">
+            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 pointer-events-none" />
+            <input
+              type="text"
+              value={iconSearch}
+              onChange={(e) => setIconSearch(e.target.value)}
+              placeholder="Buscar iconos..."
+              className="w-full pl-8 pr-3 py-1.5 text-xs bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-xl text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 outline-none focus:ring-2 focus:ring-blue-500/30"
+            />
           </div>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-1">
-          {ICON_LIBRARIES.map((iconLib) => {
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-1 max-h-[520px] overflow-y-auto pr-1">
+          {ICON_LIBRARIES.filter(
+            (i) =>
+              !iconSearch ||
+              i.name.toLowerCase().includes(iconSearch.toLowerCase()) ||
+              i.description.toLowerCase().includes(iconSearch.toLowerCase())
+          ).map((iconLib) => {
             const isSelected = design.iconLibraries.includes(iconLib.name);
             return (
               <div
                 key={iconLib.name}
-                className={`p-4 rounded-xl border flex items-center justify-between gap-3 ${
+                className={`p-4 rounded-xl border flex items-center justify-between gap-3 transition-all ${
                   isSelected
-                    ? 'border-blue-500 bg-blue-500/10 dark:bg-blue-950/20 ring-1 ring-blue-500/30'
-                    : 'border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950'
+                    ? 'border-blue-500 bg-blue-500/10 dark:bg-blue-950/20 ring-1 ring-blue-500/30 shadow-xs'
+                    : 'border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 hover:border-zinc-300 dark:hover:border-zinc-700'
                 }`}
               >
-                <div>
+                <div className="min-w-0 flex-1">
                   <div className="font-bold text-xs sm:text-sm text-zinc-900 dark:text-zinc-100">{iconLib.name}</div>
-                  <div className="text-[10px] text-zinc-500 font-mono mt-0.5">{iconLib.installCommand}</div>
+                  <p className="text-[11px] text-zinc-500 dark:text-zinc-400 line-clamp-1 mt-0.5">{iconLib.description}</p>
+                  <div className="text-[10px] text-zinc-400 font-mono mt-1 truncate" title={iconLib.installCommand}>
+                    {iconLib.installCommand}
+                  </div>
                 </div>
                 <button
                   type="button"
                   onClick={() => toggleIconLib(iconLib.name)}
-                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all shrink-0 cursor-pointer ${
                     isSelected ? 'bg-blue-600 text-white shadow-xs' : 'bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-300'
                   }`}
                 >

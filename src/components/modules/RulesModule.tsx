@@ -9,6 +9,11 @@ import {
   FileCheck2,
   AlertTriangle,
   Scale,
+  Pencil,
+  Check,
+  X,
+  BookOpen,
+  Search,
 } from 'lucide-react';
 import type { LibretoProject } from '../../types/libreto';
 
@@ -17,9 +22,84 @@ interface RulesModuleProps {
   onChange: (updated: Partial<LibretoProject>) => void;
 }
 
+const PRESET_RULES_CATALOG = [
+  {
+    category: 'Seguridad & Secretos',
+    rule: 'Prohibido almacenar API Keys, credenciales o contraseñas en el código fuente; todo secreto debe residir en variables de entorno validadas.',
+  },
+  {
+    category: 'Seguridad & Secretos',
+    rule: 'Almacenar tokens de autenticación únicamente en cookies HttpOnly, Secure y SameSite=Strict; nunca en localStorage ni sessionStorage.',
+  },
+  {
+    category: 'Seguridad & Secretos',
+    rule: 'Sanitizar todas las entradas y parámetros en frontera de API con esquemas estrictos de validación (Zod / DTOs) antes de persistirlos.',
+  },
+  {
+    category: 'Calidad & Tipado',
+    rule: 'Cero uso de tipos any o unknown sin refinamiento (type narrowing) previo en TypeScript.',
+  },
+  {
+    category: 'Calidad & Tipado',
+    rule: 'Toda mutación de estado o cálculo crítico debe ser una función pura inmutable sin efectos secundarios ocultos.',
+  },
+  {
+    category: 'Calidad & Tipado',
+    rule: 'Implementar retornos tempranos (Early Returns) y evitar estructuras if/else con más de 2 niveles de anidamiento.',
+  },
+  {
+    category: 'Arquitectura & Modularidad',
+    rule: 'Separar estrictamente la lógica de negocio y llamadas a API de los componentes visuales de presentación.',
+  },
+  {
+    category: 'Arquitectura & Modularidad',
+    rule: 'Ningún archivo individual debe superar las 250 líneas de código útil; descomponer en subcomponentes o custom hooks.',
+  },
+  {
+    category: 'Arquitectura & Modularidad',
+    rule: 'Prohibidas las dependencias circulares; la jerarquía de módulos debe fluir en una sola dirección.',
+  },
+  {
+    category: 'UI, Estilos & Accesibilidad',
+    rule: 'Utilizar exclusivamente los tokens de color, espaciado y tipografía del sistema de diseño ratificado en DESIGN.md.',
+  },
+  {
+    category: 'UI, Estilos & Accesibilidad',
+    rule: 'Todos los elementos accionables deben ser accesibles por teclado (focus-visible) y contar con atributos semánticos WAI-ARIA.',
+  },
+  {
+    category: 'UI, Estilos & Accesibilidad',
+    rule: 'Diseño Mobile-First estricto: toda vista debe adaptarse fluidamente a dispositivos móviles sin desbordamientos horizontales.',
+  },
+  {
+    category: 'Git & Commits',
+    rule: 'Redactar todos los mensajes de commit siguiendo el estándar Conventional Commits (feat:, fix:, refactor:, chore:, docs:).',
+  },
+  {
+    category: 'Git & Commits',
+    rule: 'Cada commit debe ser atómico, autónomo y dejar la rama principal en estado compilable sin errores de linter.',
+  },
+  {
+    category: 'Pruebas & Resiliencia',
+    rule: 'Toda lógica de negocio o algoritmo debe contar con pruebas unitarias que cubran casos de éxito y valores de borde (edge cases).',
+  },
+  {
+    category: 'Pruebas & Resiliencia',
+    rule: 'Encapsular toda llamada asíncrona en bloques try/catch con retroalimentación visual amigable (toasts / skeletons) ante fallas.',
+  },
+];
+
 export const RulesModule: React.FC<RulesModuleProps> = ({ project, onChange }) => {
   const { rules } = project;
   const [newRule, setNewRule] = useState('');
+
+  // Editing state for existing rules
+  const [editingIndex, setEditingIndex] = useState<number | null>(null);
+  const [editingText, setEditingText] = useState('');
+
+  // Preset catalog filter state
+  const [selectedPresetCat, setSelectedPresetCat] = useState('Todas');
+  const [presetSearch, setPresetSearch] = useState('');
 
   const handleUpdate = (fields: Partial<typeof rules>) => {
     onChange({
@@ -42,6 +122,36 @@ export const RulesModule: React.FC<RulesModuleProps> = ({ project, onChange }) =
     const next = [...rules.customRules];
     next.splice(idx, 1);
     handleUpdate({ customRules: next });
+    if (editingIndex === idx) {
+      setEditingIndex(null);
+      setEditingText('');
+    }
+  };
+
+  const handleStartEdit = (idx: number, currentText: string) => {
+    setEditingIndex(idx);
+    setEditingText(currentText);
+  };
+
+  const handleSaveEdit = (idx: number) => {
+    if (!editingText.trim()) return;
+    const next = [...rules.customRules];
+    next[idx] = editingText.trim();
+    handleUpdate({ customRules: next });
+    setEditingIndex(null);
+    setEditingText('');
+  };
+
+  const handleCancelEdit = () => {
+    setEditingIndex(null);
+    setEditingText('');
+  };
+
+  const handleSelectPresetRule = (presetRuleText: string) => {
+    if (rules.customRules.includes(presetRuleText)) return;
+    handleUpdate({
+      customRules: [...rules.customRules, presetRuleText],
+    });
   };
 
   const standardDirectives = [
@@ -214,35 +324,207 @@ export const RulesModule: React.FC<RulesModuleProps> = ({ project, onChange }) =
           </button>
         </div>
 
-        <div className="space-y-2.5 max-h-72 overflow-y-auto pr-1">
-          {rules.customRules.map((rule, idx) => (
-            <div
-              key={idx}
-              className="flex items-start justify-between gap-3 p-3 sm:p-3.5 rounded-xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-sm group hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors"
-            >
-              <div className="flex items-start gap-3 min-w-0 flex-1">
-                <span className="w-6 h-6 rounded-lg bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 font-mono font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">
-                  {idx + 1}
-                </span>
-                <span className="text-zinc-800 dark:text-zinc-200 text-xs sm:text-sm leading-relaxed break-words">
-                  {rule}
-                </span>
-              </div>
-              <button
-                type="button"
-                onClick={() => handleRemoveCustomRule(idx)}
-                className="w-7 h-7 rounded-lg flex items-center justify-center text-zinc-400 hover:text-red-500 hover:bg-red-500/10 transition-colors shrink-0"
-                title="Eliminar regla"
+        <div className="space-y-2.5 max-h-80 overflow-y-auto pr-1">
+          {rules.customRules.map((rule, idx) => {
+            const isEditing = editingIndex === idx;
+            return (
+              <div
+                key={idx}
+                className={`p-3 sm:p-3.5 rounded-xl border text-sm transition-all ${
+                  isEditing
+                    ? 'border-cyan-500 bg-cyan-500/5 dark:bg-cyan-950/20 ring-1 ring-cyan-500/30'
+                    : 'bg-white dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700'
+                }`}
               >
-                <Trash2 className="w-4 h-4" />
-              </button>
-            </div>
-          ))}
+                {isEditing ? (
+                  <div className="space-y-2.5">
+                    <div className="flex items-center gap-2 text-xs font-bold text-cyan-600 dark:text-cyan-400">
+                      <Pencil className="w-3.5 h-3.5" />
+                      <span>Editando Regla #{idx + 1}</span>
+                    </div>
+                    <textarea
+                      value={editingText}
+                      onChange={(e) => setEditingText(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                          e.preventDefault();
+                          handleSaveEdit(idx);
+                        } else if (e.key === 'Escape') {
+                          handleCancelEdit();
+                        }
+                      }}
+                      rows={2}
+                      className="w-full text-xs sm:text-sm bg-white dark:bg-zinc-900 border border-zinc-300 dark:border-zinc-700 rounded-lg p-2.5 text-zinc-900 dark:text-zinc-100 outline-none focus:ring-2 focus:ring-cyan-500/40"
+                      placeholder="Redacta la regla personalizada..."
+                      autoFocus
+                    />
+                    <div className="flex items-center justify-end gap-2">
+                      <button
+                        type="button"
+                        onClick={handleCancelEdit}
+                        className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-700 flex items-center gap-1 transition-all cursor-pointer"
+                      >
+                        <X className="w-3.5 h-3.5" /> Cancelar
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleSaveEdit(idx)}
+                        className="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-cyan-600 hover:bg-cyan-500 text-white flex items-center gap-1 transition-all shadow-xs cursor-pointer active:scale-98"
+                      >
+                        <Check className="w-3.5 h-3.5" /> Guardar Cambios
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-start gap-3 min-w-0 flex-1">
+                      <span className="w-6 h-6 rounded-lg bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 font-mono font-bold text-xs flex items-center justify-center shrink-0 mt-0.5">
+                        {idx + 1}
+                      </span>
+                      <span
+                        onClick={() => handleStartEdit(idx, rule)}
+                        className="text-zinc-800 dark:text-zinc-200 text-xs sm:text-sm leading-relaxed break-words cursor-pointer hover:text-cyan-600 dark:hover:text-cyan-400 transition-colors"
+                        title="Haz clic para editar esta regla"
+                      >
+                        {rule}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <button
+                        type="button"
+                        onClick={() => handleStartEdit(idx, rule)}
+                        className="w-7 h-7 rounded-lg flex items-center justify-center text-zinc-400 hover:text-cyan-600 hover:bg-cyan-500/10 transition-colors cursor-pointer"
+                        title="Editar regla"
+                      >
+                        <Pencil className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveCustomRule(idx)}
+                        className="w-7 h-7 rounded-lg flex items-center justify-center text-zinc-400 hover:text-red-500 hover:bg-red-500/10 transition-colors cursor-pointer"
+                        title="Eliminar regla"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
           {rules.customRules.length === 0 && (
             <div className="text-xs text-zinc-400 italic py-2">
-              No hay reglas personalizadas adicionales registradas aún.
+              No hay reglas personalizadas adicionales registradas aún. Puedes redactar una arriba o seleccionar del catálogo de abajo.
             </div>
           )}
+        </div>
+      </div>
+
+      {/* 5. Selectable Presets Rule Catalog */}
+      <div className="bg-zinc-50 dark:bg-zinc-900/60 p-5 sm:p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-zinc-200/80 dark:border-zinc-800">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
+              <BookOpen className="w-4.5 h-4.5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+                  5. Catálogo de Reglas Profesionales Seleccionables
+                </h3>
+                <span className="px-2 py-0.5 text-[10px] font-mono font-bold rounded-md bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">
+                  {PRESET_RULES_CATALOG.length} directivas
+                </span>
+              </div>
+              <p className="text-[11px] text-zinc-500">Haz clic en "Seleccionar" para incorporarlas a tu proyecto y editarlas a tu medida</p>
+            </div>
+          </div>
+
+          {/* Preset Search */}
+          <div className="relative w-full sm:w-56 shrink-0">
+            <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-zinc-400 pointer-events-none" />
+            <input
+              type="text"
+              value={presetSearch}
+              onChange={(e) => setPresetSearch(e.target.value)}
+              placeholder="Filtrar catálogo..."
+              className="w-full pl-8 pr-3 py-1.5 text-xs bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-xl text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 outline-none focus:ring-2 focus:ring-purple-500/30"
+            />
+          </div>
+        </div>
+
+        {/* Categories Chips */}
+        <div className="flex items-center gap-1.5 flex-wrap">
+          {['Todas', 'Seguridad & Secretos', 'Calidad & Tipado', 'Arquitectura & Modularidad', 'UI, Estilos & Accesibilidad', 'Git & Commits', 'Pruebas & Resiliencia'].map((cat) => (
+            <button
+              key={cat}
+              type="button"
+              onClick={() => setSelectedPresetCat(cat)}
+              className={`px-2.5 py-1 rounded-lg text-[11px] font-medium transition-all cursor-pointer ${
+                selectedPresetCat === cat
+                  ? 'bg-purple-600 text-white font-bold shadow-xs'
+                  : 'bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:border-zinc-300'
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+
+        {/* Preset Rules Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-72 overflow-y-auto pr-1">
+          {PRESET_RULES_CATALOG.filter((item) => {
+            const matchesCat = selectedPresetCat === 'Todas' || item.category === selectedPresetCat;
+            const matchesQuery =
+              !presetSearch ||
+              item.rule.toLowerCase().includes(presetSearch.toLowerCase()) ||
+              item.category.toLowerCase().includes(presetSearch.toLowerCase());
+            return matchesCat && matchesQuery;
+          }).map((preset, idx) => {
+            const isAlreadyAdded = rules.customRules.includes(preset.rule);
+            return (
+              <div
+                key={idx}
+                className={`p-3.5 rounded-xl border flex flex-col justify-between transition-all ${
+                  isAlreadyAdded
+                    ? 'border-purple-500/40 bg-purple-500/5 dark:bg-purple-950/20 ring-1 ring-purple-500/20'
+                    : 'bg-white dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700'
+                }`}
+              >
+                <div>
+                  <div className="flex items-center justify-between gap-2 mb-1.5">
+                    <span className="text-[10px] font-mono font-bold px-2 py-0.5 rounded bg-purple-500/10 text-purple-600 dark:text-purple-400">
+                      {preset.category}
+                    </span>
+                    {isAlreadyAdded ? (
+                      <span className="text-[10px] font-bold text-emerald-600 dark:text-emerald-400 flex items-center gap-1">
+                        <Check className="w-3 h-3" /> Añadida
+                      </span>
+                    ) : null}
+                  </div>
+                  <p className="text-xs text-zinc-700 dark:text-zinc-300 leading-relaxed mb-3">
+                    {preset.rule}
+                  </p>
+                </div>
+
+                <div className="pt-2 border-t border-zinc-100 dark:border-zinc-800/80 flex items-center justify-end">
+                  <button
+                    type="button"
+                    onClick={() => handleSelectPresetRule(preset.rule)}
+                    disabled={isAlreadyAdded}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 transition-all cursor-pointer ${
+                      isAlreadyAdded
+                        ? 'opacity-50 cursor-not-allowed bg-zinc-100 dark:bg-zinc-800 text-zinc-500'
+                        : 'bg-purple-600 hover:bg-purple-500 text-white shadow-xs active:scale-98'
+                    }`}
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    {isAlreadyAdded ? 'En tus reglas' : 'Seleccionar y Añadir'}
+                  </button>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>

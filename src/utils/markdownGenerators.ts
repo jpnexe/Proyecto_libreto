@@ -556,6 +556,7 @@ export function generateRules(p: LibretoProject): string {
   const feInfo = getFrontendTechInfo(p.architecture.frontendFramework);
   const beInfo = getBackendTechInfo(p.architecture.backendFramework);
   const dbInfo = getDatabaseTechInfo(p.architecture.database);
+  const styleInfo = getStyleTechInfo(p.design.style);
 
   const extraRules = [
     p.rules.atomicModifications && `### Directiva 1: Modificaciones Atómicas y Quirúrgicas
@@ -587,8 +588,19 @@ export function generateRules(p: LibretoProject): string {
 - Cada nuevo módulo de lógica empresarial, utilidad matemática o formateador debe acompañarse de su correspondiente archivo de pruebas unitarias (\`*.test.ts\` o \`*.spec.ts\`).`,
   ].filter(Boolean);
 
+  const langRules = (p.architecture.languages && p.architecture.languages.length > 0)
+    ? `### Directiva 7: Estándares Obligatorios de Lenguaje (${p.architecture.languages.join(' + ')})
+- **Tipado Fuerte y Contratos:** Todo código escrito en ${p.architecture.languages.join(' / ')} debe apegarse a las directivas idiomáticas oficiales, tipos explícitos y contratos inmutables.
+- **Validación con Linter:** El código debe superar las reglas de linter y formateador oficial antes de integrarse en producción.`
+    : '';
+
+  const uiRules = `### Directiva 8: Tokens y Librerías de Diseño Ratificadas
+- **Tokens del Estilo (${styleInfo.name}):** Prohibido el uso de colores hexadecimales arbitrarios o márgenes fuera de la escala de \`${p.design.styleFramework}\`.
+- **Librerías de Animación Autorizadas:** Queda terminantemente prohibido instalar motores de animación concurrentes; usar exclusivamente: **\`${(p.design.animationLibraries && p.design.animationLibraries.length > 0) ? p.design.animationLibraries.join(', ') : 'Animaciones CSS nativas'}\`**.
+- **Librerías de Iconos Autorizadas:** Utilizar únicamente la familia ratificada: **\`${(p.design.iconLibraries && p.design.iconLibraries.length > 0) ? p.design.iconLibraries.join(', ') : 'Lucide Icons'}\`**.`;
+
   const customRulesList = p.rules.customRules.length > 0
-    ? `### Directivas Adicionales Formuladas por el Propietario:\n${p.rules.customRules.map((r, i) => `${i + 1}. **${r}**`).join('\n')}`
+    ? `### Directivas Personalizadas Formuladas por el Propietario:\n${p.rules.customRules.map((r, i) => `${i + 1}. **${r}**`).join('\n')}`
     : '';
 
   return `# REGLAS DE COMPORTAMIENTO VINCULANTES PARA LA INTELIGENCIA ARTIFICIAL
@@ -596,6 +608,7 @@ export function generateRules(p: LibretoProject): string {
 > **Documento Legal y Operativo de Cumplimiento Innegociable**
 > **Proyecto:** ${p.name}
 > **Stack Ratificado:** ${feInfo.name} + ${beInfo.name} + ${dbInfo.name}
+> **Lenguajes:** ${(p.architecture.languages && p.architecture.languages.length > 0) ? p.architecture.languages.join(', ') : 'TypeScript'}
 
 ---
 
@@ -611,6 +624,10 @@ Cualquier acción unilateral en la que el asistente instale librerías no pactad
 ## 📋 DIRECTIVAS TÉCNICAS OBLIGATORIAS DE INGENIERÍA
 
 ${extraRules.join('\n\n')}
+
+${langRules ? `\n${langRules}\n` : ''}
+
+${uiRules}
 
 ${customRulesList ? `\n---\n${customRulesList}\n` : ''}
 
@@ -640,19 +657,37 @@ export function generateDecisions(p: LibretoProject): string {
   const dbInfo = getDatabaseTechInfo(p.architecture.database);
   const patInfo = getPatternTechInfo(p.architecture.architecturalPattern);
   const styleInfo = getStyleTechInfo(p.design.style);
+  const languagesStr = (p.architecture.languages && p.architecture.languages.length > 0)
+    ? p.architecture.languages.join(', ')
+    : 'TypeScript';
+  const animLibsStr = (p.design.animationLibraries && p.design.animationLibraries.length > 0)
+    ? p.design.animationLibraries.join(', ')
+    : 'Animaciones CSS Nativas';
+  const iconLibsStr = (p.design.iconLibraries && p.design.iconLibraries.length > 0)
+    ? p.design.iconLibraries.join(', ')
+    : 'Lucide Icons';
 
   const adrList = [
     {
       id: 'ADR-001',
+      title: `Lenguajes de Programación y Tipado: ${languagesStr}`,
+      status: 'Aprobado y Ratificado',
+      context: `Se requiere un estándar estricto de tipado y ergonomía de desarrollo para minimizar defectos en tiempo de ejecución en la plataforma ${p.architecture.platform.toUpperCase()}.`,
+      decision: `Se ratifica el uso oficial de **${languagesStr}** con configuración de tipado estricto y contratos de datos inmutables.`,
+      consequences: `Todo código nuevo debe apegarse a contratos tipados; prohibido el uso de tipos implícitos ambiguos.`,
+      discarded: `Lenguajes no tipados o dialectos no compatibles con el pipeline de compilación.`,
+    },
+    {
+      id: 'ADR-002',
       title: `Adopción del Framework Frontend: ${feInfo.name}`,
       status: 'Aprobado y Ratificado',
-      context: `Se requiere una solución visual de alto rendimiento, excelente experiencia de desarrollo y sólida tipificación para la plataforma ${p.architecture.platform.toUpperCase()}. Se evaluaron alternativas de la industria.`,
+      context: `Se requiere una solución visual de alto rendimiento, excelente experiencia de desarrollo y sólida modularidad.`,
       decision: `Se adopta de forma oficial y vinculante **${feInfo.name}** (${feInfo.category}) bajo el paradigma \`${feInfo.paradigm}\`.`,
       consequences: `Todas las vistas, componentes y estados de cliente deben implementarse exclusivamente conforme a las convenciones de este framework. Queda prohibida la introducción de librerías visuales concurrentes que inflen el bundle.`,
       discarded: `Frameworks no consensuados o librerías legacy incompatibles con el stack ratificado.`,
     },
     {
-      id: 'ADR-002',
+      id: 'ADR-003',
       title: `Estrategia de Backend y Runtime: ${beInfo.name}`,
       status: 'Aprobado y Ratificado',
       context: `La lógica de negocio y persistencia requiere un entorno de procesamiento confiable y escalable que se comunique a través de ${p.architecture.connectionType}.`,
@@ -661,7 +696,7 @@ export function generateDecisions(p: LibretoProject): string {
       discarded: `Monolitos no estructurados, servidores desprovistos de tipado estricto o servicios no pactados.`,
     },
     {
-      id: 'ADR-003',
+      id: 'ADR-004',
       title: `Motor de Persistencia y Base de Datos: ${dbInfo.name}`,
       status: 'Aprobado y Ratificado',
       context: `El sistema requiere persistencia segura y transaccional acorde a la naturaleza de los requerimientos funcionales del proyecto.`,
@@ -670,16 +705,25 @@ export function generateDecisions(p: LibretoProject): string {
       discarded: `Bases de datos no acordadas que requieran infraestructuras o licencias no autorizadas por el equipo.`,
     },
     {
-      id: 'ADR-004',
-      title: `Sistema de Diseño Visual y Tokens: ${styleInfo.name} con ${p.design.styleFramework}`,
+      id: 'ADR-005',
+      title: `Sistema de Diseño Visual, Animaciones e Iconografía`,
       status: 'Aprobado y Ratificado',
-      context: `Para garantizar coherencia estética ejecutiva, accesibilidad y velocidad de maquetación en el equipo.`,
-      decision: `Se establece el estilo visual **${styleInfo.name}** complementado con el framework de utilidades **${p.design.styleFramework}** y la tipografía **${p.design.typography}**.`,
-      consequences: `Queda terminantemente prohibido escribir CSS en línea desordenado con colores hexadecimales arbitrarios fuera de los tokens semánticos definidos en \`DESIGN.md\`.`,
+      context: `Garantizar coherencia estética ejecutiva, accesibilidad WCAG y velocidad de maquetación en el equipo.`,
+      decision: `Se establece el estilo visual **${styleInfo.name}** con el framework **${p.design.styleFramework}**, tipografía **${p.design.typography}**, animaciones en **${animLibsStr}** e iconografía en **${iconLibsStr}**.`,
+      consequences: `Queda terminantemente prohibido escribir CSS en línea desordenado fuera de los tokens semánticos definidos en \`DESIGN.md\`.`,
       discarded: `Librerías pesadas de componentes que impidan la personalización de los tokens visuales del estilo.`,
     },
     {
-      id: 'ADR-005',
+      id: 'ADR-006',
+      title: `Protocolo de Integración y Conexión: ${p.architecture.connectionType}`,
+      status: 'Aprobado y Ratificado',
+      context: `Definir el canal de transporte e intercambio de datos entre cliente y servidor.`,
+      decision: `Se adopta el protocolo **${p.architecture.connectionType}** con contratos estandarizados de serialización.`,
+      consequences: `Toda comunicación externa debe fluir a través de este estándar con manejo defensivo de fallas de red.`,
+      discarded: `Protocolos propietarios o no compatibles con la infraestructura de red del proyecto.`,
+    },
+    {
+      id: 'ADR-007',
       title: `Patrón Arquitectónico del Software: ${patInfo.name}`,
       status: 'Aprobado y Ratificado',
       context: `Para evitar la deuda técnica y permitir la evolución desacoplada de la base de código.`,
@@ -688,7 +732,7 @@ export function generateDecisions(p: LibretoProject): string {
       discarded: `Estructuras planas sin separación de responsabilidades ("Código Espagueti").`,
     },
     {
-      id: 'ADR-006',
+      id: 'ADR-008',
       title: `Gestión de Seguridad, Variables de Entorno y Secretos`,
       status: 'Aprobado y Ratificado',
       context: `Prevenir filtraciones de credenciales de infraestructura o claves de APIs privadas en repositorios de código abierto o compartidos.`,
@@ -735,9 +779,186 @@ ${customAdrs ? `\n---\n## ADRs ADICIONALES ESPECÍFICOS DEL PROYECTO\n${customAd
 }
 
 /**
+ * Genera normas de seguridad específicas adaptadas a las tecnologías concretas seleccionadas
+ */
+function getTechnologySpecificSecurityDirectives(p: LibretoProject): string {
+  const fe = p.architecture.frontendFramework || '';
+  const be = p.architecture.backendFramework || '';
+  const db = p.architecture.database || '';
+  const platform = p.architecture.platform || 'web';
+
+  const feRules: string[] = [];
+  const beRules: string[] = [];
+  const dbRules: string[] = [];
+  const platformRules: string[] = [];
+
+  // Frontend Specifics
+  if (fe.includes('Next.js')) {
+    feRules.push(
+      '**Server Actions Security:** Toda Server Action invocada desde formularios o cliente debe validar la sesión del usuario mediante middleware y autenticar permisos antes de ejecutar mutaciones.',
+      '**Aislamiento de Entorno SSR:** Ninguna clave de servicio o secreto sin el prefijo `NEXT_PUBLIC_` debe pasar a componentes de cliente (`"use client"`).',
+      '**Cabeceras de Redirección y CORS:** Configurar `headers()` en `next.config.js` forzando HSTS, CSP y restringiendo la carga de iframes con `X-Frame-Options: DENY`.'
+    );
+  } else if (fe.includes('React') || fe.includes('Vite')) {
+    feRules.push(
+      '**Prevención de XSS en Renderizado React:** Prohibido el uso de `dangerouslySetInnerHTML` salvo sanitización obligatoria con DOMPurify.',
+      '**Variables de Entorno Públicas:** Las variables con prefijo `VITE_` son públicas y empaquetadas en el bundle; terminantemente prohibido almacenar tokens de servicio o contraseñas en ellas.',
+      '**Subresource Integrity (SRI):** Si se importan scripts externos, verificar hashes de integridad criptográfica en las etiquetas `<script>`.'
+    );
+  } else if (fe.includes('Astro') || fe.includes('11ty') || fe.includes('Hugo')) {
+    feRules.push(
+      '**Seguridad en Sitios Estáticos (SSG):** El bundle exportado a producción no debe incluir archivos `.env`, rutas de API locales no protegidas ni dependencias de desarrollo.',
+      '**Aislamiento de Islas Cliente:** Limitar el uso de directivas `client:load` y `client:only` a componentes estrictamente interactivos para reducir la superficie de ataque XSS.',
+      '**CSP Estricto en Edge CDN:** Configurar en el host estático una política Content-Security-Policy sin directivas `unsafe-inline` ni `unsafe-eval`.'
+    );
+  } else if (fe.includes('Vue') || fe.includes('Nuxt')) {
+    feRules.push(
+      '**Protección de Directivas Vue:** Evitar la directiva `v-html` con contenido no sanitizado; utilizar `v-text` o interpolación de texto estándar `{{ }}` que escapa caracteres peligrosos.',
+      '**Nuxt Server Routes:** Todo endpoint en `server/api/` debe implementar validación con H3 / Zod y validar tokens de sesión en cookies seguras.'
+    );
+  } else if (fe.includes('Angular')) {
+    feRules.push(
+      '**Angular DomSanitizer:** Confiar en el motor de contextual escaping de Angular y evitar llamadas a `bypassSecurityTrust*` sin auditoría previa de seguridad.',
+      '**Interceptores HTTP Seguros:** Implementar un `HttpInterceptor` global para adjuntar tokens Bearer con rotación y sanitizar respuestas de error.'
+    );
+  } else {
+    feRules.push(
+      '**Sanitización y Escape Web:** Todo dato renderizado en el navegador proveniente de usuarios o APIs externas debe ser escapado para prevenir ataques XSS.',
+      '**Aislamiento de Secretos de Frontend:** El código cliente jamás debe contener credenciales maestras de base de datos o claves privadas de APIs.'
+    );
+  }
+
+  // Backend Specifics
+  if (be.includes('FastAPI')) {
+    beRules.push(
+      '**Validación de Esquemas con Pydantic v2:** Todos los endpoints deben recibir modelos Pydantic con validadores estrictos (`Field(...)`, regex, longitudes mínimas/máximas) descartando campos adicionales no reconocidos.',
+      '**CORS Middleware Restrictivo:** Utilizar `CORSMiddleware` con `allow_origins` declarando explícitamente los dominios del cliente; prohibido el comodín `["*"]` con credenciales habilitadas.',
+      '**Hashing Criptográfico de Contraseñas:** Emplear `passlib` con algoritmo **Argon2id** o **Bcrypt** con factor de coste mínimo de 12 para almacenar credenciales.',
+      '**OAuth2 con JWT:** Generar tokens de corta duración (máximo 15 minutos) firmados con algoritmo HS256 o RS256 con claves simétricas/asimétricas rotativas.'
+    );
+  } else if (be.includes('NestJS')) {
+    beRules.push(
+      '**ValidationPipe Global:** Activar `app.useGlobalPipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true, transform: true }))` para rechazar automáticamente cualquier propiedad no declarada en los DTOs.',
+      '**Protección de Cabeceras con Helmet:** Integrar `helmet()` en el archivo `main.ts` para habilitar cabeceras defensivas automáticas.',
+      '**Guardas de Autenticación y RBAC:** Implementar `AuthGuard` y `RolesGuard` con decoradores personalizados para proteger todas las rutas privadas.',
+      '**Limitación de Tasa con ThrottlerModule:** Configurar `@nestjs/throttler` para blindar endpoints de autenticación contra ataques de fuerza bruta.'
+    );
+  } else if (be.includes('Express')) {
+    beRules.push(
+      '**Seguridad con Helmet y CORS:** Configurar `app.use(helmet())` y `cors({ origin: allowedOrigins, credentials: true })` en el punto de entrada de la aplicación.',
+      '**Limitación de Peticiones:** Implementar `express-rate-limit` con ventanas deslizantes de tiempo para frenar ataques DoS y fuerza bruta.',
+      '**Prevención de Prototype Pollution:** Desactivar `app.disable("x-powered-by")` y utilizar librerías de parsing seguras que impidan inyecciones a través de `__proto__`.',
+      '**Manejo Centralizado de Errores:** Middleware final de captura de excepciones que nunca exponga trazas de error (stack traces) internas al cliente en producción.'
+    );
+  } else if (be.includes('Django')) {
+    beRules.push(
+      '**Django Security Middleware:** Activar `SECURE_SSL_REDIRECT = True`, `SESSION_COOKIE_SECURE = True`, y `CSRF_COOKIE_SECURE = True` en entornos de producción.',
+      '**Consultas ORM Parametrizadas:** Utilizar exclusivamente el ORM de Django con métodos tipados; prohibido el uso de `raw()` o concatenación de strings en queries SQL.',
+      '**Protección CSRF Universal:** Mantener activo el middleware `CsrfViewMiddleware` en formularios web y validar tokens en cabeceras `X-CSRFToken` en llamadas AJAX.'
+    );
+  } else if (be.includes('Laravel')) {
+    beRules.push(
+      '**FormRequests de Validación:** Toda solicitud que altere el estado debe encapsularse en una clase `FormRequest` dedicada con reglas estrictas.',
+      '**Protección contra Asignación Masiva:** Definir rigurosamente las propiedades `$fillable` en todos los modelos Eloquent; prohibido el uso de `$guarded = []`.',
+      '**Tokens de API Seguros con Sanctum/Passport:** Emitir tokens con alcances (abilities/scopes) mínimos y fechas de caducidad fijadas.',
+      '**Encriptación y Hashing Nativo:** Utilizar la fachada `Hash::make()` con el driver Bcrypt/Argon2 para contraseñas.'
+    );
+  } else if (be.includes('Go')) {
+    beRules.push(
+      '**Seguridad de Memoria y Concurrencia:** Evitar data races ejecutando pruebas con `go test -race`; controlar el ciclo de vida de goroutines con `context.Context`.',
+      '**Consultas Seguras con Placeholders:** Prohibido construir sentencias SQL mediante `fmt.Sprintf`; utilizar siempre placeholders (`?` o `$1`) provistos por `database/sql`.',
+      '**Middleware de Recuperación ante Panics:** Configurar middleware de recover en Gin/Fiber para evitar caídas del servicio ante excepciones imprevistas.'
+    );
+  } else if (be.includes('Spring Boot')) {
+    beRules.push(
+      '**Spring Security Filter Chain:** Configurar una cadena de filtros explícita que bloquee todas las rutas por defecto (`anyRequest().authenticated()`).',
+      '**Prevención de Deserialización Insegura:** Prohibir la deserialización directa de objetos Java sin listas blancas de clases permitidas.',
+      '**Auditoría de Inyecciones de Dependencia:** Utilizar inyección por constructor para garantizar inmutabilidad y componentes no manipulables.'
+    );
+  } else if (be.includes('Serverless') || be.includes('Edge')) {
+    beRules.push(
+      '**Aislamiento de Entornos Serverless:** Cada función debe operar bajo el principio de mínimo privilegio en sus roles de IAM / Cloudflare Workers.',
+      '**Validación en Tiempo de Ejecución:** Validar la firma criptográfica de webhooks externos (ej. Stripe, GitHub) antes de procesar cualquier evento.'
+    );
+  }
+
+  // Database Specifics
+  if (db.includes('Supabase')) {
+    dbRules.push(
+      '**Row Level Security (RLS) Obligatorio:** Activar RLS en el 100% de las tablas de Supabase (`ALTER TABLE nombre ENABLE ROW LEVEL SECURITY;`). Ninguna tabla debe ser accesible públicamente sin una política declarada.',
+      '**Políticas por Usuario:** Escribir políticas basadas en `auth.uid() = user_id` para garantizar que ningún usuario pueda leer o mutar registros de terceros.',
+      '**Aislamiento de la Service Role Key:** La clave `service_role` posee privilegios de superusuario que eluden RLS; terminantemente prohibido utilizarla en código cliente.'
+    );
+  } else if (db.includes('PostgreSQL')) {
+    dbRules.push(
+      '**Conexiones Cifradas con SSL:** La cadena de conexión a PostgreSQL debe exigir cifrado en tránsito (`sslmode=require` o `sslmode=verify-full`).',
+      '**Principio de Mínimo Privilegio en Roles de BD:** La aplicación web debe conectarse con un usuario de base de datos sin privilegios de `SUPERUSER` ni permisos de `DROP DATABASE`.',
+      '**Consultas Preparadas contra SQL Injection:** Emplear sentencias preparadas en todas las interacciones con la base de datos para neutralizar inyecciones SQL.',
+      '**Transacciones ACID para Operaciones Críticas:** Envolver flujos que involucren más de una tabla en bloques de transacción (`BEGIN ... COMMIT`) para evitar estados inconsistentes.'
+    );
+  } else if (db.includes('MongoDB')) {
+    dbRules.push(
+      '**Mitigación de NoSQL Injection:** Sanitizar todas las entradas con librerías como `mongo-sanitize` para eliminar operadores de consulta maliciosos como `$gt`, `$ne` o `$where`.',
+      '**Esquemas con Validación de Tipos (Mongoose):** Configurar `strict: true` en todos los esquemas para rechazar documentos con campos no autorizados.',
+      '**Autenticación SCRAM-SHA-256 y Cifrado TLS:** Forzar conexiones autenticadas con TLS obligatorio en la cadena de conexión de MongoDB Atlas o local.'
+    );
+  } else if (db.includes('SQLite') || db.includes('Turso')) {
+    dbRules.push(
+      '**Permisos Restringidos del Archivo SQLite:** El archivo de base de datos debe tener permisos de sistema operativo `0600` (lectura/escritura exclusiva del usuario del proceso).',
+      '**Modo WAL (Write-Ahead Logging):** Activar `PRAGMA journal_mode=WAL;` y `PRAGMA busy_timeout=5000;` para prevenir bloqueos y corrupción de datos en lecturas concurrentes.',
+      '**Sentencias Preparadas:** Prohibida la interpolación de cadenas; utilizar binding de parámetros nativo de SQLite.'
+    );
+  } else if (db.includes('Redis')) {
+    dbRules.push(
+      '**Autenticación con Contraseña Fuerte:** Configurar directiva `requirepass` con una clave criptográfica de alta entropía.',
+      '**Deshabilitación de Comandos Críticos:** Renombrar o deshabilitar comandos peligrosos como `FLUSHALL`, `FLUSHDB`, `CONFIG` y `KEYS` en `redis.conf`.',
+      '**Límites de Memoria Seguros:** Definir `maxmemory` junto con una política de desalojo controlada (`volatile-lru` o `allkeys-lru`) para evitar caídas por saturación de RAM.'
+    );
+  } else if (db.includes('Archivos Locales') || db.includes('Ninguna')) {
+    dbRules.push(
+      '**Validación de Esquemas de Contenido:** Todos los archivos Markdown/JSON deben validarse con esquemas tipados (Zod/Frontmatter) en tiempo de compilación.',
+      '**Prevención de Directory Traversal:** Sanitizar rutas de acceso a archivos para impedir que parámetros de usuario lean archivos del sistema (`../../etc/passwd`).'
+    );
+  }
+
+  // Platform Specifics
+  if (platform === 'mobile' || fe.includes('React Native') || fe.includes('Flutter')) {
+    platformRules.push(
+      '**Almacenamiento Seguro por Hardware:** Credenciales y tokens sensibles deben almacenarse exclusivamente en **iOS Keychain** o **Android Keystore / EncryptedSharedPreferences** (vía `expo-secure-store` o `flutter_secure_storage`).',
+      '**SSL Certificate Pinning:** Implementar anclaje de certificados SSL en los clientes móviles para mitigar ataques de intermediario (Man-In-The-Middle) en redes Wi-Fi públicas.',
+      '**Detección de Dispositivos Vulnerables:** Detectar dispositivos con Root (Android) o Jailbreak (iOS) para advertir al usuario o restringir funciones de alta criticidad.',
+      '**Ofuscación de Código en Producción:** Activar ProGuard / R8 en Android y optimizaciones de Hermes para dificultar la ingeniería inversa de los binarios.'
+    );
+  } else if (platform === 'static') {
+    platformRules.push(
+      '**Cero Exposición de Credenciales:** Verificar que en el directorio de salida estático (`dist` o `build`) no figure ningún archivo `.env` ni claves privadas.',
+      '**Cabeceras de Seguridad en Edge CDN:** Configurar en Vercel/Cloudflare/Netlify las cabeceras `Content-Security-Policy`, `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff` y `Referrer-Policy: strict-origin-when-cross-origin`.'
+    );
+  }
+
+  return `### 2.1 Directivas Específicas para Frontend (${fe || 'Web'})
+${feRules.map((r) => `- ${r}`).join('\n')}
+
+### 2.2 Directivas Específicas para Backend (${be || 'Runtime'})
+${beRules.map((r) => `- ${r}`).join('\n')}
+
+### 2.3 Directivas Específicas para Persistencia (${db || 'Datos'})
+${dbRules.map((r) => `- ${r}`).join('\n')}
+
+${platformRules.length > 0 ? `### 2.4 Directivas Específicas para Plataforma (${platform.toUpperCase()})\n${platformRules.map((r) => `- ${r}`).join('\n')}` : ''}
+`;
+}
+
+/**
  * 6. SECURITY.md - Directrices de Seguridad Informática & OWASP
  */
 export function generateSecurity(p: LibretoProject): string {
+  const feInfo = getFrontendTechInfo(p.architecture.frontendFramework);
+  const beInfo = getBackendTechInfo(p.architecture.backendFramework);
+  const dbInfo = getDatabaseTechInfo(p.architecture.database);
+
+  const techSecurityDirectives = getTechnologySpecificSecurityDirectives(p);
+
   const policies = [
     p.security.envVariablesManagement && `### 1. 🔐 Gestión Estricta de Variables de Entorno y Secretos
 - **Cero Credenciales en Código:** Ningún token, API Key, contraseña de base de datos o secreto debe figurar en el código fuente ni en el historial de Git.
@@ -780,12 +1001,19 @@ export function generateSecurity(p: LibretoProject): string {
   return `# MANUAL Y DIRECTRICES DE SEGURIDAD INFORMÁTICA
 
 > **Proyecto:** ${p.name}
-> **Nivel de Exigencia:** Máximo / Grado de Producción
+> **Stack Ratificado:** ${feInfo.name} + ${beInfo.name} + ${dbInfo.name}
 > **Marco de Referencia:** OWASP Top 10 & CWE Top 25
+> **Nivel de Exigencia:** Grado de Producción / Máxima Resiliencia
 
 ---
 
-## 🛡️ DIRECTIVAS DE SEGURIDAD DEFENSIVA
+## 🔒 DIRECTIVAS DE SEGURIDAD ESPECÍFICAS PARA EL STACK RATIFICADO
+
+${techSecurityDirectives}
+
+---
+
+## 🛡️ POLÍTICAS GENERALES DE SEGURIDAD DEFENSIVA
 
 ${policies.join('\n\n')}
 
