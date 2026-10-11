@@ -333,7 +333,7 @@ export const TasksModule: React.FC<TasksModuleProps> = ({ project, onChange }) =
       <div className="p-4 sm:p-5 rounded-2xl bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 space-y-3.5 shadow-xs">
         {/* Top Header & Actions Row */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-zinc-200/80 dark:border-zinc-800/80">
-          <div className="flex items-center gap-2.5">
+          <div className="flex items-center gap-2.5 min-w-0 flex-1">
             <div className="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center shrink-0">
               <Sparkles className="w-4.5 h-4.5" />
             </div>
@@ -356,20 +356,20 @@ export const TasksModule: React.FC<TasksModuleProps> = ({ project, onChange }) =
             </div>
           </div>
 
-          {/* Action Buttons: Auto-sync toggle & Regenerate button */}
-          <div className="flex items-center gap-2 flex-wrap sm:shrink-0">
+          {/* Action Buttons: Auto-sync toggle & Regenerate button (stacked vertically) */}
+          <div className="flex flex-col gap-2 shrink-0 w-full sm:w-auto items-stretch sm:items-end">
             <button
               type="button"
               onClick={handleToggleAutoSync}
-              className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer flex items-center gap-1.5 ${
+              className={`w-full sm:w-auto px-3.5 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer flex items-center justify-center gap-1.5 ${
                 tasks.autoSync !== false && !tasks.customEdited
                   ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-300'
                   : 'bg-white dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:border-zinc-300'
               }`}
               title="Alternar sincronización automática cuando cambies opciones en Arquitectura o Diseño"
             >
-              <Zap className={`w-3.5 h-3.5 ${tasks.autoSync !== false && !tasks.customEdited ? 'text-emerald-500' : 'text-zinc-400'}`} />
-              <span>
+              <Zap className={`w-3.5 h-3.5 shrink-0 ${tasks.autoSync !== false && !tasks.customEdited ? 'text-emerald-500' : 'text-zinc-400'}`} />
+              <span className="whitespace-nowrap">
                 {tasks.autoSync !== false && !tasks.customEdited ? 'Auto-sincronizar: Activo' : 'Auto-sincronizar: Pausado'}
               </span>
             </button>
@@ -377,11 +377,11 @@ export const TasksModule: React.FC<TasksModuleProps> = ({ project, onChange }) =
             <button
               type="button"
               onClick={handleRegenerateFromStack}
-              className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white shadow-xs shadow-blue-500/20 active:scale-98 transition-all flex items-center gap-1.5 cursor-pointer"
+              className="w-full sm:w-auto px-3.5 py-1.5 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white shadow-xs shadow-blue-500/20 active:scale-98 transition-all flex items-center justify-center gap-1.5 cursor-pointer"
               title="Regenerar tareas sugeridas a partir del frontend, backend, base de datos y diseño seleccionados"
             >
-              <RefreshCw className="w-3.5 h-3.5 text-blue-200" />
-              <span>Sincronizar con Stack Actual</span>
+              <RefreshCw className="w-3.5 h-3.5 shrink-0 text-blue-200" />
+              <span className="whitespace-nowrap">Sincronizar con Stack Actual</span>
             </button>
           </div>
         </div>
