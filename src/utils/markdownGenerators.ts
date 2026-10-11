@@ -1,5 +1,13 @@
 import type { GeneratedFiles, LibretoProject } from '../types/libreto';
 import { ANIMATION_LIBRARIES, DESIGN_STYLES, ICON_LIBRARIES } from '../constants/options';
+import {
+  getFrontendTechInfo,
+  getBackendTechInfo,
+  getDatabaseTechInfo,
+  getPatternTechInfo,
+  getStyleTechInfo,
+} from '../constants/techDictionary';
+import { generateSuggestedTasks, isStaticProject } from './taskGenerator';
 
 export function slugify(text: string): string {
   return text
@@ -11,7 +19,7 @@ export function slugify(text: string): string {
 }
 
 /**
- * 1. PRD.md - Product Requirements Document & Prompt Maestro
+ * 1. PRD.md - Documento de Requerimientos de Producto & Prompt Maestro
  */
 export function generatePRD(p: LibretoProject): string {
   const toneDescriptions: Record<string, string> = {
@@ -21,484 +29,683 @@ export function generatePRD(p: LibretoProject): string {
     minimalist_concise: 'Pragmático y Conciso: Código conciso y directo al grano, sin explicaciones redundantes, máxima eficiencia.',
   };
 
+  const feInfo = getFrontendTechInfo(p.architecture.frontendFramework);
+  const beInfo = getBackendTechInfo(p.architecture.backendFramework);
+  const dbInfo = getDatabaseTechInfo(p.architecture.database);
+  const patInfo = getPatternTechInfo(p.architecture.architecturalPattern);
+  const styleInfo = getStyleTechInfo(p.design.style);
+  const isStatic = isStaticProject(p);
+
   const reqList = p.prd.functionalRequirements.length > 0
-    ? p.prd.functionalRequirements.map((r, i) => `${i + 1}. **${r}**`).join('\n')
-    : '1. Requerimientos funcionales en definición.';
+    ? p.prd.functionalRequirements.map((r, i) => {
+        const id = `RF-${String(i + 1).padStart(3, '0')}`;
+        return `### ${id}: ${r}
+- **Prioridad:** ${i === 0 ? 'Crítica (MVP Bloqueante)' : i < 3 ? 'Alta' : 'Media'}
+- **Descripción:** Implementación integral del flujo operativo correspondiente a "${r}".
+- **Criterios de Aceptación (BDD):**
+  - **Dado que** el usuario se encuentra autenticado con los permisos requeridos (o navega en modo público si aplica),
+  - **Cuando** interactúa con los controles de la interfaz para activar esta funcionalidad,
+  - **Entonces** el sistema procesa la solicitud con validación estricta de esquemas y responde en menos de 200ms sin errores visuales ni excepciones no controladas.
+- **Definición de Terminado (DoD):**
+  - [ ] Interfaz reactiva responsiva según los lineamientos de \`DESIGN.md\`.
+  - [ ] Validación de entradas en frontera (Zod/DTO) y manejo defensivo de errores.
+  - [ ] Pruebas unitarias que validen casos de éxito y de borde (edge cases).`;
+      }).join('\n\n')
+    : '### RF-001: Requerimientos funcionales base en definición.\n- **Descripción:** Definir las capacidades operativas esenciales del MVP.';
 
   const nonFuncList = p.prd.nonFunctionalRequirements.length > 0
-    ? p.prd.nonFunctionalRequirements.map((r) => `- ${r}`).join('\n')
-    : '- Rendimiento óptimo y alta disponibilidad.';
+    ? p.prd.nonFunctionalRequirements.map((r, i) => `#### NFR-${i + 1}: ${r}\n- **Estándar:** Cumplimiento estricto en todos los entornos de despliegue.\n- **Métrica de Verificación:** Verificable mediante auditorías automatizadas y pruebas de carga.`).join('\n\n')
+    : `#### NFR-1: Rendimiento y Latencia
+- **Estándar:** Time to First Byte (TTFB) < 100ms y First Contentful Paint (FCP) < 1.2s.
+- **Métrica:** Puntuación de Google Lighthouse ≥ 95 en producción.
+
+#### NFR-2: Seguridad en Frontera
+- **Estándar:** Cero vulnerabilidades críticas en dependencias (npm audit / safety check). Sanitización estricta de entradas y cabeceras CSP.
+
+#### NFR-3: Accesibilidad Universal (A11y)
+- **Estándar:** Cumplimiento estricto del estándar WAI-ARIA y WCAG 2.1 nivel AA con ratios de contraste mínimo de 4.5:1.`;
 
   const storiesList = p.prd.userStories.length > 0
-    ? p.prd.userStories.map((s) => `> - *${s}*`).join('\n')
-    : '> - *Como usuario, quiero una experiencia fluida y consistente.*';
+    ? p.prd.userStories.map((s, i) => `### Historia de Usuario US-${String(i + 1).padStart(3, '0')}
+> **Enunciado:** "${s}"
+- **Actor Principal:** ${p.targetAudience}
+- **Valor de Negocio:** Garantiza una experiencia intuitiva, fluida y predecible que incrementa la retención y reduce la tasa de abandono.
+- **Condiciones Previas:** La sesión y el estado de la aplicación deben estar sincronizados.
+- **Flujo Principal:** El usuario ejecuta la acción prevista recibiendo retroalimentación háptica o visual inmediata (skeletons / spinners / toast notifications).`).join('\n\n')
+    : `### Historia de Usuario US-001
+> **Enunciado:** "Como ${p.targetAudience}, quiero acceder a una interfaz fluida, rápida y coherente para gestionar mis tareas eficientemente sin fricciones técnicas."
+- **Actor Principal:** ${p.targetAudience}
+- **Valor de Negocio:** Facilidad de adopción y máxima productividad.`;
 
-  return `# PRD & PROMPT MAESTRO: ${p.name.toUpperCase()}
+  return `# PRD & ESPECIFICACIÓN DE REQUERIMIENTOS: ${p.name.toUpperCase()}
 
-> **Versión:** ${p.version} | **Fecha de Emisión:** ${new Date(p.createdAt).toLocaleDateString()} | **Última Actualización:** ${new Date(p.updatedAt).toLocaleDateString()}
+> **Documento:** Product Requirements Document (PRD) & Master Prompt
+> **Versión del Producto:** \`${p.version}\` | **Fecha de Emisión:** ${new Date(p.createdAt).toLocaleDateString()} | **Última Revisión:** ${new Date(p.updatedAt).toLocaleDateString()}
 > **Público Objetivo:** ${p.targetAudience}
+> **Plataforma:** \`${p.architecture.platform.toUpperCase()}\` ${isStatic ? '(⚡ Sitio Estático Jamstack / SSG)' : ''}
 
 ---
 
-## 1. RESUMEN EJECUTIVO DEL PRODUCTO
+## 1. RESUMEN EJECUTIVO & PROPÓSITO DEL PRODUCTO
+
+### 1.1 Declaración del Problema y Visión de Solución
 ${p.description}
 
+### 1.2 Objetivos Estratégicos & Factores Críticos de Éxito
+- **Alineación Tecnológica:** Construido sobre la base de **${feInfo.name}**, **${beInfo.name}** y persistencia en **${dbInfo.name}**.
+- **Identidad Visual Distintiva:** Interfaz gobernada por el estilo **${styleInfo.name}** (${styleInfo.category}) bajo el framework **${p.design.styleFramework}**.
+- **Time-to-Market:** Desarrollo incremental por fases estructuradas en \`TASKS.md\` con verificación continua de calidad.
+- **Rendimiento de Clase Mundial:** Cumplimiento de los SLAs de latencia y disponibilidad definidos en los requerimientos no funcionales.
+
 ---
 
-## 2. REQUERIMIENTOS FUNCIONALES CLAVE (MVP)
+## 2. MATRIZ DE REQUERIMIENTOS FUNCIONALES (ALCANCE MVP)
+
+El sistema debe satisfacer sin excepción los siguientes requerimientos funcionales prioritarios:
+
 ${reqList}
 
 ---
 
-## 3. REQUERIMIENTOS NO FUNCIONALES (NFR)
+## 3. REQUERIMIENTOS NO FUNCIONALES (NFR) & CRITERIOS DE INGENIERÍA
+
 ${nonFuncList}
+
+### 3.1 Directivas de Rendimiento del Stack Tecnológico
+- **Frontend (${feInfo.name}):** ${feInfo.performanceDirectives.join(' ')}
+- **Backend (${beInfo.name}):** ${beInfo.performanceDirectives.join(' ')}
+- **Persistencia (${dbInfo.name}):** ${dbInfo.performanceDirectives.join(' ')}
 
 ---
 
-## 4. HISTORIAS DE USUARIO PRINCIPALES
+## 4. HISTORIAS DE USUARIO Y ESCENARIOS DE COMPORTAMIENTO (BDD)
+
 ${storiesList}
 
 ---
 
-## 5. PROMPT MAESTRO DE INICIALIZACIÓN PARA EL ASISTENTE IA
+## 5. DICCIONARIO TÉCNICO & GLOSARIO DE CONCEPTOS DEL SISTEMA
+
+Para garantizar una comprensión unívoca entre el equipo humano y los asistentes de Inteligencia Artificial, se establecen las siguientes definiciones formales:
+
+- **${feInfo.name}:** ${feInfo.description}
+  *Paradigma clave:* \`${feInfo.paradigm}\`.
+- **${beInfo.name}:** ${beInfo.description}
+  *Paradigma clave:* \`${beInfo.paradigm}\`.
+- **${dbInfo.name}:** ${dbInfo.description}
+  *Paradigma clave:* \`${dbInfo.paradigm}\`.
+- **${patInfo.name}:** ${patInfo.description}
+  *Enfoque:* ${patInfo.architectureGuide}
+- **${styleInfo.name}:** ${styleInfo.philosophy}
+
+---
+
+## 6. PROMPT MAESTRO DE INICIALIZACIÓN PARA EL ASISTENTE IA
 
 \`\`\`markdown
-### INSTRUCCIONES DE IDENTIDAD Y MISIÓN PARA EL ASISTENTE IA
+### INSTRUCCIONES DE IDENTIDAD, ROL Y MISIÓN PARA EL ASISTENTE IA
 
-Actúa como el **Desarrollador Principal y Arquitecto de Software Senior** responsable del proyecto "${p.name}".
+Actúa como el **Arquitecto de Software Principal y Desarrollador Senior Líder** del proyecto "${p.name}".
 
-#### CONTEXTO Y MISIÓN:
-- **Producto:** ${p.name} (${p.description})
+#### 1. MISIÓN Y CONTEXTO VINCULANTE:
+- **Nombre del Producto:** ${p.name}
+- **Descripción:** ${p.description}
+- **Audiencia Objetivo:** ${p.targetAudience}
 - **Plataforma:** ${p.architecture.platform.toUpperCase()}
-- **Stack:** ${p.architecture.frontendFramework} | ${p.architecture.backendFramework} | ${p.architecture.database}
-- **Estilo de Interfaz:** ${p.design.style} (${p.design.styleFramework})
-- **Tono Operativo:** ${toneDescriptions[p.prd.masterPromptTone] || toneDescriptions.strict_senior}
+- **Pila Tecnológica Ratificada:**
+  - Frontend: ${p.architecture.frontendFramework} (${feInfo.paradigm})
+  - Backend: ${p.architecture.backendFramework}
+  - Base de Datos: ${p.architecture.database}
+  - Patrón Arquitectónico: ${p.architecture.architecturalPattern}
+  - Conectividad: ${p.architecture.connectionType}
+- **Sistema de Diseño:** ${p.design.style} (${p.design.styleFramework}) con paleta: Primario (${p.design.primaryColor}), Secundario (${p.design.secondaryColor})
+- **Tono y Filosofía Operativa:** ${toneDescriptions[p.prd.masterPromptTone] || toneDescriptions.strict_senior}
 
-#### CONTRATO DE TRABAJO Y DOCUMENTOS VINCULANTES:
-Debes leer y respetar escrupulosamente los siguientes archivos directivos ubicados en la raíz del proyecto antes de escribir código:
-1. \`RULES.md\`: Obedecer la **REGLA DE ORO OBLIGATORIA** y las restricciones de tipado y modularidad.
-2. \`ARCHITECTURE.md\`: Ceñirte a la arquitectura y patrones designados sin desviaciones.
-3. \`DESIGN.md\`: Usar la paleta de colores, frameworks y librerías de componentes prescritas.
-4. \`DECISIONS.md\`: Respetar los ADRs y abstenerte de proponer tecnologías descartadas.
-5. \`SECURITY.md\`: Implementar validación defensiva, auth segura y cero secretos hardcodeados.
-6. \`TASKS.md\`: Avanzar secuencialmente resolviendo los hitos de la hoja de ruta.
-7. \`MEMORY.md\`: Consultar y actualizar el estado de progreso tras cada sesión.
+#### 2. CONTRATO DE TRABAJO Y CUMPLIMIENTO DOCUMENTAL OBLIGATORIO:
+Antes de generar código, instalar dependencias o proponer cambios, DEBES leer e internalizar los 8 archivos maestros:
+1. \`RULES.md\`: **REGLA DE ORO INAMOVIBLE**. Solicitar aprobación explícita antes de ejecutar comandos, crear archivos o instalar librerías.
+2. \`ARCHITECTURE.md\`: Obedecer la estructura de carpetas, separación de capas y contratos de API ratificados.
+3. \`DESIGN.md\`: Utilizar estrictamente los tokens de color, componentes y librerías visuales autorizadas.
+4. \`DECISIONS.md\`: Respetar los registros ADR y abstenerse de proponer tecnologías descartadas.
+5. \`SECURITY.md\`: Aplicar validación de esquemas Zod en frontera, mitigación de OWASP y cero secretos en Git.
+6. \`TASKS.md\`: Avanzar fase por fase de forma secuencial sin saltar requerimientos ni omitir pruebas.
+7. \`MEMORY.md\`: Consultar y actualizar la bitácora tras cada hito completado.
 
-${p.prd.customMasterPromptDirectives ? `#### DIRECTIVAS ESPECIALES DEL PROPIETARIO:\n${p.prd.customMasterPromptDirectives}\n` : ''}
-#### PRIMERA RESPUESTA REQUERIDA:
-Confirma la lectura de este PRD y los archivos directivos complementarios. Desglosa los pasos inmediatos a ejecutar para la Fase 1 definida en \`TASKS.md\` y solicita confirmación antes de iniciar cualquier acción en el código.
+${p.prd.customMasterPromptDirectives ? `#### 3. DIRECTIVAS ESPECIALES DEL USUARIO:\n${p.prd.customMasterPromptDirectives}\n` : ''}
+#### 4. PROTOCOLO OBLIGATORIO DE PRIMERA RESPUESTA:
+En tu primera interacción, debes:
+1. Confirmar la asimilación completa de este PRD y los archivos directivos.
+2. Resumir la pila técnica seleccionada y los requerimientos funcionales críticos de la Fase 1 en \`TASKS.md\`.
+3. Proponer el plan de acción inmediato y SOLICITAR CONFIRMACIÓN EXPLÍCITA antes de escribir cualquier archivo o ejecutar comandos.
 \`\`\`
 `;
 }
 
 /**
- * 2. ARCHITECTURE.md - Pila tecnológica, conectividad y patrones
+ * 2. ARCHITECTURE.md - Especificación Técnica, Pila y Flujo de Datos
  */
 export function generateArchitecture(p: LibretoProject): string {
-  const isStatic =
-    p.architecture.platform === 'static' ||
-    Boolean(p.architecture.isStaticSite) ||
-    Boolean(p.architecture.database?.includes('Ninguna')) ||
-    Boolean(p.architecture.backendFramework?.includes('Ninguno'));
-
-  const getPatternDetails = (pattern: string) => {
-    if (pattern.includes('SSG') || pattern.includes('Jamstack')) {
-      return `
-\`\`\`
-src/
-├── content/           # Documentos y colecciones Markdown / MDX / JSON
-│   ├── blog/          # Artículos y publicaciones
-│   └── docs/          # Documentación técnica
-├── components/        # Componentes UI reutilizables e interactivos
-├── layouts/           # Maquetaciones base (HTML shell, cabeceras, SEO, meta tags)
-├── pages/             # Enrutamiento estático por archivos (File-based routing)
-├── styles/            # Estilos globales, variables y temas CSS
-└── public/            # Favicon, robots.txt y assets estáticos no procesados
-\`\`\``;
-    }
-    if (pattern.includes('Islas') || pattern.includes('Islands')) {
-      return `
-\`\`\`
-src/
-├── components/
-│   ├── static/        # Componentes cero-JS renderizados a HTML puro
-│   └── islands/       # Islas interactivas hidratadas client-side (client:visible/load)
-├── content/           # Colecciones tipadas con esquemas de validación
-├── layouts/           # Plantillas base de página y layouts maestros
-├── pages/             # Generación de rutas estáticas
-└── styles/            # Sistema de tokens de diseño
-\`\`\``;
-    }
-    if (pattern.includes('SPA Estática')) {
-      return `
-\`\`\`
-src/
-├── components/        # Componentes atómicos y vistas modulares
-├── views/             # Páginas principales del SPA
-├── hooks/             # Custom hooks y estado reactivo cliente
-├── services/          # Integraciones HTTP / llamadas API cliente
-├── assets/            # SVGs, imágenes y recursos estáticos
-└── types/             # Definiciones TypeScript
-\`\`\``;
-    }
-    if (pattern.includes('Colecciones')) {
-      return `
-\`\`\`
-src/
-├── content/           # Colecciones de contenido tipadas y esquemas Zod
-│   └── config.ts      # Definición de colecciones y metadatos
-├── components/        # Componentes visuales de renderizado
-├── layouts/           # Plantillas base
-└── pages/             # Páginas estáticas generadas dinámicamente
-\`\`\``;
-    }
-    if (pattern.includes('Clean')) {
-      return `
-\`\`\`
-src/
-├── domain/            # Entidades de negocio puras, reglas empresariales
-│   ├── entities/
-│   └── value-objects/
-├── application/       # Casos de uso, interfaces/puertos (Ports)
-│   ├── use-cases/
-│   └── dtos/
-├── infrastructure/    # Adaptadores de BD, APIs externas, ORM, clientes
-│   ├── database/
-│   └── http/
-└── presentation/      # Controladores, vistas, componentes UI, rutas
-    ├── components/
-    └── controllers/
-\`\`\``;
-    }
-    if (pattern.includes('MVVM')) {
-      return `
-\`\`\`
-src/
-├── models/            # Estructuras de datos y esquemas
-├── viewmodels/        # Lógica de estado reactivo y comandos
-├── views/             # Componentes visuales y pantallas
-└── services/          # Conexión con APIs y persistencia local
-\`\`\``;
-    }
-    if (pattern.includes('Hexagonal')) {
-      return `
-\`\`\`
-src/
-├── core/
-│   ├── domain/        # Lógica pura desacoplada
-│   └── ports/         # Interfaces de entrada y salida
-└── adapters/
-    ├── in/            # Web, REST controllers, listeners
-    └── out/           # Repositorios SQL, mensajería, storage
-\`\`\``;
-    }
-    return `
-\`\`\`
-src/
-├── controllers/       # Puntos de entrada HTTP y enrutamiento
-├── services/          # Lógica de negocio y orquestación
-├── repositories/      # Acceso a datos y consultas de base de datos
-├── models/            # Esquemas y tipados
-└── ui/                # Componentes de interfaz de usuario
-\`\`\``;
-  };
+  const feInfo = getFrontendTechInfo(p.architecture.frontendFramework);
+  const beInfo = getBackendTechInfo(p.architecture.backendFramework);
+  const dbInfo = getDatabaseTechInfo(p.architecture.database);
+  const patInfo = getPatternTechInfo(p.architecture.architecturalPattern);
+  const isStatic = isStaticProject(p);
 
   const techRows = [
-    `| **Plataforma** | ${p.architecture.platform} | ${isStatic ? 'Sitio Web Estático (SSG / Jamstack)' : 'Web / Móvil según directiva'} |`,
-    `| **Lenguajes** | ${(p.architecture.languages || []).join(', ') || 'TypeScript'} | Tipado estricto sin \`any\` |`,
-    `| **Frontend** | ${p.architecture.frontendFramework || 'No definido'} | UI interactiva y responsiva |`,
-    `| **Backend / API** | ${p.architecture.backendFramework || 'Ninguno'} | ${isStatic ? 'Sin servidor de backend (Frontend Estático)' : 'Servicios y lógica de negocio'} |`,
-    `| **Base de Datos** | ${p.architecture.database || 'Ninguna'} | ${isStatic ? 'Sin Base de Datos / Archivos Estáticos' : 'Persistencia principal'} |`,
-    `| **Conectividad** | ${p.architecture.connectionType || 'Archivos Estáticos Locales'} | ${isStatic ? 'Archivos locales compilados en build' : 'Comunicación Cliente-Servidor'} |`,
-    `| **Patrón Base** | ${p.architecture.architecturalPattern || 'SSG'} | Separación estricta de responsabilidades |`,
+    `| **Plataforma Objetivo** | \`${p.architecture.platform.toUpperCase()}\` | ${isStatic ? '⚡ Jamstack / SSG (Cero Servidores Backend)' : 'Web / Móvil Dinámico'} |`,
+    `| **Lenguajes** | \`${(p.architecture.languages || []).join(', ') || 'TypeScript'}\` | Tipado estricto sin uso de \`any\` ni conversiones ambiguas |`,
+    `| **Capa de Frontend** | \`${p.architecture.frontendFramework}\` | ${feInfo.category} (\`${feInfo.paradigm}\`) |`,
+    `| **Capa de Backend** | \`${p.architecture.backendFramework}\` | ${beInfo.category} |`,
+    `| **Persistencia / BD** | \`${p.architecture.database}\` | ${dbInfo.category} |`,
+    `| **Protocolo de Enlace** | \`${p.architecture.connectionType}\` | ${isStatic ? 'Archivos locales / Build-time fetch' : 'Comunicación cliente-servidor estructurada'} |`,
+    `| **Patrón Arquitectónico** | \`${p.architecture.architecturalPattern}\` | ${patInfo.category} |`,
   ];
 
   if (isStatic && p.architecture.staticHosting) {
-    techRows.push(`| **Hosting / CDN** | ${p.architecture.staticHosting} | Despliegue global en Edge CDN ($0 costo de servidor) |`);
+    techRows.push(`| **Distribución / CDN** | \`${p.architecture.staticHosting}\` | Red perimetral Edge CDN global con alta disponibilidad |`);
   }
-
-  const connectivitySection = isStatic
-    ? `## 2. FUENTES DE CONTENIDO & DISTRIBUCIÓN ESTÁTICA (JAMSTACK)
-- **Tipo de Enlace:** ${p.architecture.connectionType || 'Archivos Estáticos Locales (Markdown / MDX / JSON)'}
-- **Estrategia de Renderizado:** Pre-renderizado completo en compilación (Static Site Generation - SSG).
-- **Cero Llamadas a Base de Datos en Runtime:** No existen conexiones directas a bases de datos en producción. Todo el contenido reside en archivos versionados en Git o APIs sin estado consumidas durante el build.
-- **Plataforma de Despliegue Sugerida:** ${p.architecture.staticHosting || 'Edge CDN (Vercel / Cloudflare Pages / Netlify)'}.
-- **Caché y Distribución:** Distribución atómica instantánea a través de red CDN distribuida globalmente.`
-    : `## 2. PROTOCOLO DE CONECTIVIDAD Y COMUNICACIÓN
-- **Tipo de Enlace:** ${p.architecture.connectionType || 'REST API (JSON)'}
-- **Formato de Carga Útil:** JSON con esquemas estandarizados para respuestas exitosas y errores.
-- **Estructura Estándar de Respuesta API:**
-\`\`\`json
-{
-  "success": true,
-  "data": {},
-  "error": null,
-  "meta": { "timestamp": "2026-10-11T00:00:00Z" }
-}
-\`\`\`
-- **Respuesta de Error Estándar:**
-\`\`\`json
-{
-  "success": false,
-  "data": null,
-  "error": {
-    "code": "VALIDATION_FAILED",
-    "message": "Descripción clara del problema",
-    "details": []
-  }
-}
-\`\`\``;
-
-  const bindingDirectives = isStatic
-    ? `1. **Cero Dependencias de Servidor Dinámico:** La IA no debe generar controladores de backend ni scripts que asuman bases de datos SQL/NoSQL en ejecución continua.
-2. **Optimización de Assets en Build:** Todas las imágenes deben procesarse en formatos modernos (WebP/AVIF) y el CSS debe purgarse exhaustivamente.
-3. **Islas Interactivas Mínimas:** Mantener el JavaScript de cliente al mínimo indispensable; usar hidratación parcial únicamente en componentes que requieran interactividad reactiva.
-4. **Validación de Schemas de Contenido:** Garantizar que los archivos Markdown/MDX cumplan esquemas tipados (ej. Zod o frontmatter estricto).`
-    : `1. **Desacoplamiento Estricto:** La capa de presentación nunca debe importar directamente consultas SQL ni llamadas de bajo nivel a la base de datos.
-2. **Inyección de Dependencias / Inversión de Control:** Favorecer contratos e interfaces sobre implementaciones concretas para permitir pruebas unitarias sin dependencias externas.
-3. **Manejo Centralizado de Estado:** Mantener el estado global limpio, predictible e inmutable.`;
 
   return `# ESPECIFICACIÓN DE ARQUITECTURA TÉCNICA
 
 > **Proyecto:** ${p.name}
-> **Plataforma Objetivo:** ${p.architecture.platform.toUpperCase()}
-> **Patrón Arquitectónico:** ${p.architecture.architecturalPattern}
-${isStatic ? '> **Modo de Infraestructura:** ⚡ Sitio Web Estático Jamstack (SSG / Sin Base de Datos)\n' : ''}
+> **Versión:** \`${p.version}\`
+> **Plataforma:** \`${p.architecture.platform.toUpperCase()}\` ${isStatic ? '(⚡ Jamstack SSG)' : ''}
+> **Patrón Arquitectónico:** \`${p.architecture.architecturalPattern}\`
+
 ---
 
-## 1. RESUMEN DE LA PILA TECNOLÓGICA (TECH STACK)
+## 1. MATRIZ DE LA PILA TECNOLÓGICA (TECH STACK)
 
-| Componente | Tecnología Seleccionada | Detalle / Versión |
+| Dimensión | Tecnología Asignada | Enfoque y Justificación Técnica |
 | :--- | :--- | :--- |
 ${techRows.join('\n')}
 
 ---
 
-${connectivitySection}
+## 2. FICHAS TÉCNICAS PROFUNDAS DE TECNOLOGÍAS SELECCIONADAS
+
+### 2.1 Frontend: ${feInfo.name}
+- **Categoría:** ${feInfo.category}
+- **Paradigma Operativo:** \`${feInfo.paradigm}\`
+- **Descripción:** ${feInfo.description}
+- **Guía de Arquitectura:**
+  ${feInfo.architectureGuide}
+- **Comandos CLI Esenciales:**
+\`\`\`bash
+${feInfo.cliCommands.map((c) => `# ${c.label}\n${c.command}`).join('\n\n')}
+\`\`\`
+- **Librerías Clave del Ecosistema:** ${feInfo.keyLibraries.join(', ')}
+- **Directivas de Rendimiento:**
+${feInfo.performanceDirectives.map((d) => `  - ${d}`).join('\n')}
+- **Buenas Prácticas de Ingeniería:**
+${feInfo.bestPractices.map((b) => `  - ${b}`).join('\n')}
+- **Errores Comunes y Antipatrones a Evitar:**
+${feInfo.commonPitfalls.map((cp) => `  - ⚠️ ${cp}`).join('\n')}
 
 ---
 
-## 3. ESTRUCTURA Y PATRÓN ARQUITECTÓNICO: ${p.architecture.architecturalPattern}
-
-Separación de capas obligatoria:
-${getPatternDetails(p.architecture.architecturalPattern)}
+### 2.2 Backend: ${beInfo.name}
+- **Categoría:** ${beInfo.category}
+- **Paradigma Operativo:** \`${beInfo.paradigm}\`
+- **Descripción:** ${beInfo.description}
+- **Guía de Arquitectura:**
+  ${beInfo.architectureGuide}
+- **Comandos CLI Esenciales:**
+\`\`\`bash
+${beInfo.cliCommands.map((c) => `# ${c.label}\n${c.command}`).join('\n\n')}
+\`\`\`
+- **Librerías Clave:** ${beInfo.keyLibraries.join(', ')}
+- **Directivas de Rendimiento:**
+${beInfo.performanceDirectives.map((d) => `  - ${d}`).join('\n')}
+- **Seguridad en Backend:**
+${beInfo.securityConsiderations.map((s) => `  - 🛡️ ${s}`).join('\n')}
 
 ---
 
-## 4. DIRECTIVAS ARQUITECTÓNICAS VINCULANTES
-${bindingDirectives}
-${p.architecture.customNotes ? `\n### Notas Específicas del Proyecto:\n${p.architecture.customNotes}\n` : ''}
+### 2.3 Persistencia y Datos: ${dbInfo.name}
+- **Categoría:** ${dbInfo.category}
+- **Paradigma Operativo:** \`${dbInfo.paradigm}\`
+- **Descripción:** ${dbInfo.description}
+- **Guía de Arquitectura:**
+  ${dbInfo.architectureGuide}
+- **Comandos CLI Esenciales:**
+\`\`\`bash
+${dbInfo.cliCommands.map((c) => `# ${c.label}\n${c.command}`).join('\n\n')}
+\`\`\`
+- **Buenas Prácticas de Datos:**
+${dbInfo.bestPractices.map((b) => `  - ${b}`).join('\n')}
+- **Directivas de Rendimiento:**
+${dbInfo.performanceDirectives.map((d) => `  - ${d}`).join('\n')}
+
+---
+
+## 3. FLUJO DE DATOS DE EXTREMO A EXTREMO (END-TO-END DATA FLOW)
+
+El ciclo de vida de una petición dentro del sistema sigue un flujo unidireccional y predecible:
+
+\`\`\`mermaid
+flowchart TD
+    A[Usuario / Interfaz Cliente] -->|1. Evento / Petición Tipada| B[Capa de Presentación / UI Components]
+    B -->|2. Validación de Entrada Zod| C[Servicios de API / State Store]
+    C -->|3. ${p.architecture.connectionType}| D[Controladores / Route Handlers]
+    D -->|4. Casos de Uso / Servicios de Negocio| E[Lógica de Dominio Pura]
+    E -->|5. Repositorio / Abstracción de Datos| F[${dbInfo.name}]
+    F -->|6. Datos Crudos Persistidos| E
+    E -->|7. DTOs Sanitizados| D
+    D -->|8. Carga Útil Estandarizada| C
+    C -->|9. Renderizado Reactivo| B
+    B -->|10. Retroalimentación Visual| A
+\`\`\`
+
+1. **Interacción del Usuario:** El usuario dispara una acción en un componente visual gobernado por los tokens de \`DESIGN.md\`.
+2. **Validación en Frontera:** Los datos del formulario o acción se validan mediante esquemas antes de salir del cliente.
+3. **Transporte de Red:** La petición se emite mediante **${p.architecture.connectionType}** con cabeceras de autorización y trazabilidad.
+4. **Capa de Control:** El backend (o función serverless/handler) valida la carga útil y la pasa a la capa de servicios.
+5. **Dominio Empresarial:** Se ejecutan las reglas invariantes de negocio desacopladas de frameworks.
+6. **Persistencia:** Se consulta o muta la base de datos **${dbInfo.name}** utilizando transacciones atómicas si aplica.
+7. **Respuesta Serializada:** Se devuelve un payload normalizado con metadatos de paginación y tiempo de procesamiento.
+
+---
+
+## 4. CONTRATO DE RESPUESTAS Y PROTOCOLO DE CONECTIVIDAD
+
+Toda comunicación a través de **${p.architecture.connectionType}** debe cumplir el siguiente formato estándar:
+
+### 4.1 Respuesta Exitosa Estándar (HTTP 200 / 201)
+\`\`\`json
+{
+  "success": true,
+  "data": {
+    "id": "uuid-v4",
+    "attributes": {}
+  },
+  "error": null,
+  "meta": {
+    "timestamp": "2026-10-11T00:00:00Z",
+    "version": "${p.version}",
+    "executionTimeMs": 24
+  }
+}
+\`\`\`
+
+### 4.2 Respuesta de Error Estandarizada (RFC 7807 Problem Details)
+\`\`\`json
+{
+  "success": false,
+  "data": null,
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Los parámetros suministrados no cumplen las restricciones del esquema.",
+    "details": [
+      {
+        "field": "email",
+        "issue": "Formato de correo electrónico inválido"
+      }
+    ]
+  },
+  "meta": {
+    "timestamp": "2026-10-11T00:00:00Z",
+    "traceId": "req-987654321"
+  }
+}
+\`\`\`
+
+---
+
+## 5. ESTRUCTURA CANÓNICA DE DIRECTORIOS: ${patInfo.name}
+
+La base de código DEBE organizarse estrictamente según el siguiente árbol de carpetas comentado:
+
+\`\`\`
+${patInfo.recommendedFolderStructure}
+\`\`\`
+
+---
+
+## 6. NORMAS DE NOMENCLATURA & ESTILO DE CÓDIGO
+
+- **Archivos de Componentes:** \`PascalCase.tsx\` (ej. \`UserProfileCard.tsx\`).
+- **Archivos de Utilidades y Servicios:** \`camelCase.ts\` (ej. \`authService.ts\`, \`formatCurrency.ts\`).
+- **Variables y Funciones:** \`camelCase\` explícito, auto-documentado y libre de abreviaturas crípticas.
+- **Tipos, Interfaces y Clases:** \`PascalCase\` sin prefijo "I" húngaro (ej. \`UserProfile\` en lugar de \`IUserProfile\`).
+- **Variables de Entorno:** \`SCREAMING_SNAKE_CASE\` (ej. \`DATABASE_URL\`, \`API_SECRET_KEY\`).
+- **Tablas y Columnas en Base de Datos:** \`snake_case\` en minúsculas y plural (ej. \`user_profiles\`, \`created_at\`).
+
+---
+
+## 7. DIRECTIVAS ARQUITECTÓNICAS VINCULANTES PARA LA IA
+
+1. **Separación Estricta de Capas:** La capa de presentación visual nunca debe ejecutar consultas directas de base de datos ni contener lógica SQL embebida.
+2. **Inyección y Desacoplamiento:** Favorecer contratos e interfaces sobre implementaciones concretas para facilitar la sustitución de componentes y la ejecución de pruebas automatizadas.
+3. **Manejo Centralizado de Excepciones:** Todas las fallas de infraestructura deben capturarse y traducirse a excepciones de dominio legibles.
+4. **Cero Secretos en el Cliente:** Jamás exponer variables de entorno sensibles en componentes que compilen al navegador del usuario.
+
+${p.architecture.customNotes ? `\n### Directivas Particulares del Proyecto:\n${p.architecture.customNotes}\n` : ''}
 `;
 }
 
 /**
- * 3. DESIGN.md - Sistema de diseño, librerías visuales y de animación
+ * 3. DESIGN.md - Sistema de Diseño, Tokens Visuales & UI/UX
  */
 export function generateDesign(p: LibretoProject): string {
   const currentStyle = DESIGN_STYLES.find((s) => s.id === p.design.style) || DESIGN_STYLES[0];
   const activePalette = p.design.styleColors?.[p.design.style] || currentStyle.colors;
+  const styleInfo = getStyleTechInfo(p.design.style);
 
-  const animLibrariesDetails = p.design.animationLibraries.map((libName) => {
-    const found = ANIMATION_LIBRARIES.find((l) => l.name.toLowerCase().includes(libName.toLowerCase()) || libName.toLowerCase().includes(l.name.toLowerCase()));
-    if (found) {
-      return `### 🎬 ${found.name}
+  const animLibrariesDetails = p.design.animationLibraries.length > 0
+    ? p.design.animationLibraries.map((libName) => {
+        const found = ANIMATION_LIBRARIES.find((l) => l.name.toLowerCase().includes(libName.toLowerCase()) || libName.toLowerCase().includes(l.name.toLowerCase()));
+        if (found) {
+          return `### 🎬 ${found.name}
 - **Descripción:** ${found.description}
 - **Repositorio Oficial:** [${found.repoUrl}](${found.repoUrl})
 - **Comando de Instalación:**
 \`\`\`bash
 ${found.installCommand}
 \`\`\`
-- **Ejemplo de Uso:**
+- **Ejemplo de Código:**
 \`\`\`tsx
 ${found.sampleCode}
 \`\`\`
 `;
-    }
-    return `### 🎬 ${libName}
-- **Comando de Instalación:** \`npm install ${libName.toLowerCase()}\`
+        }
+        return `### 🎬 ${libName}
+- **Instalación:** \`npm install ${libName.toLowerCase()}\`
 `;
-  }).join('\n');
+      }).join('\n')
+    : 'No se han especificado librerías adicionales; utilizar animaciones nativas CSS / Tailwind.';
 
-  const iconLibrariesDetails = p.design.iconLibraries.map((iconName) => {
-    const found = ICON_LIBRARIES.find((i) => i.name.toLowerCase().includes(iconName.toLowerCase()) || iconName.toLowerCase().includes(i.name.toLowerCase()));
-    if (found) {
-      return `### 🎨 ${found.name}
+  const iconLibrariesDetails = p.design.iconLibraries.length > 0
+    ? p.design.iconLibraries.map((iconName) => {
+        const found = ICON_LIBRARIES.find((i) => i.name.toLowerCase().includes(iconName.toLowerCase()) || iconName.toLowerCase().includes(i.name.toLowerCase()));
+        if (found) {
+          return `### 🎨 ${found.name}
 - **Descripción:** ${found.description}
 - **Repositorio Oficial:** [${found.repoUrl}](${found.repoUrl})
 - **Comando de Instalación:**
 \`\`\`bash
 ${found.installCommand}
 \`\`\`
-- **Ejemplo:**
+- **Ejemplo de Importación:**
 \`\`\`tsx
 ${found.sampleCode}
 \`\`\`
 `;
-    }
-    return `### 🎨 ${iconName}
-- **Comando de Instalación:** \`npm install ${iconName.toLowerCase()}\`
+        }
+        return `### 🎨 ${iconName}
+- **Instalación:** \`npm install ${iconName.toLowerCase()}\`
 `;
-  }).join('\n');
+      }).join('\n')
+    : 'No se han especificado librerías de iconos.';
 
-  return `# SISTEMA DE DISEÑO & PAUTAS UI/UX
+  return `# SISTEMA DE DISEÑO & PAUTAS UI/UX: ${styleInfo.name.toUpperCase()}
 
 > **Proyecto:** ${p.name}
-> **Estilo Visual:** ${currentStyle.name}
-> **Framework Base:** ${p.design.styleFramework}
-> **Modo Oscuro Predeterminado:** ${p.design.darkModeDefault ? 'Sí (Dark First)' : 'No (Light First con toggle)'}
+> **Estilo Visual Seleccionado:** **${styleInfo.name}** (\`${styleInfo.category}\`)
+> **Framework de Estilos:** \`${p.design.styleFramework}\`
+> **Tipografía Principal:** \`${p.design.typography}\`
+> **Estrategia de Modo Oscuro:** ${p.design.darkModeDefault ? 'Predeterminado en Modo Oscuro (Dark First)' : 'Predeterminado en Modo Claro con conmutador'}
 
 ---
 
-## 1. ESTILO VISUAL: ${currentStyle.name.toUpperCase()}
+## 1. FILOSOFÍA VISUAL Y LENGUAJE DE DISEÑO
 
-- **Concepto:** ${currentStyle.subtitle}
-- **Rasgos Visuales Obligatorios:** ${currentStyle.visualFeatures || currentStyle.description}
-- **Pautas de Paleta:** ${currentStyle.paletteDescription || currentStyle.description}
-- **Uso Ideal en el Proyecto:** ${currentStyle.idealUse || 'Todo tipo de interfaces modernas'}
-- **Tipografía Base:** \`${p.design.typography}\`
+### 1.1 Declaración Estética
+${styleInfo.philosophy}
 
-### Tokens de Color Principales y Paleta del Estilo
-| Token | Código Hexadecimal | Propósito |
+### 1.2 Reglas de CSS Mandatorias del Estilo
+Para reproducir fielmente la estética **${styleInfo.name}**, la IA y el equipo deben emplear obligatoriamente las siguientes reglas CSS:
+\`\`\`css
+/* Reglas fundamentales de ${styleInfo.name} */
+${styleInfo.cssRules.map((r) => `${r};`).join('\n')}
+\`\`\`
+
+---
+
+## 2. ARQUITECTURA DE COLOR & TOKENS SEMÁNTICOS
+
+La interfaz utiliza un sistema de diseño con nombres de tokens semánticos desacoplados de los valores hexadecimales para facilitar temas y coherencia:
+
+| Token Semántico | Código Hexadecimal | Rol de Interfaz y Aplicación |
 | :--- | :--- | :--- |
-| **Color Primario** | \`${p.design.primaryColor}\` | Botones de acción principal (CTA), estados activos, enlaces destacados |
-| **Color Secundario / Acento** | \`${p.design.secondaryColor}\` | Badges, indicadores visuales, gradientes complementarios |
-${activePalette.map((c, i) => `| **Color de Paleta #${i + 1}** | \`${c}\` | Fondo, bordes, tarjetas o contrastes de ${currentStyle.name} |`).join('\n')}
+| **Color Primario (Brand)** | \`${p.design.primaryColor}\` | Botones de acción principal (CTA), enlaces activos, estados destacados |
+| **Color Secundario / Acento** | \`${p.design.secondaryColor}\` | Badges, indicadores de estado, bordes focales, microdestellos |
+${activePalette.map((c, i) => `| **Paleta del Estilo #${i + 1}** | \`${c}\` | Superficie, fondo, contraste o tarjeta de ${styleInfo.name} |`).join('\n')}
+
+### 2.1 Tokens Específicos del Estilo ${styleInfo.name}
+| Token Específico | Valor CSS | Función en Componentes |
+| :--- | :--- | :--- |
+${styleInfo.colorTokens.map((t) => `| **${t.token}** | \`${t.hex}\` | ${t.role} |`).join('\n')}
 
 ---
 
-## 2. FRAMEWORK DE ESTILOS: ${p.design.styleFramework}
-Toda la interfaz debe seguir de forma estricta las convenciones de clases utilitarias y componentes prescritas por **${p.design.styleFramework}**.
+## 3. SISTEMA TIPOGRÁFICO Y ESCALA MODULAR
+
+- **Familia Tipográfica:** \`${p.design.typography}\`
+- **Pauta Tipográfica del Estilo:** ${styleInfo.typographyGuideline}
+
+### 3.1 Escala Modular de Texto
+| Nivel | Tamaño (rem / px) | Peso (Font Weight) | Tracking / Interletrado | Uso en Interfaz |
+| :--- | :--- | :--- | :--- | :--- |
+| **Display** | \`3.0rem / 48px\` | 800 (Bold / Black) | \`-0.025em\` | Héroes visuales y grandes cifras |
+| **H1** | \`2.25rem / 36px\` | 700 (Bold) | \`-0.02em\` | Título principal de página |
+| **H2** | \`1.75rem / 28px\` | 600 (Semibold) | \`-0.015em\` | Títulos de secciones principales |
+| **H3** | \`1.25rem / 20px\` | 600 (Semibold) | \`-0.01em\` | Encabezados de tarjetas y modales |
+| **Body** | \`1.0rem / 16px\` | 400 (Regular) | \`0em\` | Párrafos de lectura estándar |
+| **Small / Caption** | \`0.875rem / 14px\` | 500 (Medium) | \`+0.01em\` | Badges, metadatos y notas |
+| **Code / Mono** | \`0.875rem / 14px\` | 500 (Medium) | \`0em\` | Identificadores, comandos y métricas |
 
 ---
 
-## 3. LIBRERÍAS DE ANIMACIÓN Y MICROINTERACCIONES
-${animLibrariesDetails || 'No se han seleccionado librerías adicionales de animación.'}
+## 4. ESPECIFICACIÓN DE COMPONENTES ATÓMICOS
+
+Las directivas de maquetación para los componentes clave son:
+
+${styleInfo.componentDirectives.map((d, i) => `### 4.${i + 1} Directiva de Componente: ${d}`).join('\n\n')}
+
+### 4.4 Estados Interactivos Obligatorios
+Todo componente accionable (botones, enlaces, filas interactivas) DEBE implementar 4 estados visuales distintos:
+1. **Estado Normal (\`default\`):** Cumple los tokens de color y elevación base.
+2. **Estado Hover (\`:hover\`):** Cambio sutil de luminosidad (escala 1.02x o desplazamiento -2px según estilo).
+3. **Estado Focus-Visible (\`:focus-visible\`):** Anillo de enfoque de 2px con offset de 2px (\`ring-2 ring-primary ring-offset-2\`) para usuarios de teclado.
+4. **Estado Activo / Presionado (\`:active\`):** Reducción de elevación o escala (0.98x) para retroalimentación táctil inmediata.
+5. **Estado Deshabilitado (\`:disabled\`):** Opacidad reducida al 50%, cursor \`not-allowed\` e interactividad desactivada (\`pointer-events-none\`).
 
 ---
 
-## 4. LIBRERÍAS DE ICONOGRAFÍA
-${iconLibrariesDetails || 'No se han seleccionado librerías de iconos.'}
+## 5. PERFIL DE ANIMACIÓN Y MICROINTERACCIONES
+
+- **Perfil Dinámico del Estilo:** ${styleInfo.animationProfile}
+- **Duraciones Estándar:**
+  - Microinteracciones rápidas (hovers, tooltips): \`150ms\` a \`200ms\`.
+  - Transiciones de componentes (modales, drawers): \`250ms\` a \`350ms\`.
+  - Animaciones de entrada de página: \`400ms\` a \`500ms\`.
+- **Curva de Atenuación Recomendada:** \`cubic-bezier(0.16, 1, 0.3, 1)\` (curva suave de aceleración inicial y frenado fluido).
 
 ---
 
-## 5. DIRECTRICES DE ACCESIBILIDAD Y RESPONSIVIDAD (UI/UX)
-1. **Contraste de Colores:** Debe cumplir el estándar WCAG 2.1 nivel AA (ratio de contraste mínimo 4.5:1 para texto estándar).
-2. **Diseño Mobile-First:** Todos los componentes deben contemplar breakpoints responsivos (\`sm\`, \`md\`, \`lg\`, \`xl\`).
-3. **Estados Interactivos Claros:** Cada botón, input y tarjeta interactiva debe implementar estados visuales diferenciados para:
-   - \`:hover\` (elevación sutil o cambio de luminosidad)
-   - \`:focus-visible\` (anillo de foco visible de 2px para navegación por teclado)
-   - \`:active\` (escala o presión sutil)
-   - \`:disabled\` (opacidad reducida al 50% y cursor \`not-allowed\`)
-${p.design.customDesignGuidelines ? `\n### Pautas Particulares:\n${p.design.customDesignGuidelines}\n` : ''}
+## 6. LIBRERÍAS DE ANIMACIÓN E ICONOGRAFÍA SELECCIONADAS
+
+${animLibrariesDetails}
+
+---
+
+${iconLibrariesDetails}
+
+---
+
+## 7. CRITERIOS DE ACCESIBILIDAD Y RESPONSIVIDAD (WCAG 2.1 AA)
+
+1. **Ratio de Contraste:** Todo texto debe mantener un ratio de contraste mínimo de 4.5:1 respecto a su fondo (o 3:1 para titulares grandes).
+2. **Soporte de Movimiento Reducido:** Respetar la preferencia del sistema \`prefers-reduced-motion: reduce\` suprimiendo traslaciones y rebotes exagerados.
+3. **Breakpoints Responsivos (Mobile-First):**
+   - \`sm\` (≥ 640px): Teléfonos en orientación horizontal / Phablets.
+   - \`md\` (≥ 768px): Tabletas en vertical.
+   - \`lg\` (≥ 1024px): Laptops y tabletas en horizontal.
+   - \`xl\` (≥ 1280px): Monitores de escritorio estándar.
+   - \`2xl\` (≥ 1536px): Pantallas panorámicas (contenedor centrado con \`max-w-7xl\`).
+
+${p.design.customDesignGuidelines ? `\n### Directrices Específicas de Diseño:\n${p.design.customDesignGuidelines}\n` : ''}
 `;
 }
 
 /**
- * 4. RULES.md - Reglas de comportamiento de la IA y Regla de Oro
+ * 4. RULES.md - Reglas de Comportamiento de la IA & Regla de Oro
  */
 export function generateRules(p: LibretoProject): string {
+  const feInfo = getFrontendTechInfo(p.architecture.frontendFramework);
+  const beInfo = getBackendTechInfo(p.architecture.backendFramework);
+  const dbInfo = getDatabaseTechInfo(p.architecture.database);
+
   const extraRules = [
-    p.rules.atomicModifications && '1. **Modificaciones Atómicas y Quirúrgicas:** Queda terminantemente prohibido reescribir archivos enteros cuando solo se modifican unas pocas líneas. Emplear reemplazos dirigidos y preservar comentarios existentes.',
-    p.rules.strictTyping && '2. **Tipado Estricto Sin Excepciones:** Prohibido el uso de `any`, conversiones ambiguas (`as unknown as T`) o tipado dinámico no validado. Cada parámetro, retorno y estado debe contar con su interfaz o tipo explícito.',
-    p.rules.mandatoryExceptionHandling && '3. **Manejo Obligatorio de Excepciones:** Cada endpoint, función asíncrona o mutación debe contar con bloques `try/catch` estructurados, registrando errores y respondiendo con códigos de estado HTTP semánticos (400, 401, 403, 404, 409, 500).',
-    p.rules.strictModularity && '4. **Modularidad Estricta (Límite 50 Líneas):** Ninguna función o método debe superar las 50 líneas de código útil. Si una función crece más allá, DEBE descomponerse en funciones auxiliares o hooks reutilizables desacoplados.',
-    p.rules.gitCommitConventions && '5. **Convenciones de Mensajes de Commit:** Seguir el estándar Conventional Commits (`feat:`, `fix:`, `refactor:`, `docs:`, `test:`, `chore:`).',
-    p.rules.testCoverageRequirement && '6. **Cobertura de Pruebas Unitarias:** Cada nueva utilidad de lógica de negocio o cálculo debe acompañarse de su correspondiente archivo de prueba unitaria.',
+    p.rules.atomicModifications && `### Directiva 1: Modificaciones Atómicas y Quirúrgicas
+- **Prohibición de Sobrescrituras Masivas:** Queda terminantemente prohibido reescribir archivos enteros cuando solo se requiere modificar un bloque acotado de líneas.
+- **Técnica Obligatoria:** Utilizar reemplazos dirigidos y preservar rigurosamente todos los comentarios, documentación y tipos existentes no relacionados con la modificación.`,
+
+    p.rules.strictTyping && `### Directiva 2: Tipado Estricto Sin Excepciones
+- **Prohibición de Any:** Queda prohibido el uso de \`any\`, conversiones arbitrarias (\`as unknown as T\`) o tipados implícitos no verificados.
+- **Contratos Explícitos:** Cada parámetro de función, valor de retorno, estado reactivo y carga útil de API debe contar con una interfaz o tipo explícito exportado.`,
+
+    p.rules.mandatoryExceptionHandling && `### Directiva 3: Manejo Obligatorio y Defensivo de Excepciones
+- **Bloques Try/Catch:** Toda operación asíncrona, llamada a API o mutación de base de datos debe encapsularse en bloques \`try/catch\` estructurados.
+- **Códigos Semánticos:** Mapear excepciones a códigos HTTP semánticos (400 Bad Request, 401 Unauthorized, 403 Forbidden, 404 Not Found, 409 Conflict, 500 Internal Error) evitando responder 200 OK con cuerpos que contengan mensajes de falla.`,
+
+    p.rules.strictModularity && `### Directiva 4: Modularidad Estricta y Límite de 50 Líneas Útiles
+- **Límite por Función:** Ninguna función, método o componente individual debe exceder las 50 líneas de código útil.
+- **Descomposición:** Si una función crece más allá de este límite, DEBE descomponerse en funciones auxiliares puras, custom hooks o subcomponentes desacoplados.`,
+
+    p.rules.gitCommitConventions && `### Directiva 5: Estándar Conventional Commits
+- Todo mensaje de commit debe seguir la convención internacional:
+  - \`feat:\` Nueva funcionalidad para el usuario.
+  - \`fix:\` Corrección de un defecto o error reportado.
+  - \`refactor:\` Reestructuración de código sin alterar su comportamiento externo.
+  - \`docs:\` Modificaciones exclusivas en documentación.
+  - \`test:\` Creación o ajuste de pruebas unitarias o de integración.
+  - \`chore:\` Mantenimiento de configuración, dependencias o tooling.`,
+
+    p.rules.testCoverageRequirement && `### Directiva 6: Mandato de Cobertura de Pruebas Automatizadas
+- Cada nuevo módulo de lógica empresarial, utilidad matemática o formateador debe acompañarse de su correspondiente archivo de pruebas unitarias (\`*.test.ts\` o \`*.spec.ts\`).`,
   ].filter(Boolean);
 
   const customRulesList = p.rules.customRules.length > 0
-    ? p.rules.customRules.map((r, i) => `${extraRules.length + i + 1}. **${r}**`).join('\n')
+    ? `### Directivas Adicionales Formuladas por el Propietario:\n${p.rules.customRules.map((r, i) => `${i + 1}. **${r}**`).join('\n')}`
     : '';
 
-  return `# REGLAS DE COMPORTAMIENTO PARA LA INTELIGENCIA ARTIFICIAL
+  return `# REGLAS DE COMPORTAMIENTO VINCULANTES PARA LA INTELIGENCIA ARTIFICIAL
 
-> **Documento de Cumplimiento Obligatorio e Innegociable**
+> **Documento Legal y Operativo de Cumplimiento Innegociable**
 > **Proyecto:** ${p.name}
+> **Stack Ratificado:** ${feInfo.name} + ${beInfo.name} + ${dbInfo.name}
 
 ---
 
-## ⚡ REGLA DE ORO OBLIGATORIA (MÁXIMA PRIORIDAD)
+## ⚡ REGLA DE ORO OBLIGATORIA (MÁXIMA PRIORIDAD OPERATIVA)
 
 > ### 🛑 REGLA DE ORO INAMOVIBLE:
-> **«La Inteligencia Artificial DEBE preguntar siempre y solicitar aprobación explícita al usuario ANTES de instalar dependencias, ejecutar comandos, crear nuevos archivos o implementar cualquier funcionalidad crítica. Debe desglosar los archivos afectados y el impacto antes de tocar el código».**
+> **«La Inteligencia Artificial DEBE preguntar siempre y solicitar aprobación explícita al usuario ANTES de instalar dependencias, ejecutar comandos en terminal, crear nuevos archivos o modificar funcionalidad existente. Debe presentar siempre un resumen previo con los archivos afectados y el impacto del cambio antes de tocar el código».**
 
-Cualquier acción unilateral que instale paquetes no autorizados, modifique archivos estructurales o ejecute scripts destructivos sin la venia previa del usuario se considerará una violación crítica de este libreto.
+Cualquier acción unilateral en la que el asistente instale librerías no pactadas, sobreescriba configuraciones de entorno o modifique archivos estructurales sin autorización previa constituye una violación crítica de este protocolo.
 
 ---
 
-## 📋 DIRECTIVAS TÉCNICAS OBLIGATORIAS
+## 📋 DIRECTIVAS TÉCNICAS OBLIGATORIAS DE INGENIERÍA
 
 ${extraRules.join('\n\n')}
 
-${customRulesList ? `\n### DIRECTIVAS ADICIONALES ESPECÍFICAS DEL PROYECTO:\n${customRulesList}\n` : ''}
+${customRulesList ? `\n---\n${customRulesList}\n` : ''}
+
 ---
 
-## 🛡️ PROTOCOLO DE INTERACCIÓN ANTES DE CADA CAMBIO
+## 🛡️ PROTOCOLO ESTÁNDAR DE INTERACCIÓN ANTES DE CADA ACCIÓN
 
-Antes de proponer o ejecutar código, el asistente IA debe presentar una respuesta con el siguiente formato:
+Antes de sugerir o aplicar cualquier cambio sobre el código fuente, el asistente IA debe emitir una propuesta con la siguiente estructura de 4 puntos:
 
-1. **Objetivo del cambio:** Breve resumen de lo que se va a solucionar o construir.
-2. **Archivos afectados:** Lista de rutas absolutas o relativas que se crearán o editarán.
-3. **Nuevas dependencias (si aplica):** Justificación y comando exacto a ejecutar.
-4. **Solicitud de aprobación:** *"¿Deseas que proceda con estos cambios?"*
+1. **🎯 Objetivo y Razón del Cambio:**
+   Explicación concisa y técnica de qué se va a resolver y por qué es necesario.
+2. **📁 Archivos Afectados:**
+   Lista explícita de rutas de archivo que se crearán, editarán o eliminarán.
+3. **📦 Dependencias / Comandos CLI Requeridos (si aplica):**
+   Comando exacto a ejecutar y justificación técnica del paquete solicitado.
+4. **❓ Solicitud Formal de Confirmación:**
+   *"¿Autorizas la ejecución de estos cambios según lo descrito?"*
 `;
 }
 
 /**
- * 5. DECISIONS.md - ADRs (Architecture Decision Records)
+ * 5. DECISIONS.md - Registros de Decisiones de Arquitectura (ADR)
  */
 export function generateDecisions(p: LibretoProject): string {
+  const feInfo = getFrontendTechInfo(p.architecture.frontendFramework);
+  const beInfo = getBackendTechInfo(p.architecture.backendFramework);
+  const dbInfo = getDatabaseTechInfo(p.architecture.database);
+  const patInfo = getPatternTechInfo(p.architecture.architecturalPattern);
+  const styleInfo = getStyleTechInfo(p.design.style);
+
   const adrList = [
     {
       id: 'ADR-001',
-      title: `Selección de Frontend: ${p.architecture.frontendFramework}`,
-      context: `Se requiere una interfaz de usuario moderna para la plataforma ${p.architecture.platform}, garantizando alto rendimiento y experiencia de desarrollo óptima.`,
-      decision: `Se adopta **${p.architecture.frontendFramework}** como el framework estándar para la capa visual.`,
-      consequences: `Alineación de todo el equipo y directivas de componentes en torno a este framework. Prohibido mezclar con librerías incompatibles.`,
-      discarded: `Angular, jQuery, frameworks legacy no acordados.`,
+      title: `Adopción del Framework Frontend: ${feInfo.name}`,
+      status: 'Aprobado y Ratificado',
+      context: `Se requiere una solución visual de alto rendimiento, excelente experiencia de desarrollo y sólida tipificación para la plataforma ${p.architecture.platform.toUpperCase()}. Se evaluaron alternativas de la industria.`,
+      decision: `Se adopta de forma oficial y vinculante **${feInfo.name}** (${feInfo.category}) bajo el paradigma \`${feInfo.paradigm}\`.`,
+      consequences: `Todas las vistas, componentes y estados de cliente deben implementarse exclusivamente conforme a las convenciones de este framework. Queda prohibida la introducción de librerías visuales concurrentes que inflen el bundle.`,
+      discarded: `Frameworks no consensuados o librerías legacy incompatibles con el stack ratificado.`,
     },
     {
       id: 'ADR-002',
-      title: `Estrategia de Backend y API: ${p.architecture.backendFramework}`,
-      context: `La lógica de negocio y persistencia requiere un entorno robusto con conexión ${p.architecture.connectionType}.`,
-      decision: `Se implementa **${p.architecture.backendFramework}** como el servicio principal de backend.`,
-      consequences: `Garantiza contratos de API consistentes y tipado sincronizado.`,
-      discarded: `Monolitos no estructurados, lenguajes no consensuados.`,
+      title: `Estrategia de Backend y Runtime: ${beInfo.name}`,
+      status: 'Aprobado y Ratificado',
+      context: `La lógica de negocio y persistencia requiere un entorno de procesamiento confiable y escalable que se comunique a través de ${p.architecture.connectionType}.`,
+      decision: `Se selecciona **${beInfo.name}** como el motor de backend oficial.`,
+      consequences: `Garantiza contratos de API uniformes, validación robusta y cumplimiento de los patrones de desacoplamiento.`,
+      discarded: `Monolitos no estructurados, servidores desprovistos de tipado estricto o servicios no pactados.`,
     },
     {
       id: 'ADR-003',
-      title: `Motor de Base de Datos: ${p.architecture.database}`,
-      context: `Se necesita un almacén de datos fiable, escalable y con soporte para las entidades del modelo de negocio.`,
-      decision: `Se selecciona **${p.architecture.database}** como la base de datos oficial.`,
-      consequences: `Todas las consultas, migraciones y esquemas deben optimizarse específicamente para las características de este motor.`,
-      discarded: `Soluciones NoSQL sin esquema cuando se requiera integridad referencial estricta, o bases de datos no acordadas.`,
+      title: `Motor de Persistencia y Base de Datos: ${dbInfo.name}`,
+      status: 'Aprobado y Ratificado',
+      context: `El sistema requiere persistencia segura y transaccional acorde a la naturaleza de los requerimientos funcionales del proyecto.`,
+      decision: `Se implementa **${dbInfo.name}** (${dbInfo.category}) como la capa de persistencia autorizada.`,
+      consequences: `Todas las consultas, migraciones de esquema e índices deben optimizarse específicamente para las capacidades nativas de este motor.`,
+      discarded: `Bases de datos no acordadas que requieran infraestructuras o licencias no autorizadas por el equipo.`,
     },
     {
       id: 'ADR-004',
-      title: `Sistema de Estilos y Diseño: ${p.design.styleFramework} con estilo ${p.design.style}`,
-      context: `Se busca una experiencia de usuario coherente con el estilo ${p.design.style}.`,
-      decision: `Se prescribe **${p.design.styleFramework}** y componentes consistentes con los tokens definidos en \`DESIGN.md\`.`,
-      consequences: `Prohibido introducir CSS inline desordenado o librerías de estilos concurrentes que contaminen el bundle.`,
-      discarded: `CSS Vanilla desorganizado, librerías pesadas redundantes.`,
+      title: `Sistema de Diseño Visual y Tokens: ${styleInfo.name} con ${p.design.styleFramework}`,
+      status: 'Aprobado y Ratificado',
+      context: `Para garantizar coherencia estética ejecutiva, accesibilidad y velocidad de maquetación en el equipo.`,
+      decision: `Se establece el estilo visual **${styleInfo.name}** complementado con el framework de utilidades **${p.design.styleFramework}** y la tipografía **${p.design.typography}**.`,
+      consequences: `Queda terminantemente prohibido escribir CSS en línea desordenado con colores hexadecimales arbitrarios fuera de los tokens semánticos definidos en \`DESIGN.md\`.`,
+      discarded: `Librerías pesadas de componentes que impidan la personalización de los tokens visuales del estilo.`,
     },
     {
       id: 'ADR-005',
-      title: `Patrón de Diseño de Software: ${p.architecture.architecturalPattern}`,
-      context: `Para evitar el acoplamiento y facilitar el mantenimiento a largo plazo.`,
-      decision: `Toda la base de código debe estructurarse conforme a **${p.architecture.architecturalPattern}**.`,
-      consequences: `El código debe dividirse en capas con responsabilidades independientes.`,
-      discarded: `Estructura plana sin separación de responsabilidades ("Spaghetti Code").`,
+      title: `Patrón Arquitectónico del Software: ${patInfo.name}`,
+      status: 'Aprobado y Ratificado',
+      context: `Para evitar la deuda técnica y permitir la evolución desacoplada de la base de código.`,
+      decision: `Se ratifica el patrón **${patInfo.name}** como la directiva estructural obligatoria.`,
+      consequences: `El código debe segregarse estrictamente por capas funcionales según el árbol canónico de carpetas documentado en \`ARCHITECTURE.md\`.`,
+      discarded: `Estructuras planas sin separación de responsabilidades ("Código Espagueti").`,
+    },
+    {
+      id: 'ADR-006',
+      title: `Gestión de Seguridad, Variables de Entorno y Secretos`,
+      status: 'Aprobado y Ratificado',
+      context: `Prevenir filtraciones de credenciales de infraestructura o claves de APIs privadas en repositorios de código abierto o compartidos.`,
+      decision: `Se establece una política de cero secretos comiteados en Git, uso obligatorio de \`.env.example\` y almacenamiento de tokens de sesión exclusivamente en cookies HttpOnly o bóvedas nativas.`,
+      consequences: `Toda variable requerida debe documentarse y auditarse en revisiones de código previas a la integración.`,
+      discarded: `Hardcodear cadenas de conexión o llaves de API directamente en el código fuente.`,
     },
   ];
 
   const customAdrs = p.decisions.customDecisions.map((c, i) => `
 ### ADR-${String(adrList.length + i + 1).padStart(3, '0')}: ${c.title}
-- **Estado:** Aprobado / Vigente
+- **Estado:** ✅ Aprobado y Ratificado
 - **Contexto:** ${c.context}
 - **Decisión:** ${c.decision}
 - **Consecuencias:** ${c.consequences}
 - **Alternativas Descartadas:** ${c.discardedAlternatives}
-`).join('\n');
+`).join('\n---\n');
 
   return `# REGISTRO DE DECISIONES DE ARQUITECTURA (ADR)
 
@@ -516,99 +723,140 @@ export function generateDecisions(p: LibretoProject): string {
 
 ${adrList.map((adr) => `
 ### ${adr.id}: ${adr.title}
-- **Estado:** ✅ Aprobado / Vigente
+- **Estado:** ✅ ${adr.status}
 - **Contexto:** ${adr.context}
 - **Decisión:** ${adr.decision}
 - **Consecuencias:** ${adr.consequences}
-- **Alternativas Terminantemente Descartadas:** ${adr.discarded}
+- **Alternativas Descartadas:** ${adr.discarded}
 `).join('\n---\n')}
 
-${customAdrs ? `\n---\n## ADRs ESPECÍFICOS ADICIONALES\n${customAdrs}` : ''}
+${customAdrs ? `\n---\n## ADRs ADICIONALES ESPECÍFICOS DEL PROYECTO\n${customAdrs}` : ''}
 `;
 }
 
 /**
- * 6. SECURITY.md - Pautas estrictas de sanitización, auth y secretos
+ * 6. SECURITY.md - Directrices de Seguridad Informática & OWASP
  */
 export function generateSecurity(p: LibretoProject): string {
   const policies = [
     p.security.envVariablesManagement && `### 1. 🔐 Gestión Estricta de Variables de Entorno y Secretos
-- **Cero Credenciales Hardcodeadas:** Ningún token, API Key, contraseña de base de datos o secreto debe comitearse en el repositorio bajo ninguna circunstancia.
-- **Plantilla Obligatoria:** Mantener actualizado el archivo \`.env.example\` con todas las variables requeridas y valores vacíos o ficticios.
-- **Auditoría de Git:** Verificar que \`.env\`, \`.env.local\` y archivos de claves estén incluidos en \`.gitignore\`.`,
+- **Cero Credenciales en Código:** Ningún token, API Key, contraseña de base de datos o secreto debe figurar en el código fuente ni en el historial de Git.
+- **Plantilla Obligatoria:** Mantener actualizado \`.env.example\` con todas las variables requeridas asignadas a valores descriptivos ficticios.
+- **Protección de Git:** Verificar que \`.env\`, \`.env.local\`, \`*.pem\` y \`*.key\` figuren expresamente en el archivo \`.gitignore\`.`,
 
-    p.security.secureAuth && `### 2. 🛡️ Autenticación y Autorización Segura
-- **Almacenamiento de Tokens:** En aplicaciones Web, almacenar tokens JWT y de sesión exclusivamente en **cookies \`HttpOnly\`, \`Secure\` y \`SameSite=Strict\`**.
-- **Entornos Móviles:** En aplicaciones móviles, utilizar bóvedas nativas cifradas (\`SecureStore\` en Expo / Keychain en iOS / Keystore en Android). Prohibido guardar credenciales en AsyncStorage en texto plano.
-- **Expiración y Rotación:** Implementar tiempo de vida corto para Access Tokens y rotación segura de Refresh Tokens.`,
+    p.security.secureAuth && `### 2. 🛡️ Autenticación y Autorización Robusta
+- **Almacenamiento Web de Tokens:** Almacenar tokens JWT y cookies de sesión exclusivamente en **cookies con flags \`HttpOnly\`, \`Secure\` y \`SameSite=Strict\`**. Queda prohibido el almacenamiento de tokens sensibles en \`localStorage\` debido a la exposición a ataques XSS.
+- **Entornos Móviles:** Utilizar bóvedas de claves cifradas por hardware (\`SecureStore\` en Expo / Keychain en iOS / Keystore en Android).
+- **Ciclo de Vida de Tokens:** Configurar Access Tokens de vida corta (15 minutos) combinados con rotación estricta de Refresh Tokens.`,
 
     p.security.inputSanitization && `### 3. 🧹 Sanitización de Entradas y Validación de Esquemas
-- **Validación en Frontera:** Toda petición entrante a la API debe validarse contra esquemas estrictos (ej. **Zod**, **Joi**, **Pydantic**) antes de ser procesada por los controladores o servicios.
-- **Rechazo de Parámetros Desconocidos:** Descartar propiedades que no figuren en el esquema esperado para prevenir inyecciones de asignación masiva (Mass Assignment).`,
+- **Validación en Frontera:** Toda solicitud entrante a la API debe validarse mediante esquemas estrictos (Zod, Pydantic, class-validator) antes de que el controlador o servicio ejecute cualquier acción.
+- **Defensa contra Asignación Masiva:** Descartar propiedades no declaradas explícitamente en los esquemas (whitelist) para prevenir inyecciones de campos protegidos (ej. \`isAdmin: true\`).`,
 
-    p.security.sqlInjectionAndXssProtection && `### 4. 🛑 Protección Contra Inyección SQL y XSS
-- **Consultas Parametrizadas:** Queda prohibida la concatenación directa de cadenas de texto para generar sentencias SQL. Utilizar siempre consultas preparadas o el query builder del ORM.
-- **Escape de Salidas:** Escapar todo contenido dinámico renderizado en el navegador para mitigar Cross-Site Scripting (XSS). No utilizar \`dangerouslySetInnerHTML\` salvo sanitización previa comprobada con DOMPurify.`,
+    p.security.sqlInjectionAndXssProtection && `### 4. 🛑 Protección contra Inyección SQL y Cross-Site Scripting (XSS)
+- **Consultas Parametrizadas:** Queda prohibida la interpolación directa de cadenas de texto para construir sentencias SQL. Utilizar siempre consultas preparadas o el query builder del ORM.
+- **Escape Automático:** Escapar todo contenido dinámico renderizado en el navegador. Prohibido el uso de \`dangerouslySetInnerHTML\` salvo sanitización previa obligatoria mediante librerías como \`DOMPurify\`.`,
 
     p.security.corsAndSecurityHeaders && `### 5. 🌐 Políticas de CORS y Cabeceras de Seguridad HTTP
-- **CORS Restrictivo:** Configurar una lista blanca explícita de dominios autorizados. Prohibido el uso de comodines (\`Access-Control-Allow-Origin: *\`) en endpoints protegidos o autenticados.
-- **Cabeceras de Protección:** Incluir cabeceras estándar como \`Content-Security-Policy (CSP)\`, \`X-Frame-Options: DENY\`, \`X-Content-Type-Options: nosniff\` y \`Strict-Transport-Security (HSTS)\`.`,
+- **CORS Restrictivo:** Configurar una lista blanca explícita de dominios autorizados. Prohibido el uso de comodines (\`Access-Control-Allow-Origin: *\`) en rutas autenticadas.
+- **Cabeceras Defensivas:** Implementar cabeceras estándar:
+  - \`Content-Security-Policy (CSP)\`
+  - \`X-Frame-Options: DENY\`
+  - \`X-Content-Type-Options: nosniff\`
+  - \`Strict-Transport-Security (HSTS)\`
+  - \`Referrer-Policy: strict-origin-when-cross-origin\``,
 
-    p.security.rateLimiting && `### 6. ⏱️ Limitación de Tasa (Rate Limiting) y Protección contra Ataques de Fuerza Bruta
-- Aplicar limitadores de tasa (ej. \`express-rate-limit\`, Redis sliding window) en rutas sensibles: login, registro, recuperación de contraseña y endpoints de pago.`,
+    p.security.rateLimiting && `### 6. ⏱️ Limitación de Tasa (Rate Limiting) y Protección contra Fuerza Bruta
+- Aplicar limitadores de tasa (ej. Redis sliding window o express-rate-limit) en endpoints críticos: login, registro, recuperación de contraseñas y transacciones financieras.`,
 
-    p.security.csrfProtection && `### 7. 🔒 Protección contra Falsificación de Peticiones (CSRF)
-- Validar tokens CSRF o aprovechar el aislamiento de cookies \`SameSite=Strict\` para todas las peticiones con métodos mutables (POST, PUT, PATCH, DELETE).`,
+    p.security.csrfProtection && `### 7. 🔒 Protección contra Falsificación de Peticiones en Sitios Cruzados (CSRF)
+- Validar tokens antifalsificación CSRF o confiar en el aislamiento estricto de cookies \`SameSite=Strict\` para todas las mutaciones HTTP (POST, PUT, PATCH, DELETE).`,
   ].filter(Boolean);
 
   const customSec = p.security.customSecurityPolicies.length > 0
-    ? `### 8. Políticas Adicionales de Seguridad del Proyecto\n${p.security.customSecurityPolicies.map((s) => `- ${s}`).join('\n')}`
+    ? `### 8. Políticas Adicionales Formuladas por el Propietario\n${p.security.customSecurityPolicies.map((s) => `- ${s}`).join('\n')}`
     : '';
 
   return `# MANUAL Y DIRECTRICES DE SEGURIDAD INFORMÁTICA
 
 > **Proyecto:** ${p.name}
-> **Nivel de Exigencia:** Máximo / Producción Segura
+> **Nivel de Exigencia:** Máximo / Grado de Producción
+> **Marco de Referencia:** OWASP Top 10 & CWE Top 25
 
 ---
 
-## RESUMEN DE MANDATOS DE SEGURIDAD
+## 🛡️ DIRECTIVAS DE SEGURIDAD DEFENSIVA
 
 ${policies.join('\n\n')}
 
-${customSec}
+${customSec ? `\n---\n${customSec}\n` : ''}
 
 ---
 
-## CHECKLIST DE REVISIÓN ANTES DE DESPLIEGUE A PRODUCCIÓN
-- [ ] Ningún secreto expuesto en el historial de Git (\`git log\`).
-- [ ] Variables de entorno comprobadas contra \`.env.example\`.
-- [ ] Validación de esquemas activa en el 100% de los endpoints públicos y privados.
-- [ ] Escaneo de dependencias ejecutado con cero vulnerabilidades críticas o altas (\`npm audit\` / \`safety check\`).
-- [ ] Cabeceras de seguridad activadas y verificadas en escáneres SSL/SecurityHeaders.
+## 📋 CHECKLIST EXHAUSTIVO DE AUDITORÍA PREVIO A DESPLIEGUE
+
+Antes de promover la aplicación a entornos de producción, se debe verificar el 100% de los siguientes puntos:
+
+- [ ] **Secretos:** Verificación mediante \`git log\` de que no existen credenciales hardcodeadas en ningún commit.
+- [ ] **Variables de Entorno:** Comprobación de que todas las variables en \`.env.example\` cuentan con valores configurados en el host de producción.
+- [ ] **Validación de Esquemas:** Cobertura de validación activa en el 100% de los endpoints públicos y privados.
+- [ ] **Auditoría de Vulnerabilidades:** Ejecución limpia de \`npm audit\` / \`safety check\` con 0 alertas críticas o altas.
+- [ ] **Cabeceras HTTP:** Verificación de calificación "A+" en escáneres de seguridad (ej. securityheaders.com).
+- [ ] **Manejo de Errores:** Confirmación de que las trazas de error (stack traces) internas están ocultas al usuario final en producción.
 `;
 }
 
 /**
- * 7. TASKS.md - Hoja de ruta secuencial de ejecución
+ * 7. TASKS.md - Hoja de Ruta Secuencial de Ejecución
  */
 export function generateTasks(p: LibretoProject): string {
-  const phasesOutput = p.tasks.phases.map((phase) => {
+  const feInfo = getFrontendTechInfo(p.architecture.frontendFramework);
+  const beInfo = getBackendTechInfo(p.architecture.backendFramework);
+  const patInfo = getPatternTechInfo(p.architecture.architecturalPattern);
+  const styleInfo = getStyleTechInfo(p.design.style);
+
+  // Asegurar que usamos las fases dinámicas si están disponibles
+  const phases = p.tasks.phases && p.tasks.phases.length > 0
+    ? p.tasks.phases
+    : generateSuggestedTasks(p);
+
+  const phasesOutput = phases.map((phase, idx) => {
     const taskItems = phase.tasks.map((t) => `- [ ] ${t}`).join('\n');
-    return `### ${phase.name}\n${taskItems}\n`;
-  }).join('\n');
+    return `### Fase ${idx + 1}: ${phase.name}
+${taskItems}
+
+#### Criterios de Aceptación y Definición de Terminado (DoD) de la Fase ${idx + 1}:
+- [ ] Todas las tareas de esta fase cuentan con pruebas unitarias o de integración operativas.
+- [ ] No existen errores de tipado en TypeScript (\`npx tsc --noEmit\` exitoso).
+- [ ] Los componentes construidos respetan los tokens y estética de \`${styleInfo.name}\`.
+- [ ] El usuario ha confirmado la revisión satisfactoria de este hito antes de iniciar la siguiente fase.
+`;
+  }).join('\n---\n\n');
 
   return `# HOJA DE RUTA SECUENCIAL DE EJECUCIÓN (TASKS)
 
 > **Proyecto:** ${p.name}
-> **Metodología:** Desarrollo Iterativo e Incremental Asistido por IA
+> **Ecosistema:** ${feInfo.name} | ${beInfo.name} | ${p.architecture.database}
+> **Patrón Arquitectónico:** ${patInfo.name} (\`${patInfo.category}\`)
+> **Metodología:** Desarrollo Iterativo e Incremental Asistido por Inteligencia Artificial
 
 ---
 
-## 📌 INSTRUCCIÓN OPERATIVA PARA LA IA
-1. Abordar las tareas en estricto orden secuencial por fases.
-2. No pasar a la fase siguiente sin antes verificar el correcto funcionamiento y pruebas de la fase actual.
-3. Marcar con \`- [x]\` cada tarea verificada en este archivo tras recibir confirmación del usuario.
+## 📌 INSTRUCCIONES OPERATIVAS VINCULANTES PARA LA IA
+
+1. **Secuencialidad Estricta:** Abordar las tareas en estricto orden secuencial fase por fase. Queda prohibido avanzar a fases posteriores si la fase activa presenta tareas pendientes o pruebas fallidas.
+2. **Protocolo de Aprobación:** Solicitar confirmación al usuario antes de modificar el estado de cada tarea a \`- [x]\`.
+3. **Comandos Recomendados del Stack:**
+\`\`\`bash
+# Servidor de Desarrollo
+${feInfo.cliCommands[0]?.command || 'npm run dev'}
+
+# Verificación de Tipos y Linter
+npx tsc --noEmit && npm run lint
+
+# Compilación de Producción
+${feInfo.cliCommands[1]?.command || 'npm run build'}
+\`\`\`
 
 ---
 
@@ -617,20 +865,23 @@ ${phasesOutput}
 }
 
 /**
- * 8. MEMORY.md - Bitácora viva de estado y progreso
+ * 8. MEMORY.md - Bitácora Viva de Estado y Memoria de Sesiones
  */
 export function generateMemory(p: LibretoProject): string {
+  const feInfo = getFrontendTechInfo(p.architecture.frontendFramework);
+  const beInfo = getBackendTechInfo(p.architecture.backendFramework);
+
   const completedList = p.memory.completedMilestones.length > 0
     ? p.memory.completedMilestones.map((m) => `- [x] ${m}`).join('\n')
-    : '- [x] Creación del libreto maestro de directivas';
+    : `- [x] Inicialización del libreto de directivas para "${p.name}".\n- [x] Ratificación de la arquitectura técnica y sistema de diseño.`;
 
   const inProgressList = p.memory.inProgressMilestones.length > 0
     ? p.memory.inProgressMilestones.map((m) => `- [ ] ⏳ **${m}**`).join('\n')
-    : '- [ ] ⏳ **Fase 1: Configuración inicial del entorno**';
+    : '- [ ] ⏳ **Fase 1: Configuración inicial del entorno y componentes base.**';
 
   const blockersList = p.memory.blockers.length > 0
     ? p.memory.blockers.map((b) => `- ⚠️ ${b}`).join('\n')
-    : '- Ninguno identificado al momento.';
+    : '- Ninguno identificado al momento. El entorno de trabajo se encuentra despejado.';
 
   return `# BITÁCORA VIVA DE ESTADO & MEMORIA DEL PROYECTO (MEMORY)
 
@@ -640,35 +891,51 @@ export function generateMemory(p: LibretoProject): string {
 
 ---
 
-## 1. ESTADO ACTUAL DEL PROYECTO
+## 1. ESTADO ACTUAL DEL PROYECTO & RESUMEN EJECUTIVO
+
 ${p.memory.currentState}
 
-**Hito / Sprint Activo:** \`${p.memory.activeSprintOrMilestone}\`
+- **Hito / Sprint Activo:** \`${p.memory.activeSprintOrMilestone}\`
+- **Pila en Ejecución:** ${feInfo.name} + ${beInfo.name} + ${p.architecture.database}
+- **Estilo Visual:** ${p.design.style} (${p.design.styleFramework})
 
 ---
 
-## 2. HITOS COMPLETADOS
+## 2. HITOS COMPLETADOS & VALIDADOS
+
 ${completedList}
 
 ---
 
-## 3. HITOS EN PROGRESO ACTIVO
+## 3. HITOS EN PROGRESO ACTIVO (FOCO ACTUAL)
+
 ${inProgressList}
 
 ---
 
-## 4. BLOQUEOS Y RIESGOS ACTIVOS
+## 4. BLOQUEOS, RIESGOS Y DEUDA TÉCNICA
+
 ${blockersList}
 
 ---
 
-## 5. BITÁCORA DE CAMBIOS Y SESIONES RECIENTES (CHANGELOG)
+## 5. PROTOCOLO DE TRASPASO ENTRE SESIONES DE IA
+
+Al iniciar una nueva sesión de desarrollo asistido por IA, el asistente DEBE:
+1. Leer \`MEMORY.md\` para conocer el último sprint completado y las tareas en curso.
+2. Leer \`TASKS.md\` para ubicar la fase actual.
+3. Informar al usuario: *"Contexto recuperado de MEMORY.md: Nos encontramos en ${p.memory.activeSprintOrMilestone}. ¿Continuamos con las tareas pendientes de esta fase?"*
+4. Tras finalizar una intervención significativa, actualizar este archivo con las nuevas tareas completadas.
+
+---
+
+## 6. HISTORIAL DE VERSIONES Y CAMBIOS (CHANGELOG)
 
 ### [Sesión 0: Inicialización del Libreto] - ${new Date().toLocaleDateString()}
 - **Autor:** Sistema "Construcción de Libreto"
 - **Acciones Realizadas:**
   - Generación de los 8 archivos maestros: PRD, ARCHITECTURE, DESIGN, RULES, DECISIONS, SECURITY, TASKS y MEMORY.
-  - Ratificación de la pila tecnológica: ${p.architecture.frontendFramework} + ${p.architecture.backendFramework} + ${p.architecture.database}.
+  - Ratificación formal de la pila tecnológica: ${feInfo.name} + ${beInfo.name} + ${p.architecture.database}.
   - Establecimiento de la Regla de Oro obligatoria de solicitud de aprobación previa.
 `;
 }

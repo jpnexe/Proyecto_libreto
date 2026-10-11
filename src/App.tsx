@@ -23,6 +23,7 @@ import {
   createNewProjectFromTemplate,
 } from './utils/storage';
 import { generateAllMarkdownFiles } from './utils/markdownGenerators';
+import { generateSuggestedTasks } from './utils/taskGenerator';
 import { downloadZip, exportToSystemFolder } from './utils/fileExporter';
 import type { ExportResult } from './utils/fileExporter';
 import type { LibretoProject, MarkdownFileKey } from './types/libreto';
@@ -101,11 +102,30 @@ export function App() {
   };
 
   const handleUpdateProject = (fields: Partial<LibretoProject>) => {
-    const updated = {
+    let updated: LibretoProject = {
       ...project,
       ...fields,
       updatedAt: new Date().toISOString(),
     };
+
+    // Auto-sincronizar tareas si cambió la arquitectura, el diseño o requerimientos del PRD
+    // y la sincronización automática está habilitada y no fue bloqueada por edición manual
+    if (
+      (fields.architecture || fields.design || fields.prd) &&
+      !fields.tasks &&
+      updated.tasks?.autoSync !== false &&
+      !updated.tasks?.customEdited
+    ) {
+      const generatedPhases = generateSuggestedTasks(updated);
+      updated = {
+        ...updated,
+        tasks: {
+          ...updated.tasks,
+          phases: generatedPhases,
+        },
+      };
+    }
+
     setProject(updated);
     saveCurrentProject(updated);
     const updatedHistory = syncWithHistory(updated);

@@ -13,8 +13,14 @@ import {
   Eye,
   CheckCircle2,
   MoveRight,
+  ChevronLeft,
+  ChevronRight,
+  Sparkles,
+  RefreshCw,
+  Zap,
 } from 'lucide-react';
 import type { LibretoProject, TaskPhase } from '../../types/libreto';
+import { generateSuggestedTasks, isStaticProject } from '../../utils/taskGenerator';
 
 interface TasksModuleProps {
   project: LibretoProject;
@@ -22,7 +28,7 @@ interface TasksModuleProps {
 }
 
 export const TasksModule: React.FC<TasksModuleProps> = ({ project, onChange }) => {
-  const { tasks } = project;
+  const { tasks, architecture, design } = project;
 
   // Selected phase index
   const [selectedPhaseIdx, setSelectedPhaseIdx] = useState(0);
@@ -35,6 +41,9 @@ export const TasksModule: React.FC<TasksModuleProps> = ({ project, onChange }) =
 
   // Search filter for tasks
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Notification / toast feedback for tasks regeneration
+  const [syncFeedback, setSyncFeedback] = useState<string | null>(null);
 
   // Editing state for task: { phaseIdx: number, taskIdx: number, text: string } | null
   const [editingTask, setEditingTask] = useState<{
@@ -51,9 +60,56 @@ export const TasksModule: React.FC<TasksModuleProps> = ({ project, onChange }) =
   const [isAddingPhase, setIsAddingPhase] = useState(false);
   const [newPhaseName, setNewPhaseName] = useState('');
 
-  // Helper to commit changes to tasks.phases
-  const handleUpdatePhases = (newPhases: TaskPhase[]) => {
-    onChange({ tasks: { phases: newPhases } });
+  const isStatic = isStaticProject(project);
+
+  const showFeedback = (msg: string) => {
+    setSyncFeedback(msg);
+    setTimeout(() => setSyncFeedback(null), 3500);
+  };
+
+  // Helper to commit changes to tasks
+  const handleUpdateTasks = (updatedTasks: Partial<typeof tasks>) => {
+    onChange({
+      tasks: {
+        ...tasks,
+        ...updatedTasks,
+      },
+    });
+  };
+
+  // Helper to commit changes to phases while marking manual customization
+  const handleUpdatePhases = (newPhases: TaskPhase[], markCustom = true) => {
+    onChange({
+      tasks: {
+        ...tasks,
+        phases: newPhases,
+        ...(markCustom ? { customEdited: true } : {}),
+      },
+    });
+  };
+
+  // Regenerate tasks dynamically from current architecture and design
+  const handleRegenerateFromStack = () => {
+    const generatedPhases = generateSuggestedTasks(project);
+    handleUpdateTasks({
+      phases: generatedPhases,
+      customEdited: false,
+    });
+    showFeedback('¡Tareas sincronizadas y adaptadas exitosamente a tu arquitectura y diseño actual!');
+  };
+
+  // Toggle auto-sync behavior
+  const handleToggleAutoSync = () => {
+    const nextVal = tasks.autoSync === false;
+    handleUpdateTasks({
+      autoSync: nextVal,
+      ...(nextVal ? { customEdited: false } : {}),
+    });
+    showFeedback(
+      nextVal
+        ? 'Sincronización automática activada. Las tareas se actualizarán al cambiar arquitectura o diseño.'
+        : 'Sincronización automática desactivada. Tus tareas manuales están protegidas.'
+    );
   };
 
   // Add a task to a specific phase
@@ -198,12 +254,25 @@ export const TasksModule: React.FC<TasksModuleProps> = ({ project, onChange }) =
     setSelectedPhaseIdx(Math.max(0, phaseIdx - 1));
   };
 
+  // Navigation handlers for next/previous phase button
+  const handleNextPhase = () => {
+    if (selectedPhaseIdx < tasks.phases.length - 1) {
+      setSelectedPhaseIdx((prev) => prev + 1);
+    }
+  };
+
+  const handlePrevPhase = () => {
+    if (selectedPhaseIdx > 0) {
+      setSelectedPhaseIdx((prev) => prev - 1);
+    }
+  };
+
   // Total tasks calculation
   const totalTasksCount = tasks.phases.reduce((acc, p) => acc + p.tasks.length, 0);
 
   return (
     <div className="space-y-6 animate-fadeIn">
-      {/* Header */}
+      {/* 1. Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-zinc-200 dark:border-zinc-800 pb-5">
         <div>
           <div className="flex items-center gap-2">
@@ -234,14 +303,104 @@ export const TasksModule: React.FC<TasksModuleProps> = ({ project, onChange }) =
         </div>
       </div>
 
-      {/* View Mode & Search Bar Controls */}
+      {/* 2. Feedback Notification Toast if triggered */}
+      {syncFeedback && (
+        <div className="p-3.5 rounded-xl bg-blue-500/10 border border-blue-500/30 text-blue-700 dark:text-blue-300 text-xs flex items-center justify-between gap-2 transition-all animate-fadeIn">
+          <div className="flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-blue-500 shrink-0" />
+            <span>{syncFeedback}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setSyncFeedback(null)}
+            className="text-xs text-blue-500 hover:text-blue-700 dark:hover:text-blue-200 cursor-pointer"
+          >
+            ✕
+          </button>
+        </div>
+      )}
+
+      {/* 3. Smart Stack Dynamic Synchronization Card */}
+      <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 space-y-3">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+          <div className="space-y-1">
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300">
+                <Sparkles className="w-4 h-4 text-amber-500" />
+                Sincronización con Stack Tecnológico
+              </span>
+
+              {tasks.customEdited ? (
+                <span className="px-2 py-0.5 text-[10px] font-mono font-bold rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                  Modo Personalizado (Ediciones manuales activas)
+                </span>
+              ) : (
+                <span className="px-2 py-0.5 text-[10px] font-mono font-bold rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
+                  <Check className="w-3 h-3" />
+                  Sincronizado con Arquitectura & Diseño
+                </span>
+              )}
+            </div>
+
+            {/* Current Stack Detected Tags */}
+            <div className="flex items-center gap-1.5 flex-wrap text-[11px] text-zinc-600 dark:text-zinc-400 pt-0.5">
+              <span className="font-semibold text-zinc-800 dark:text-zinc-200">Stack activo:</span>
+              <span className="px-2 py-0.5 rounded bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 font-medium">
+                {architecture?.frontendFramework || 'Frontend'}
+              </span>
+              <span className="px-2 py-0.5 rounded bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 font-medium">
+                {isStatic ? '⚡ Jamstack (Sin BD)' : architecture?.backendFramework || 'Backend'}
+              </span>
+              {!isStatic && architecture?.database && (
+                <span className="px-2 py-0.5 rounded bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 font-medium">
+                  {architecture.database}
+                </span>
+              )}
+              <span className="px-2 py-0.5 rounded bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 font-medium text-cyan-600 dark:text-cyan-400">
+                Estilo: {design?.style || 'minimalist'}
+              </span>
+            </div>
+          </div>
+
+          {/* Action Buttons: Auto-sync toggle & Regenerate button */}
+          <div className="flex items-center gap-2 shrink-0 flex-wrap">
+            <button
+              type="button"
+              onClick={handleToggleAutoSync}
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold border transition-all cursor-pointer flex items-center gap-1.5 ${
+                tasks.autoSync !== false && !tasks.customEdited
+                  ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-700 dark:text-emerald-300'
+                  : 'bg-white dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:border-zinc-300'
+              }`}
+              title="Alternar sincronización automática cuando cambies opciones en Arquitectura o Diseño"
+            >
+              <Zap className={`w-3.5 h-3.5 ${tasks.autoSync !== false && !tasks.customEdited ? 'text-emerald-500' : 'text-zinc-400'}`} />
+              <span>
+                {tasks.autoSync !== false && !tasks.customEdited ? 'Auto-sincronizar: Activo' : 'Auto-sincronizar: Pausado'}
+              </span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleRegenerateFromStack}
+              className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white shadow-xs shadow-blue-500/20 active:scale-98 transition-all flex items-center gap-1.5 cursor-pointer"
+              title="Regenerar tareas sugeridas a partir del frontend, backend, base de datos y diseño seleccionados"
+            >
+              <RefreshCw className="w-3.5 h-3.5 text-blue-200" />
+              <span>Sincronizar con Stack Actual</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* 4. View Mode & Search Bar Controls */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-        {/* Switch View: Por Fases vs Roadmap Completo */}
+        {/* Switch View: Por Fase vs Roadmap Completo */}
         <div className="flex items-center bg-zinc-100 dark:bg-zinc-900 p-1 rounded-xl border border-zinc-200 dark:border-zinc-800 self-start">
           <button
             type="button"
             onClick={() => setViewMode('single-phase')}
-            className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5 ${
+            className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
               viewMode === 'single-phase'
                 ? 'bg-white dark:bg-zinc-800 text-blue-600 dark:text-blue-400 shadow-xs'
                 : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200'
@@ -253,7 +412,7 @@ export const TasksModule: React.FC<TasksModuleProps> = ({ project, onChange }) =
           <button
             type="button"
             onClick={() => setViewMode('all-roadmap')}
-            className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5 ${
+            className={`px-3 py-1.5 text-xs font-semibold rounded-lg transition-all flex items-center gap-1.5 cursor-pointer ${
               viewMode === 'all-roadmap'
                 ? 'bg-white dark:bg-zinc-800 text-blue-600 dark:text-blue-400 shadow-xs'
                 : 'text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-200'
@@ -277,7 +436,7 @@ export const TasksModule: React.FC<TasksModuleProps> = ({ project, onChange }) =
           {searchQuery && (
             <button
               onClick={() => setSearchQuery('')}
-              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600"
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-zinc-600 cursor-pointer"
             >
               <X className="w-3.5 h-3.5" />
             </button>
@@ -285,7 +444,7 @@ export const TasksModule: React.FC<TasksModuleProps> = ({ project, onChange }) =
         </div>
       </div>
 
-      {/* Phase selection tabs (Shown in 'single-phase' mode) */}
+      {/* 5. Phase selection tabs (Shown in 'single-phase' mode) */}
       {viewMode === 'single-phase' && (
         <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
           {tasks.phases.map((phase, idx) => {
@@ -295,7 +454,7 @@ export const TasksModule: React.FC<TasksModuleProps> = ({ project, onChange }) =
                 key={phase.id}
                 type="button"
                 onClick={() => setSelectedPhaseIdx(idx)}
-                className={`px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-2 ${
+                className={`px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-all flex items-center gap-2 cursor-pointer ${
                   isSelected
                     ? 'bg-blue-600 text-white shadow-md shadow-blue-500/20'
                     : 'bg-zinc-100 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-800'
@@ -320,7 +479,7 @@ export const TasksModule: React.FC<TasksModuleProps> = ({ project, onChange }) =
             <button
               type="button"
               onClick={() => setIsAddingPhase(true)}
-              className="px-3 py-2 rounded-xl text-xs font-semibold whitespace-nowrap border border-dashed border-zinc-300 dark:border-zinc-700 text-zinc-500 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-400 transition-colors flex items-center gap-1.5"
+              className="px-3 py-2 rounded-xl text-xs font-semibold whitespace-nowrap border border-dashed border-zinc-300 dark:border-zinc-700 text-zinc-500 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-400 transition-colors flex items-center gap-1.5 cursor-pointer"
             >
               <Plus className="w-3.5 h-3.5" />
               <span>Nueva Fase</span>
@@ -342,14 +501,14 @@ export const TasksModule: React.FC<TasksModuleProps> = ({ project, onChange }) =
               <button
                 type="button"
                 onClick={handleAddNewPhase}
-                className="p-1 text-emerald-600 hover:bg-emerald-500/10 rounded-lg"
+                className="p-1 text-emerald-600 hover:bg-emerald-500/10 rounded-lg cursor-pointer"
               >
                 <Check className="w-3.5 h-3.5" />
               </button>
               <button
                 type="button"
                 onClick={() => setIsAddingPhase(false)}
-                className="p-1 text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-lg"
+                className="p-1 text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-lg cursor-pointer"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
@@ -358,11 +517,11 @@ export const TasksModule: React.FC<TasksModuleProps> = ({ project, onChange }) =
         </div>
       )}
 
-      {/* Main Container: Single Phase View or All Roadmap View */}
+      {/* 6. Main Container: Single Phase View or All Roadmap View */}
       {viewMode === 'single-phase' ? (
         /* SINGLE PHASE VIEW */
         tasks.phases[selectedPhaseIdx] && (
-          <div className="bg-zinc-50 dark:bg-zinc-900/60 p-5 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-4">
+          <div className="bg-zinc-50 dark:bg-zinc-900/60 p-5 sm:p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-4">
             {/* Phase Title Bar & Quick Edit */}
             <div className="flex items-center justify-between pb-3 border-b border-zinc-200/80 dark:border-zinc-800/80">
               {editingPhaseIdx === selectedPhaseIdx ? (
@@ -381,7 +540,7 @@ export const TasksModule: React.FC<TasksModuleProps> = ({ project, onChange }) =
                   <button
                     type="button"
                     onClick={handleSaveEditPhase}
-                    className="p-1.5 text-emerald-600 hover:bg-emerald-500/10 rounded-lg"
+                    className="p-1.5 text-emerald-600 hover:bg-emerald-500/10 rounded-lg cursor-pointer"
                     title="Guardar nombre"
                   >
                     <Check className="w-4 h-4" />
@@ -389,7 +548,7 @@ export const TasksModule: React.FC<TasksModuleProps> = ({ project, onChange }) =
                   <button
                     type="button"
                     onClick={() => setEditingPhaseIdx(null)}
-                    className="p-1.5 text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-lg"
+                    className="p-1.5 text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-lg cursor-pointer"
                     title="Cancelar"
                   >
                     <X className="w-4 h-4" />
@@ -398,13 +557,15 @@ export const TasksModule: React.FC<TasksModuleProps> = ({ project, onChange }) =
               ) : (
                 <div className="flex items-center gap-2">
                   <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-                    <Layers className="w-4 h-4 text-blue-500" />
-                    {tasks.phases[selectedPhaseIdx].name}
+                    <span className="w-6 h-6 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 font-mono text-xs font-bold flex items-center justify-center">
+                      {selectedPhaseIdx + 1}
+                    </span>
+                    <span>{tasks.phases[selectedPhaseIdx].name}</span>
                   </h3>
                   <button
                     type="button"
                     onClick={() => handleStartEditPhase(selectedPhaseIdx)}
-                    className="p-1 text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 rounded-md transition-colors"
+                    className="p-1 text-zinc-400 hover:text-blue-600 dark:hover:text-blue-400 rounded-md transition-colors cursor-pointer"
                     title="Editar nombre de esta fase"
                   >
                     <Pencil className="w-3.5 h-3.5" />
@@ -417,7 +578,7 @@ export const TasksModule: React.FC<TasksModuleProps> = ({ project, onChange }) =
                 <button
                   type="button"
                   onClick={() => handleRemovePhase(selectedPhaseIdx)}
-                  className="text-xs text-red-500 hover:text-red-600 p-1 rounded-lg hover:bg-red-500/10 flex items-center gap-1 transition-colors"
+                  className="text-xs text-red-500 hover:text-red-600 p-1 rounded-lg hover:bg-red-500/10 flex items-center gap-1 transition-colors cursor-pointer"
                   title="Eliminar esta fase completa"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
@@ -426,7 +587,7 @@ export const TasksModule: React.FC<TasksModuleProps> = ({ project, onChange }) =
               )}
             </div>
 
-            {/* Input to add a new task to this phase */}
+            {/* Input to add a new task to this phase (Espacio libre para editar y añadir) */}
             <div className="flex gap-2">
               <input
                 type="text"
@@ -439,7 +600,7 @@ export const TasksModule: React.FC<TasksModuleProps> = ({ project, onChange }) =
               <button
                 type="button"
                 onClick={() => handleAddTask(selectedPhaseIdx)}
-                className="px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-sm shadow-blue-500/20 active:scale-98 shrink-0"
+                className="px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors shadow-sm shadow-blue-500/20 active:scale-98 shrink-0 cursor-pointer"
               >
                 <Plus className="w-4 h-4" />
                 <span>Añadir</span>
@@ -485,7 +646,7 @@ export const TasksModule: React.FC<TasksModuleProps> = ({ project, onChange }) =
                           <button
                             type="button"
                             onClick={handleSaveEditTask}
-                            className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold flex items-center gap-1 transition-colors"
+                            className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold flex items-center gap-1 transition-colors cursor-pointer"
                             title="Guardar cambios (Enter)"
                           >
                             <Check className="w-3.5 h-3.5" />
@@ -494,7 +655,7 @@ export const TasksModule: React.FC<TasksModuleProps> = ({ project, onChange }) =
                           <button
                             type="button"
                             onClick={handleCancelEditTask}
-                            className="px-2.5 py-1.5 bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 rounded-lg text-xs font-semibold transition-colors"
+                            className="px-2.5 py-1.5 bg-zinc-200 dark:bg-zinc-800 hover:bg-zinc-300 dark:hover:bg-zinc-700 text-zinc-700 dark:text-zinc-300 rounded-lg text-xs font-semibold transition-colors cursor-pointer"
                             title="Cancelar (Escape)"
                           >
                             <X className="w-3.5 h-3.5" />
@@ -522,7 +683,7 @@ export const TasksModule: React.FC<TasksModuleProps> = ({ project, onChange }) =
                               onClick={() =>
                                 handleMoveTaskOrder(selectedPhaseIdx, actualTaskIdx, 'up')
                               }
-                              className="p-1.5 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 disabled:opacity-20 rounded-md transition-colors"
+                              className="p-1.5 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 disabled:opacity-20 rounded-md transition-colors cursor-pointer"
                               title="Subir prioridad"
                             >
                               <ArrowUp className="w-3.5 h-3.5" />
@@ -537,7 +698,7 @@ export const TasksModule: React.FC<TasksModuleProps> = ({ project, onChange }) =
                               onClick={() =>
                                 handleMoveTaskOrder(selectedPhaseIdx, actualTaskIdx, 'down')
                               }
-                              className="p-1.5 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 disabled:opacity-20 rounded-md transition-colors"
+                              className="p-1.5 text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-200 disabled:opacity-20 rounded-md transition-colors cursor-pointer"
                               title="Bajar prioridad"
                             >
                               <ArrowDown className="w-3.5 h-3.5" />
@@ -549,7 +710,7 @@ export const TasksModule: React.FC<TasksModuleProps> = ({ project, onChange }) =
                               onClick={() =>
                                 handleStartEditTask(selectedPhaseIdx, actualTaskIdx, taskText)
                               }
-                              className="p-1.5 text-zinc-500 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-500/10 rounded-md transition-colors"
+                              className="p-1.5 text-zinc-500 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-500/10 rounded-md transition-colors cursor-pointer"
                               title="Editar tarea"
                             >
                               <Pencil className="w-3.5 h-3.5" />
@@ -594,7 +755,7 @@ export const TasksModule: React.FC<TasksModuleProps> = ({ project, onChange }) =
                             <button
                               type="button"
                               onClick={() => handleRemoveTask(selectedPhaseIdx, actualTaskIdx)}
-                              className="p-1.5 text-zinc-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-500/10 rounded-md transition-colors"
+                              className="p-1.5 text-zinc-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-500/10 rounded-md transition-colors cursor-pointer"
                               title="Eliminar tarea"
                             >
                               <Trash2 className="w-3.5 h-3.5" />
@@ -610,6 +771,63 @@ export const TasksModule: React.FC<TasksModuleProps> = ({ project, onChange }) =
                 <div className="text-center py-8 text-zinc-400 text-xs border border-dashed border-zinc-200 dark:border-zinc-800 rounded-xl">
                   No hay tareas registradas en esta fase. ¡Agrega la primera tarea arriba!
                 </div>
+              )}
+            </div>
+
+            {/* 7. BOTÓN INFERIOR PARA PASAR A LA SIGUIENTE FASE (Sin cambiar entre Por Fase y Roadmap) */}
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-4 mt-6 border-t border-zinc-200 dark:border-zinc-800">
+              {/* Botón Fase Anterior */}
+              <button
+                type="button"
+                disabled={selectedPhaseIdx === 0}
+                onClick={handlePrevPhase}
+                className="flex items-center justify-center gap-2 px-3.5 py-2 rounded-xl text-xs font-semibold bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-900 disabled:opacity-30 disabled:cursor-not-allowed transition-all cursor-pointer shadow-2xs"
+              >
+                <ChevronLeft className="w-4 h-4" />
+                <span>Fase Anterior</span>
+              </button>
+
+              {/* Indicador de progreso entre fases */}
+              <div className="flex items-center justify-center gap-1.5">
+                {tasks.phases.map((p, idx) => (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() => setSelectedPhaseIdx(idx)}
+                    className={`h-2 rounded-full transition-all cursor-pointer ${
+                      idx === selectedPhaseIdx
+                        ? 'w-6 bg-blue-600 dark:bg-blue-500'
+                        : 'w-2 bg-zinc-300 dark:bg-zinc-700 hover:bg-zinc-400'
+                    }`}
+                    title={`Ir a ${p.name}`}
+                  />
+                ))}
+                <span className="text-[11px] font-mono text-zinc-400 dark:text-zinc-500 ml-1.5">
+                  Fase {selectedPhaseIdx + 1} de {tasks.phases.length}
+                </span>
+              </div>
+
+              {/* Botón Siguiente Fase */}
+              {selectedPhaseIdx < tasks.phases.length - 1 ? (
+                <button
+                  type="button"
+                  onClick={handleNextPhase}
+                  className="flex items-center justify-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white shadow-sm shadow-blue-500/20 active:scale-98 transition-all cursor-pointer"
+                >
+                  <span className="truncate max-w-[200px]">
+                    Siguiente: {tasks.phases[selectedPhaseIdx + 1]?.name}
+                  </span>
+                  <ChevronRight className="w-4 h-4 shrink-0" />
+                </button>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setViewMode('all-roadmap')}
+                  className="flex items-center justify-center gap-2 px-3.5 py-2 rounded-xl text-xs font-bold bg-zinc-800 hover:bg-zinc-750 text-zinc-100 dark:bg-zinc-800 dark:hover:bg-zinc-750 border border-zinc-700 shadow-xs transition-all cursor-pointer"
+                >
+                  <Eye className="w-4 h-4 text-blue-400 shrink-0" />
+                  <span>Ver Roadmap Completo</span>
+                </button>
               )}
             </div>
           </div>
@@ -645,9 +863,10 @@ export const TasksModule: React.FC<TasksModuleProps> = ({ project, onChange }) =
                       setSelectedPhaseIdx(pIdx);
                       setViewMode('single-phase');
                     }}
-                    className="text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
+                    className="text-xs text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 cursor-pointer"
                   >
                     <span>Editar esta fase</span>
+                    <ChevronRight className="w-3.5 h-3.5" />
                   </button>
                 </div>
 
@@ -687,7 +906,7 @@ export const TasksModule: React.FC<TasksModuleProps> = ({ project, onChange }) =
                             <button
                               type="button"
                               onClick={handleSaveEditTask}
-                              className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold flex items-center gap-1"
+                              className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-xs font-semibold flex items-center gap-1 cursor-pointer"
                             >
                               <Check className="w-3.5 h-3.5" />
                               <span>Guardar</span>
@@ -695,7 +914,7 @@ export const TasksModule: React.FC<TasksModuleProps> = ({ project, onChange }) =
                             <button
                               type="button"
                               onClick={handleCancelEditTask}
-                              className="px-2.5 py-1.5 bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-lg text-xs"
+                              className="px-2.5 py-1.5 bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-lg text-xs cursor-pointer"
                             >
                               <X className="w-3.5 h-3.5" />
                             </button>
@@ -713,7 +932,7 @@ export const TasksModule: React.FC<TasksModuleProps> = ({ project, onChange }) =
                               <button
                                 type="button"
                                 onClick={() => handleStartEditTask(pIdx, actualTaskIdx, taskText)}
-                                className="p-1.5 text-zinc-500 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-500/10 rounded-md transition-colors"
+                                className="p-1.5 text-zinc-500 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-500/10 rounded-md transition-colors cursor-pointer"
                                 title="Editar tarea"
                               >
                                 <Pencil className="w-3.5 h-3.5" />
@@ -721,7 +940,7 @@ export const TasksModule: React.FC<TasksModuleProps> = ({ project, onChange }) =
                               <button
                                 type="button"
                                 onClick={() => handleRemoveTask(pIdx, actualTaskIdx)}
-                                className="p-1.5 text-zinc-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-500/10 rounded-md transition-colors"
+                                className="p-1.5 text-zinc-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-500/10 rounded-md transition-colors cursor-pointer"
                                 title="Eliminar tarea"
                               >
                                 <Trash2 className="w-3.5 h-3.5" />

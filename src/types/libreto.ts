@@ -128,6 +128,8 @@ export interface LibretoProject {
   // MÓDULO G: TASKS & MEMORY
   tasks: {
     phases: TaskPhase[];
+    autoSync?: boolean;
+    customEdited?: boolean;
   };
   memory: {
     currentState: string;
