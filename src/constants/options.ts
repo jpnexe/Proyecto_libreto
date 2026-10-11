@@ -1,0 +1,581 @@
+import type { DesignStyleId, TargetPlatform } from '../types/libreto';
+
+export interface StyleDefinition {
+  id: DesignStyleId;
+  name: string;
+  subtitle: string;
+  category: string;
+  visualFeatures: string;
+  paletteDescription: string;
+  idealUse: string;
+  description: string;
+  colors: string[];
+  sampleBg: string;
+  sampleBorder: string;
+  sampleShadow: string;
+  sampleBadgeClass: string;
+}
+
+export const DESIGN_STYLES: StyleDefinition[] = [
+  // 1. Glassmorphism
+  {
+    id: 'glassmorphism',
+    name: '1. Glassmorphism (Efecto Cristal Traslúcido)',
+    subtitle: 'Fondos translúcidos con desenfoque de cristal y bordes ultrafinos',
+    category: 'Táctil & 3D',
+    visualFeatures: 'Fondos translúcidos con desenfoque de cristal (backdrop-blur-md), bordes blancos ultra-finos con baja opacidad (border border-white/20) y sombras suaves multicapa.',
+    paletteDescription: 'Gradientes de malla (mesh gradients) de fondo, tarjetas en blanco con 10% a 25% de opacidad y tipografía blanca pura.',
+    idealUse: 'Paneles de control modernos, billeteras cripto, modales flotantes y apps de clima.',
+    description: 'Capas translúcidas con backdrop-blur (12px), bordes sutiles transparentes blancos y gradientes luminosos de fondo.',
+    colors: ['#3B82F6', '#8B5CF6', '#EC4899', 'rgba(255,255,255,0.25)', '#FFFFFF'],
+    sampleBg: 'bg-white/10 dark:bg-black/25 backdrop-blur-md',
+    sampleBorder: 'border border-white/30 dark:border-white/10',
+    sampleShadow: 'shadow-lg shadow-blue-500/10',
+    sampleBadgeClass: 'bg-white/20 dark:bg-white/10 backdrop-blur-sm text-blue-600 dark:text-blue-300 border border-white/40 dark:border-white/20',
+  },
+
+  // 2. Neumorphism
+  {
+    id: 'neumorphism',
+    name: '2. Neumorphism (Soft UI / Relieve Táctil)',
+    subtitle: 'Relieve táctil con doble sombra exterior e interior (inset)',
+    category: 'Táctil & 3D',
+    visualFeatures: 'Componentes que parecen brotar de la superficie con dos sombras paralelas (sombra clara superior izquierda y sombra oscura inferior derecha); botones presionados con sombra interior (inset).',
+    paletteDescription: 'Monocromática estricta en tonos perla, hueso o gris suave (#E0E5EC).',
+    idealUse: 'Reproductores de audio, consolas de domótica, calculadoras y mandos virtuales.',
+    description: 'Interfaces monocromáticas donde los elementos emergen y se hunden del fondo mediante sombras suaves proyectadas.',
+    colors: ['#E0E5EC', '#CAD2DE', '#FFFFFF', '#4B5563', '#3B82F6'],
+    sampleBg: 'bg-[#E6ECF5] dark:bg-[#1E232E]',
+    sampleBorder: 'border-0',
+    sampleShadow: 'shadow-[5px_5px_10px_#CAD2DE,-5px_-5px_10px_#FFFFFF] dark:shadow-[5px_5px_10px_#14171E,-5px_-5px_10px_#282F3E]',
+    sampleBadgeClass: 'bg-[#E6ECF5] dark:bg-[#1E232E] text-slate-700 dark:text-slate-200 shadow-[inset_2px_2px_4px_#CAD2DE,inset_-2px_-2px_4px_#FFFFFF] dark:shadow-[inset_2px_2px_4px_#14171E,inset_-2px_-2px_4px_#282F3E]',
+  },
+
+  // 3. Neo-Brutalismo
+  {
+    id: 'neo_brutalism',
+    name: '3. Neo-Brutalismo',
+    subtitle: 'Bordes negros gruesos, sombras sólidas duras y colores pop',
+    category: 'Pop & Expresivo',
+    visualFeatures: 'Bordes negros gruesos (border-2 o border-4 en #000), sombras sólidas desplazadas sin desenfoque (box-shadow: 4px 4px 0px #000), esquinas rectas o poco redondeadas y tipografía sin serifa en negrita pesada.',
+    paletteDescription: 'Tonos pop hiper-saturados (amarillo canario #FACC15, cian eléctrico, lila brillante) contrastados sobre fondos blanco o beige.',
+    idealUse: 'Portafolios creativos, plataformas educativas, herramientas dev y landing pages de startups desenfadadas.',
+    description: 'Bordes negros marcados de 2-4px, sombras duras sin desenfoque, botones llamativos y tipografías atrevidas.',
+    colors: ['#FACC15', '#00F0FF', '#FF5C93', '#000000', '#FFFFFF'],
+    sampleBg: 'bg-amber-100 dark:bg-amber-950',
+    sampleBorder: 'border-2 border-black dark:border-amber-300',
+    sampleShadow: 'shadow-[4px_4px_0px_#000000] dark:shadow-[4px_4px_0px_#fcd34d]',
+    sampleBadgeClass: 'bg-[#FACC15] text-black font-black border-2 border-black shadow-[2px_2px_0px_#000]',
+  },
+
+  // 4. Brutalismo Puro
+  {
+    id: 'pure_brutalism',
+    name: '4. Brutalismo Puro (Web Brutalism)',
+    subtitle: 'Cero ornamentos cosméticos, enlaces estándar y alineaciones crudas',
+    category: 'Pop & Expresivo',
+    visualFeatures: 'Cero ornamentos cosméticos, alineaciones crudas, enlaces azules estándar subrayados, marcos simples de 1px y fuentes de sistema o monoespaciadas sin suavizar.',
+    paletteDescription: 'Fondo blanco crudo o gris cemento con texto negro plano y acentos en azul primario (#0000EE).',
+    idealUse: 'Sitios de documentación técnica, manifiestos de software abierto y blogs de desarrolladores puristas.',
+    description: 'Estética web radical y minimalista con cero florituras, enlaces nativos y fuentes de sistema.',
+    colors: ['#FFFFFF', '#000000', '#0000EE', '#CCCCCC', '#551A8B'],
+    sampleBg: 'bg-white dark:bg-zinc-950',
+    sampleBorder: 'border border-black dark:border-zinc-700',
+    sampleShadow: 'shadow-none',
+    sampleBadgeClass: 'bg-black text-white dark:bg-white dark:text-black font-mono text-[10px] underline',
+  },
+
+  // 5. Bento Grid
+  {
+    id: 'bento_grid',
+    name: '5. Bento Grid (Modular Apple / Linear)',
+    subtitle: 'Distribución modular asimétrica en tarjetas simétricas muy redondeadas',
+    category: 'Moderno & Limpio',
+    visualFeatures: 'Distribución modular asimétrica en tarjetas simétricas con bordes generosamente redondeados (rounded-2xl), espaciado métrico uniforme y microdetalles con iconos pequeños.',
+    paletteDescription: 'Fondo carbón mate (#09090B), bordes gris oscuro de bajo contraste (border-zinc-800) y acentos de color puntuales en insignias (badges).',
+    idealUse: 'Resúmenes de características técnicas, dashboards de métricas y páginas de aterrizaje de SaaS.',
+    description: 'Cuadrícula con módulos rectangulares de diversas proporciones (1x1, 2x1, 2x2), esquinas redondeadas y visualización balanceada.',
+    colors: ['#09090B', '#18181B', '#27272A', '#38BDF8', '#FFFFFF'],
+    sampleBg: 'bg-zinc-100 dark:bg-zinc-900',
+    sampleBorder: 'border border-zinc-300/80 dark:border-zinc-800',
+    sampleShadow: 'shadow-md rounded-2xl',
+    sampleBadgeClass: 'bg-zinc-200 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 font-medium rounded-full',
+  },
+
+  // 6. Dark Tech / Cyberpunk Minimal
+  {
+    id: 'dark_tech',
+    name: '6. Dark Tech / Cyberpunk Minimal',
+    subtitle: 'Fondo negro puro, paneles flotantes oscuros y acentos esmeralda/cian',
+    category: 'Tech & Cyber',
+    visualFeatures: 'Fondo negro puro o grafito, bordes casi invisibles, microinteracciones rápidas, paneles flotantes oscuros y tipografías sans combinadas con etiquetas monoespaciadas.',
+    paletteDescription: 'Fondo #030712, tarjetas #111827, con destellos en verde esmeralda (#10B981), cian neón (#06B6D4) o violeta eléctrico.',
+    idealUse: 'Terminales web, consolas de ciberseguridad, plataformas de IA y monitores DevOps.',
+    description: 'Fondo negro carbón, microbordes tenues y acentos fluorescentes de alta precisión técnica.',
+    colors: ['#030712', '#111827', '#10B981', '#06B6D4', '#A855F7'],
+    sampleBg: 'bg-gray-950',
+    sampleBorder: 'border border-emerald-500/30',
+    sampleShadow: 'shadow-[0_0_12px_rgba(16,185,129,0.15)]',
+    sampleBadgeClass: 'bg-emerald-950/60 text-emerald-400 border border-emerald-500/40 font-mono',
+  },
+
+  // 7. Cyberpunk High-Contrast (Glow Neón)
+  {
+    id: 'cyberpunk_neon',
+    name: '7. Cyberpunk High-Contrast (Glow Neón)',
+    subtitle: 'Resplandores intensos flúor, wireframe y destellos holográficos',
+    category: 'Tech & Cyber',
+    visualFeatures: 'Resplandores intensos en botones y bordes mediante drop-shadow fluor, rejillas tipo alambre (wireframe), detalles de interfaz holográfica y efectos de escaneo visual.',
+    paletteDescription: 'Fondo negro azabache con rosa neón (#FF007F), azul cobalto y amarillo fósforo.',
+    idealUse: 'Aplicaciones de videojuegos, plataformas de streaming y comunidades Web3.',
+    description: 'Máximo contraste con luces de neón rosa, amarillo flúor y cian sobre negro absoluto.',
+    colors: ['#05050A', '#FF007F', '#00FFFF', '#FFFF00', '#2563EB'],
+    sampleBg: 'bg-black',
+    sampleBorder: 'border border-[#FF007F]',
+    sampleShadow: 'shadow-[0_0_18px_rgba(255,0,127,0.4)]',
+    sampleBadgeClass: 'bg-[#FF007F]/20 text-[#FF007F] border border-[#FF007F] font-bold shadow-[0_0_8px_rgba(255,0,127,0.5)]',
+  },
+
+  // 8. Minimalist Flat 2.0
+  {
+    id: 'minimalist_flat',
+    name: '8. Minimalist Flat 2.0 (Clean Modern)',
+    subtitle: 'Jerarquía tipográfica milimétrica, generoso espacio y elevación sutil',
+    category: 'Moderno & Limpio',
+    visualFeatures: 'Jerarquía tipográfica milimétrica, mucho espacio en blanco, líneas divisorias casi invisibles y elevación tenue únicamente al posar el cursor (hover).',
+    paletteDescription: 'Fondo blanco puro, tipografía gris grafito accesible (#1F2937) y un solo color acento sobrio (azul corporativo o negro).',
+    idealUse: 'Sistemas ERP, software bancario, plataformas SaaS empresariales y aplicaciones médicas.',
+    description: 'Simplicidad moderna, espacios generosos, bordes sutiles y claridad visual ejecutiva.',
+    colors: ['#FFFFFF', '#F9FAFB', '#1F2937', '#2563EB', '#9CA3AF'],
+    sampleBg: 'bg-white dark:bg-zinc-900',
+    sampleBorder: 'border border-zinc-200 dark:border-zinc-800',
+    sampleShadow: 'shadow-xs hover:shadow-md transition-shadow',
+    sampleBadgeClass: 'bg-zinc-100 dark:bg-zinc-800 text-zinc-800 dark:text-zinc-200',
+  },
+
+  // 9. Claymorphism
+  {
+    id: 'claymorphism',
+    name: '9. Claymorphism (Plastilina 3D Suave)',
+    subtitle: 'Elementos inflados con volumen amigable, esquinas 3xl y colores pastel',
+    category: 'Táctil & 3D',
+    visualFeatures: 'Elementos inflados con volumen amigable, bordes súper redondeados (rounded-3xl), sombra exterior difusa y dos sombras interiores que simulan luz lateral y relieve mate.',
+    paletteDescription: 'Colores pastel limpios (menta suave, lavanda, melocotón, celeste) sobre fondos claros.',
+    idealUse: 'Aplicaciones educativas infantiles, dinámicas de gamificación y rastreadores de hábitos.',
+    description: 'Estilo volumétrico suave tipo arcilla o plastilina 3D con colores pastel y bordes redondeados.',
+    colors: ['#F0FDF4', '#A7F3D0', '#DDD6FE', '#FED7AA', '#BAE6FD'],
+    sampleBg: 'bg-[#E8F5E9] dark:bg-[#1B2E24]',
+    sampleBorder: 'border-0 rounded-3xl',
+    sampleShadow: 'shadow-[6px_6px_14px_rgba(0,0,0,0.08),inset_3px_3px_6px_rgba(255,255,255,0.8),inset_-3px_-3px_6px_rgba(0,0,0,0.05)]',
+    sampleBadgeClass: 'bg-[#BAE6FD] text-sky-800 font-bold rounded-2xl shadow-[inset_1px_1px_2px_#fff,inset_-1px_-1px_2px_rgba(0,0,0,0.1)]',
+  },
+
+  // 10. Esqueumorfismo
+  {
+    id: 'skeuomorphism',
+    name: '10. Esqueumorfismo (Skeuomorphism Clásico)',
+    subtitle: 'Texturas de materiales físicos, biseles y degradados profundos',
+    category: 'Táctil & 3D',
+    visualFeatures: 'Botones con biseles, texturas que imitan materiales físicos (cuero, aluminio pulido, papel satinado, vidrio biselado) y degradados lineales profundos para simular iluminación cenital.',
+    paletteDescription: 'Tonos metálicos, bronce, gris acero y colores con gradientes de brillo a sombra.',
+    idealUse: 'Interfaces de sintetizadores de música, consolas de audio digital y simuladores de instrumentos físicos.',
+    description: 'Recreación digital de objetos físicos, iluminación cenital, botones biselados y acabados metálicos.',
+    colors: ['#2D3748', '#4A5568', '#D1D5DB', '#8B5A2B', '#E2E8F0'],
+    sampleBg: 'bg-gradient-to-b from-slate-200 to-slate-400 dark:from-slate-700 dark:to-slate-900',
+    sampleBorder: 'border-t border-l border-white/60 border-b border-r border-black/40',
+    sampleShadow: 'shadow-[inset_1px_1px_1px_#fff,2px_2px_4px_rgba(0,0,0,0.4)]',
+    sampleBadgeClass: 'bg-gradient-to-b from-amber-600 to-amber-800 text-amber-100 font-bold border border-amber-900 shadow-sm',
+  },
+
+  // 11. Estilo Editorial / Suizo
+  {
+    id: 'swiss_editorial',
+    name: '11. Estilo Editorial / Suizo (Swiss Typographic)',
+    subtitle: 'Cuadrículas asimétricas rígidas, titulares monumentales y rojo bermellón',
+    category: 'Editorial & Minimal',
+    visualFeatures: 'Cuadrículas rígidas y asimétricas, titulares gigantescos con tipografía serif o grotesque, números monumentales y divisiones geométricas limpias inspiradas en revistas impresas de alta gama.',
+    paletteDescription: 'Blanco cálido/crema, negro tinta y acentos clásicos en rojo bermellón o naranja cadmio.',
+    idealUse: 'Revistas digitales, plataformas de noticias, catálogos de arquitectura y moda.',
+    description: 'Diseño gráfico helvético de vanguardia, tipografía protagonista y rigor geométrico suizo.',
+    colors: ['#FBF9F5', '#111111', '#E63946', '#F77F00', '#E5E0D8'],
+    sampleBg: 'bg-[#FBF9F5] dark:bg-[#1A1A1A]',
+    sampleBorder: 'border-t-2 border-black dark:border-white',
+    sampleShadow: 'shadow-none',
+    sampleBadgeClass: 'bg-[#E63946] text-white font-mono text-[10px] tracking-widest uppercase',
+  },
+
+  // 12. Aurora UI
+  {
+    id: 'aurora_ui',
+    name: '12. Aurora UI (Degradados Orgánicos / Mesh Glow)',
+    subtitle: 'Manchas fluidas y borrosas con degradados etéreos de fondo',
+    category: 'Tech & Cyber',
+    visualFeatures: 'Manchas fluidas y borrosas de color degradado que se mueven o reposan de fondo creando un ambiente difuso y etéreo detrás de capas limpias.',
+    paletteDescription: 'Mezclas líquidas de índigo, violeta, fucsia y naranja pastel sobre fondo oscuro o claro.',
+    idealUse: 'Pantallas de bienvenida (onboarding), páginas de login y aplicaciones de bienestar o meditación.',
+    description: 'Atmósferas luminosas etéreas con gradientes de malla fluidos y capas suaves.',
+    colors: ['#0F172A', '#6366F1', '#8B5CF6', '#EC4899', '#FB923C'],
+    sampleBg: 'bg-gradient-to-tr from-indigo-900/40 via-purple-900/40 to-pink-900/40 backdrop-blur-xl',
+    sampleBorder: 'border border-purple-500/30',
+    sampleShadow: 'shadow-[0_0_25px_rgba(139,92,246,0.25)]',
+    sampleBadgeClass: 'bg-gradient-to-r from-indigo-500 to-pink-500 text-white font-semibold shadow-xs',
+  },
+
+  // 13. Terminal / CLI Aesthetic
+  {
+    id: 'terminal_cli',
+    name: '13. Terminal / CLI Aesthetic (Hacker UI)',
+    subtitle: 'Consola monocroma con prompt parpadeante y fósforo verde/ámbar',
+    category: 'Tech & Cyber',
+    visualFeatures: 'Interfaz que replica una consola de comandos; prompt parpadeante (>_), ausencia casi total de botones convencionales y jerarquía basada en indentaciones y corchetes.',
+    paletteDescription: 'Fondo negro puro con fósforo verde monocromo (#00FF66), ámbar clásico (#FFB000) o blanco matriz.',
+    idealUse: 'Herramientas para desarrolladores, paneles de logs de servidor y emuladores de consola.',
+    description: 'Entorno de línea de comandos puro con tipografía monoespaciada y estética hacker.',
+    colors: ['#0C0C0C', '#00FF66', '#FFB000', '#00FFCC', '#1E293B'],
+    sampleBg: 'bg-[#0C0C0C]',
+    sampleBorder: 'border border-[#00FF66]/50',
+    sampleShadow: 'shadow-[0_0_10px_rgba(0,255,102,0.15)]',
+    sampleBadgeClass: 'bg-[#00FF66]/15 text-[#00FF66] font-mono border border-[#00FF66]/40',
+  },
+
+  // 14. Material Design 3
+  {
+    id: 'material_design_3',
+    name: '14. Material Design 3 (Material You)',
+    subtitle: 'Roles tonales adaptables, botones en píldora y menús flotantes',
+    category: 'Sistemas Nativos',
+    visualFeatures: 'Componentes con esquinas adaptadas, elevaciones tonales gobernadas por color de superficie en lugar de sombras duras, botones en píldora y menús flotantes estandarizados.',
+    paletteDescription: 'Paletas dinámicas basadas en roles semánticos (Primary, On-Primary, Surface, Container).',
+    idealUse: 'Aplicaciones nativas de Android, portales de servicios públicos y suites de productividad de Google.',
+    description: 'Sistema de diseño oficial de Google con superficies adaptativas y componentes en píldora.',
+    colors: ['#6750A4', '#EADDFF', '#21005D', '#FEF7FF', '#49454F'],
+    sampleBg: 'bg-[#FEF7FF] dark:bg-[#141218]',
+    sampleBorder: 'border border-[#CAC4D0] dark:border-[#49454F]',
+    sampleShadow: 'shadow-xs rounded-3xl',
+    sampleBadgeClass: 'bg-[#EADDFF] text-[#21005D] font-medium rounded-full',
+  },
+
+  // 15. Cupertino
+  {
+    id: 'cupertino_ios',
+    name: '15. Cupertino (iOS Native Human Interface)',
+    subtitle: 'Efecto traslúcido de sistema, curvas squircles y celdas agrupadas',
+    category: 'Sistemas Nativos',
+    visualFeatures: 'Barras de navegación con efecto de material traslúcido, esquinas con curvas continuas (squircles), agrupaciones de celdas con bordes redondeados y microinteracciones elásticas.',
+    paletteDescription: 'Fondos en gris dinámico del sistema (#F2F2F7 en claro / #000000 en oscuro) con azul y verde nativos de iOS.',
+    idealUse: 'Aplicaciones móviles nativas o híbridas exclusivas para el ecosistema Apple.',
+    description: 'Guías de diseño de Apple Human Interface Guidelines con esquinas continuas y vidrio dinámico.',
+    colors: ['#F2F2F7', '#000000', '#007AFF', '#34C759', '#FFFFFF'],
+    sampleBg: 'bg-[#F2F2F7] dark:bg-black',
+    sampleBorder: 'border border-zinc-300/60 dark:border-zinc-800',
+    sampleShadow: 'shadow-sm rounded-2xl',
+    sampleBadgeClass: 'bg-[#007AFF] text-white font-medium rounded-full',
+  },
+
+  // 16. Y2K Aesthetic
+  {
+    id: 'y2k_aesthetic',
+    name: '16. Y2K Aesthetic (Cromado Retro-Futurista)',
+    subtitle: 'Texturas metálicas, botones burbuja vidriosos y cromados pop',
+    category: 'Retro & Arcade',
+    visualFeatures: 'Texturas metálicas brillantes, botones tipo burbuja con brillo vidrioso, tipografías geométricas o espaciales del año 2000 y detalles gráficos como estrellas centelleantes (sparkles).',
+    paletteDescription: 'Plata cromo, rosa chicle, celeste hielo y blanco iridiscente.',
+    idealUse: 'Tiendas de ropa urbana vintage, sitios de colectivos musicales y redes sociales dirigidas a la Generación Z.',
+    description: 'Estética futurista de cambio de milenio con destellos metálicos, cromo y tonos pastel pop.',
+    colors: ['#1A1A2E', '#C0C0C0', '#FF69B4', '#7DF9FF', '#F8F8FF'],
+    sampleBg: 'bg-gradient-to-b from-purple-900/60 via-pink-900/30 to-blue-900/40',
+    sampleBorder: 'border border-[#7DF9FF]/60',
+    sampleShadow: 'shadow-[0_0_15px_rgba(255,105,180,0.3)]',
+    sampleBadgeClass: 'bg-gradient-to-r from-[#FF69B4] to-[#7DF9FF] text-black font-extrabold rounded-full shadow-sm',
+  },
+
+  // 17. Retro Windows 95
+  {
+    id: 'retro_win95',
+    name: '17. Retro Windows 95 / Web 1.0',
+    subtitle: 'Barras de título azul marino, bordes biselados duros y gris sistema',
+    category: 'Retro & Arcade',
+    visualFeatures: 'Ventanas con barra de título azul superior, bordes de 2px con sombras biseladas duras (gris claro arriba e izquierda, gris oscuro abajo y derecha), cursores pixelados e iconos de 16x16 px.',
+    paletteDescription: 'Gris clásico de sistema (#C0C0C0), azul marino de ventana (#000080) y texto negro monoespaciado.',
+    idealUse: 'Proyectos de homenaje retro, reproductores web nostálgicos y portafolios interactivos lúdicos.',
+    description: 'Nostalgia pura de los años 90 con ventanas clásicas, bordes biselados 3D y gris corporativo.',
+    colors: ['#C0C0C0', '#000080', '#008080', '#FFFFFF', '#000000'],
+    sampleBg: 'bg-[#C0C0C0]',
+    sampleBorder: 'border-t-2 border-l-2 border-white border-b-2 border-r-2 border-black',
+    sampleShadow: 'shadow-none',
+    sampleBadgeClass: 'bg-[#000080] text-white font-mono text-[10px] px-2 py-0.5',
+  },
+
+  // 18. Pixel Art / Arcade UI
+  {
+    id: 'pixel_art',
+    name: '18. Pixel Art / Arcade UI (8-bit / 16-bit)',
+    subtitle: 'Esquinas pixeladas escalonadas, tipografías bitmap y paletas NES',
+    category: 'Retro & Arcade',
+    visualFeatures: 'Botones con esquinas pixeladas escalonadas, tipografías bitmap estilo arcade, contenedores con marcos de tablero de juego retro y separadores en mosaico.',
+    paletteDescription: 'Paletas indexadas clásicas de 16 o 32 colores tipo NES/Game Boy (tonos primarios con bajo suavizado).',
+    idealUse: 'Juegos web, portales de torneos de esports y plataformas gamificadas.',
+    description: 'Estética retro de videojuegos de 8 y 16 bits con bordes pixelados y alto contraste lúdico.',
+    colors: ['#101010', '#E03B24', '#2B59C3', '#F2C94C', '#56C596'],
+    sampleBg: 'bg-[#101010]',
+    sampleBorder: 'border-4 border-[#F2C94C]',
+    sampleShadow: 'shadow-[4px_4px_0px_#E03B24]',
+    sampleBadgeClass: 'bg-[#E03B24] text-white font-mono font-bold uppercase',
+  },
+
+  // 19. Hand-Drawn / Doodle UI
+  {
+    id: 'hand_drawn',
+    name: '19. Hand-Drawn / Doodle UI (Boceto Ilustrado)',
+    subtitle: 'Trazos imperfectos estilo lápiz/tinta sobre textura papel',
+    category: 'Pop & Expresivo',
+    visualFeatures: 'Contornos imperfectos con líneas estilo lápiz o tinta (border-radius asimétrico o SVGs irregulares), fuentes manuscritas legibles y flechas o subrayados dibujados a mano.',
+    paletteDescription: 'Fondo color papel libreta o cartulina con trazos en gris grafito o azul bolígrafo.',
+    idealUse: 'Aplicaciones de notas y lluvia de ideas, pizarras colaborativas y plataformas de aprendizaje creativo.',
+    description: 'Ilustración desenfadada dibujada a mano, bordes orgánicos asimétricos y calidez artesanal.',
+    colors: ['#FDFBF7', '#2D3748', '#1E3A8A', '#F59E0B', '#E2E8F0'],
+    sampleBg: 'bg-[#FDFBF7] dark:bg-[#1E2024]',
+    sampleBorder: 'border-2 border-dashed border-[#2D3748] dark:border-zinc-400 rounded-2xl',
+    sampleShadow: 'shadow-xs',
+    sampleBadgeClass: 'bg-amber-200 text-amber-900 border border-amber-800 font-serif italic',
+  },
+
+  // 20. Papercut / Layered Depth
+  {
+    id: 'papercut_depth',
+    name: '20. Papercut / Layered Depth (Capas de Papel 2.5D)',
+    subtitle: 'Sensación táctil de cartulinas superpuestas con sombras multicapa',
+    category: 'Táctil & 3D',
+    visualFeatures: 'Sensación táctil de hojas de cartulina superpuestas mediante sombras paralelas pronunciadas con difuminado suave (drop-shadow), simulando maquetas físicas tridimensionales.',
+    paletteDescription: 'Degradados sutiles dentro de la misma gama de color (tonos tierra, azules oceánicos o verdes bosque superpuestos).',
+    idealUse: 'Visores de historias interactivas, aplicaciones de viajes y paneles infográficos educativos.',
+    description: 'Efecto tridimensional de papel recortado en capas con sombras difuminadas y texturas ricas.',
+    colors: ['#F4F1DE', '#E07A5F', '#3D405B', '#81B29A', '#F2CC8F'],
+    sampleBg: 'bg-[#F4F1DE] dark:bg-[#2B2D42]',
+    sampleBorder: 'border-0 rounded-2xl',
+    sampleShadow: 'shadow-[0_10px_20px_rgba(0,0,0,0.15),0_6px_6px_rgba(0,0,0,0.1)]',
+    sampleBadgeClass: 'bg-[#E07A5F] text-white font-semibold rounded-xl shadow-md',
+  },
+
+  // 21. Monocromático Puro
+  {
+    id: 'monochrome_pure',
+    name: '21. Monocromático Puro (High-Contrast B&W)',
+    subtitle: 'Contraste radical 100% Blanco y 100% Negro sin tonos grises intermedios',
+    category: 'Editorial & Minimal',
+    visualFeatures: 'Ausencia absoluta de matices cromáticos; interfaz basada exclusivamente en contrastes de blanco puro, negro puro y líneas divisorias exactas de 1 píxel.',
+    paletteDescription: '100% Blanco (#FFFFFF) y 100% Negro (#000000), sin tonalidades grises intermedias en elementos estructurales.',
+    idealUse: 'Portafolios de fotografía de autor, estudios de tipografía y publicaciones de diseño de vanguardia.',
+    description: 'Pureza visual absoluta, líneas de 1px exactas, sin escalas de grises y enfoque tipográfico total.',
+    colors: ['#000000', '#FFFFFF', '#000000', '#FFFFFF', '#000000'],
+    sampleBg: 'bg-white dark:bg-black',
+    sampleBorder: 'border border-black dark:border-white',
+    sampleShadow: 'shadow-none',
+    sampleBadgeClass: 'bg-black text-white dark:bg-white dark:text-black font-mono font-bold',
+  },
+
+  // Alias para compatibilidad con proyectos antiguos
+  {
+    id: 'minimalist',
+    name: 'Minimalista Clásico (Alias)',
+    subtitle: 'Simplicidad y microbordes refinados',
+    category: 'Moderno & Limpio',
+    visualFeatures: 'Fondos neutros, tipografía limpia y bordes de 1px.',
+    paletteDescription: 'Neutros modernos y gris grafito.',
+    idealUse: 'Sistemas empresariales y apps web limpias.',
+    description: 'Fondos neutros, tipografía sans-serif y bordes sutiles.',
+    colors: ['#FFFFFF', '#F4F4F5', '#71717A', '#09090B'],
+    sampleBg: 'bg-zinc-50 dark:bg-zinc-900',
+    sampleBorder: 'border border-zinc-200 dark:border-zinc-800',
+    sampleShadow: 'shadow-sm',
+    sampleBadgeClass: 'bg-zinc-100 text-zinc-800 dark:bg-zinc-800 dark:text-zinc-200 border border-zinc-300 dark:border-zinc-700',
+  },
+  {
+    id: 'dark_cyberpunk',
+    name: 'Dark Cyberpunk Clásico (Alias)',
+    subtitle: 'Fondo negro carbón y acentos cian/morado',
+    category: 'Tech & Cyber',
+    visualFeatures: 'Fondo negro con contrastes cian y morado neón.',
+    paletteDescription: 'Fondo carbón y destellos cian.',
+    idealUse: 'Dashboards oscuros y plataformas técnicas.',
+    description: 'Fondo negro carbón con resplandores cian y morado.',
+    colors: ['#0B0F19', '#0F172A', '#06B6D4', '#A855F7'],
+    sampleBg: 'bg-slate-950',
+    sampleBorder: 'border border-cyan-500/40',
+    sampleShadow: 'shadow-[0_0_15px_rgba(6,182,212,0.25)]',
+    sampleBadgeClass: 'bg-cyan-950/60 text-cyan-300 border border-cyan-500/50 shadow-[0_0_8px_rgba(6,182,212,0.4)]',
+  },
+];
+
+export const DESIGN_CATEGORIES = [
+  'Todos',
+  'Moderno & Limpio',
+  'Tech & Cyber',
+  'Táctil & 3D',
+  'Pop & Expresivo',
+  'Retro & Arcade',
+  'Editorial & Minimal',
+  'Sistemas Nativos',
+];
+
+export const PLATFORMS: { id: TargetPlatform; label: string; icon: string; description: string; isStatic?: boolean }[] = [
+  { id: 'web', label: 'Web SPA / SSR Dinámica', icon: 'Globe', description: 'Aplicaciones web con servidor, API o rendering dinámico' },
+  { id: 'static', label: 'Web Estática / Jamstack (Sin BD)', icon: 'FileCode', description: 'Sitios estáticos (SSG), Landing Pages, Documentación o Blogs sin base de datos ni servidor backend', isStatic: true },
+  { id: 'mobile', label: 'Móvil Nativo / Híbrido', icon: 'Smartphone', description: 'Apps para iOS y Android con acceso a sensores' },
+  { id: 'dual', label: 'Dual (Web + Móvil)', icon: 'Layers', description: 'Ecosistema unificado con backend compartido' },
+];
+
+export const LANGUAGES = [
+  'TypeScript',
+  'JavaScript',
+  'Python',
+  'Dart / Flutter',
+  'Kotlin',
+  'PHP',
+  'Go',
+  'C#',
+  'Rust',
+  'Swift',
+];
+
+export const FRONTEND_FRAMEWORKS = [
+  'HTML5 + Vanilla JS + CSS3 (Puro)',
+  'Astro (SSG / Islands Architecture)',
+  'React (Vite)',
+  'Next.js (Static Export / SSG)',
+  'Next.js (App Router - Fullstack)',
+  'Vue.js (Vite / Nuxt SSG)',
+  'Svelte / SvelteKit',
+  'Docusaurus / Starlight (Docs)',
+  '11ty (Eleventy)',
+  'Hugo / Jekyll (SSG)',
+  'React Native / Expo',
+  'Flutter',
+  'Angular',
+];
+
+export const BACKEND_FRAMEWORKS = [
+  'Ninguno (Solo Frontend Estático / Jamstack)',
+  'Serverless Edge Functions (Vercel / Cloudflare)',
+  'Node.js (NestJS)',
+  'Node.js (Express)',
+  'FastAPI (Python)',
+  'Django REST Framework',
+  'Laravel (PHP)',
+  'Supabase Functions / Edge',
+  'Go Gin / Fiber',
+  'ASP.NET Core (C#)',
+  'Spring Boot (Java/Kotlin)',
+];
+
+export const DATABASES = [
+  'Ninguna (Sitio Estático / Sin BD)',
+  'Archivos Locales (Markdown / MDX / JSON)',
+  'Headless CMS (Contentful / Sanity / Strapi)',
+  'LocalStorage / IndexedDB (Cliente)',
+  'PostgreSQL',
+  'Supabase (PostgreSQL BaaS)',
+  'MySQL',
+  'MongoDB',
+  'SQLite / Turso',
+  'Firebase Firestore',
+  'Redis (Cache / KV)',
+];
+
+export const CONNECTION_TYPES = [
+  'Archivos Estáticos Locales (Markdown / MDX / JSON)',
+  'Sin Conexión Externa (Contenido 100% Estático)',
+  'APIs Client-Side (fetch bajo demanda / Serviceless)',
+  'Build-time Fetch (Generación en compilación)',
+  'REST API (JSON)',
+  'GraphQL (Apollo / Yoga)',
+  'WebSockets (Tiempo Real / Socket.io)',
+  'gRPC (Protocol Buffers)',
+  'Server-Sent Events (SSE)',
+];
+
+export const ARCHITECTURAL_PATTERNS = [
+  'SSG (Static Site Generation / Jamstack)',
+  'Arquitectura de Islas (Islands Architecture - Astro)',
+  'SPA Estática Client-Side (Vite)',
+  'Colecciones de Contenido (Content Collections / Markdown)',
+  'Clean Architecture (Domain-Driven / Use Cases)',
+  'MVC (Model-View-Controller)',
+  'MVVM (Model-View-ViewModel)',
+  'Arquitectura Hexagonal (Puertos y Adaptadores)',
+  'Capas Clásicas (Controller - Service - Repository)',
+  'Microservicios Event-Driven',
+];
+
+export const STATIC_HOSTINGS = [
+  'Vercel (Edge CDN)',
+  'Cloudflare Pages',
+  'Netlify',
+  'GitHub Pages',
+  'AWS S3 + CloudFront',
+  'Firebase Hosting',
+];
+
+export const STYLE_FRAMEWORKS = [
+  'Tailwind CSS v4 / v3',
+  'Shadcn UI + Radix UI',
+  'Bootstrap 5',
+  'Material Design 3 (MUI)',
+  'Cupertino UI (iOS Style)',
+  'Chakra UI',
+];
+
+export interface LibraryInfo {
+  name: string;
+  category: 'animation' | 'icons';
+  description: string;
+  repoUrl: string;
+  installCommand: string;
+  sampleCode: string;
+}
+
+export const ANIMATION_LIBRARIES: LibraryInfo[] = [
+  {
+    name: 'Framer Motion',
+    category: 'animation',
+    description: 'Librería estándar de la industria para animaciones reactivas, layout animations y gestos táctiles en React.',
+    repoUrl: 'https://github.com/motiondivision/motion',
+    installCommand: 'npm install framer-motion',
+    sampleCode: '<motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }} />',
+  },
+  {
+    name: 'GSAP (GreenSock)',
+    category: 'animation',
+    description: 'Motor de alto rendimiento para secuencias complejas en timeline, morphing de SVGs y ScrollTrigger.',
+    repoUrl: 'https://github.com/greensock/GSAP',
+    installCommand: 'npm install gsap @gsap/react',
+    sampleCode: 'gsap.to(".card", { scrollTrigger: ".card", x: 100, duration: 1 });',
+  },
+  {
+    name: 'LottieFiles (lottie-react)',
+    category: 'animation',
+    description: 'Reproducción de microanimaciones vectoriales ultralivianas exportadas directamente desde After Effects.',
+    repoUrl: 'https://lottiefiles.com',
+    installCommand: 'npm install lottie-react',
+    sampleCode: '<Lottie animationData={animationJson} loop={true} />',
+  },
+];
+
+export const ICON_LIBRARIES: LibraryInfo[] = [
+  {
+    name: 'Lucide Icons',
+    category: 'icons',
+    description: 'Conjunto de más de 1400 iconos SVG consistentes, limpios y completamente personalizables.',
+    repoUrl: 'https://github.com/lucide-icons/lucide',
+    installCommand: 'npm install lucide-react',
+    sampleCode: 'import { ShieldCheck, Rocket } from "lucide-react";',
+  },
+  {
+    name: 'Heroicons',
+    category: 'icons',
+    description: 'Iconos SVG artesanales diseñados por los creadores de Tailwind CSS en estilos Outline y Solid.',
+    repoUrl: 'https://github.com/tailwindlabs/heroicons',
+    installCommand: 'npm install @heroicons/react',
+    sampleCode: 'import { BeakerIcon } from "@heroicons/react/24/solid";',
+  },
+];
