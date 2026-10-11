@@ -330,49 +330,34 @@ export const TasksModule: React.FC<TasksModuleProps> = ({ project, onChange }) =
       )}
 
       {/* 3. Smart Stack Dynamic Synchronization Card */}
-      <div className="p-4 rounded-2xl bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 space-y-3">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
-          <div className="space-y-1">
-            <div className="flex items-center gap-2 flex-wrap">
-              <span className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-zinc-700 dark:text-zinc-300">
-                <Sparkles className="w-4 h-4 text-amber-500" />
-                Sincronización con Stack Tecnológico
-              </span>
-
-              {tasks.customEdited ? (
-                <span className="px-2 py-0.5 text-[10px] font-mono font-bold rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
-                  Modo Personalizado (Ediciones manuales activas)
-                </span>
-              ) : (
-                <span className="px-2 py-0.5 text-[10px] font-mono font-bold rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20 flex items-center gap-1">
-                  <Check className="w-3 h-3" />
-                  Sincronizado con Arquitectura & Diseño
-                </span>
-              )}
+      <div className="p-4 sm:p-5 rounded-2xl bg-zinc-50 dark:bg-zinc-900/60 border border-zinc-200 dark:border-zinc-800 space-y-3.5 shadow-xs">
+        {/* Top Header & Actions Row */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-zinc-200/80 dark:border-zinc-800/80">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-amber-500/10 text-amber-500 flex items-center justify-center shrink-0">
+              <Sparkles className="w-4.5 h-4.5" />
             </div>
-
-            {/* Current Stack Detected Tags */}
-            <div className="flex items-center gap-1.5 flex-wrap text-[11px] text-zinc-600 dark:text-zinc-400 pt-0.5">
-              <span className="font-semibold text-zinc-800 dark:text-zinc-200">Stack activo:</span>
-              <span className="px-2 py-0.5 rounded bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 font-medium">
-                {architecture?.frontendFramework || 'Frontend'}
-              </span>
-              <span className="px-2 py-0.5 rounded bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 font-medium">
-                {isStatic ? '⚡ Jamstack (Sin BD)' : architecture?.backendFramework || 'Backend'}
-              </span>
-              {!isStatic && architecture?.database && (
-                <span className="px-2 py-0.5 rounded bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 font-medium">
-                  {architecture.database}
-                </span>
-              )}
-              <span className="px-2 py-0.5 rounded bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 font-medium text-cyan-600 dark:text-cyan-400">
-                Estilo: {design?.style || 'minimalist'}
-              </span>
+            <div className="min-w-0">
+              <h4 className="text-xs sm:text-sm font-bold text-zinc-900 dark:text-zinc-100 uppercase tracking-wide leading-tight">
+                Sincronización con Stack Tecnológico
+              </h4>
+              <div className="mt-1 flex items-center gap-2 flex-wrap">
+                {tasks.customEdited ? (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 text-[10px] font-mono font-bold rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20">
+                    Modo Personalizado (Ediciones manuales activas)
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 text-[10px] font-mono font-bold rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
+                    <Check className="w-3 h-3" />
+                    Sincronizado con Arquitectura & Diseño
+                  </span>
+                )}
+              </div>
             </div>
           </div>
 
           {/* Action Buttons: Auto-sync toggle & Regenerate button */}
-          <div className="flex items-center gap-2 shrink-0 flex-wrap">
+          <div className="flex items-center gap-2 flex-wrap sm:shrink-0">
             <button
               type="button"
               onClick={handleToggleAutoSync}
@@ -399,6 +384,28 @@ export const TasksModule: React.FC<TasksModuleProps> = ({ project, onChange }) =
               <span>Sincronizar con Stack Actual</span>
             </button>
           </div>
+        </div>
+
+        {/* Bottom Detected Stack Chips Row */}
+        <div className="flex items-center gap-2 flex-wrap text-xs text-zinc-600 dark:text-zinc-400">
+          <span className="font-semibold text-zinc-800 dark:text-zinc-200 text-xs shrink-0">
+            Stack activo:
+          </span>
+          <span className="px-2.5 py-1 rounded-lg bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 font-medium text-xs text-zinc-900 dark:text-zinc-100 shadow-2xs">
+            {architecture?.frontendFramework || 'Frontend'}
+          </span>
+          <span className="px-2.5 py-1 rounded-lg bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 font-medium text-xs text-zinc-900 dark:text-zinc-100 shadow-2xs flex items-center gap-1">
+            {isStatic ? <Zap className="w-3 h-3 text-amber-500" /> : null}
+            <span>{isStatic ? 'Jamstack (Sin BD)' : architecture?.backendFramework || 'Backend'}</span>
+          </span>
+          {!isStatic && architecture?.database && (
+            <span className="px-2.5 py-1 rounded-lg bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 font-medium text-xs text-zinc-900 dark:text-zinc-100 shadow-2xs">
+              {architecture.database}
+            </span>
+          )}
+          <span className="px-2.5 py-1 rounded-lg bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 font-medium text-xs text-cyan-600 dark:text-cyan-400 shadow-2xs">
+            Estilo: {design?.style || 'minimalist'}
+          </span>
         </div>
       </div>
 
