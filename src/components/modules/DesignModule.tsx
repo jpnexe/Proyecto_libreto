@@ -129,7 +129,6 @@ export const DesignModule: React.FC<DesignModuleProps> = ({ project, onChange })
 
   // Filter styles by category and search
   const filteredStyles = DESIGN_STYLES.filter((style) => {
-    // Exclude compatibility aliases from regular cards unless matched specifically
     if (style.id === 'minimalist' || style.id === 'dark_cyberpunk') return false;
 
     const matchesCategory =
@@ -149,56 +148,72 @@ export const DesignModule: React.FC<DesignModuleProps> = ({ project, onChange })
   );
 
   return (
-    <div className="space-y-8 animate-fadeIn">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-zinc-200 dark:border-zinc-800 pb-5">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 text-xs font-mono font-semibold rounded bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">
-              DESIGN.md
-            </span>
-            <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-              <Palette className="w-5 h-5 text-purple-500" />
-              Sistema de Diseño & 21 Estilos Visuales
-            </h2>
+    <div className="space-y-7 animate-fadeIn">
+      {/* 1. Module Header */}
+      <div className="space-y-4 border-b border-zinc-200 dark:border-zinc-800 pb-5">
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-2xl bg-purple-500/10 border border-purple-500/25 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0 shadow-xs">
+              <Palette className="w-5.5 h-5.5" />
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="px-2 py-0.5 text-[10px] font-mono font-bold rounded-md bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/25">
+                  DESIGN.md
+                </span>
+                <span className="text-[11px] text-zinc-400 dark:text-zinc-500 font-medium">
+                  Paso 3 de 8
+                </span>
+              </div>
+              <h2 className="text-lg sm:text-xl font-bold text-zinc-900 dark:text-zinc-100 leading-tight">
+                Sistema de Diseño Visual & 21 Estilos UI
+              </h2>
+            </div>
           </div>
-          <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 mt-1">
-            Selecciona entre 21 estéticas visuales, edita la paleta de colores de cada estilo y define librerías de animación e iconografía.
-          </p>
-        </div>
-
-        {/* Active Style Indicator Pill */}
-        <div className="flex items-center gap-2 bg-zinc-100 dark:bg-zinc-900 px-3.5 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 text-xs shrink-0 self-start sm:self-auto">
-          <span className="text-zinc-500 font-medium">Estilo Activo:</span>
-          <span className="font-bold text-purple-600 dark:text-purple-400 font-mono">
-            {currentStyleDef.name.split(' (')[0]}
-          </span>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5">
+            <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed">
+              Selecciona entre 21 estéticas visuales, edita la paleta de colores y define librerías de animación e iconografía.
+            </p>
+            <div className="flex items-center gap-2 bg-purple-500/10 border border-purple-500/20 px-3 py-1 rounded-xl text-xs shrink-0 self-start sm:self-auto">
+              <span className="text-zinc-500 font-medium">Estilo Activo:</span>
+              <span className="font-bold text-purple-600 dark:text-purple-400 font-mono">
+                {currentStyleDef.name.split(' (')[0]}
+              </span>
+            </div>
+          </div>
         </div>
       </div>
 
-      {/* 1. Categorized & Searchable Style Selector */}
+      {/* 2. Categorized & Searchable Style Selector */}
       <div className="space-y-4">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
-          <label className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-            <Sliders className="w-4 h-4 text-purple-500" />
-            <span>1. Catálogo de Estilos Visuales (21 Estéticas Disponibles)</span>
-          </label>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
+              <Sliders className="w-4.5 h-4.5" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+                1. Catálogo de Estilos Visuales (21 Estéticas)
+              </h3>
+              <p className="text-[11px] text-zinc-500">Haz clic en un estilo para aplicarlo instantáneamente</p>
+            </div>
+          </div>
 
           {/* Search Box */}
-          <div className="relative w-full md:w-64">
+          <div className="relative w-full sm:w-64">
             <Search className="w-3.5 h-3.5 text-zinc-400 absolute left-3 top-1/2 -translate-y-1/2" />
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Buscar estilo visual..."
-              className="w-full text-xs pl-8 pr-3 py-1.5 rounded-xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100 outline-none focus:ring-2 focus:ring-purple-500"
+              className="w-full text-xs pl-8 pr-3 py-2 rounded-xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-zinc-900 dark:text-zinc-100 outline-none focus:ring-2 focus:ring-purple-500/30 transition-all placeholder:text-zinc-400"
             />
           </div>
         </div>
 
-        {/* Category Filter Pills with horizontal scroll */}
-        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scroll-smooth">
+        {/* Category Filter Pills */}
+        <div className="flex items-center gap-1.5 overflow-x-auto pb-1.5 scroll-smooth">
           {DESIGN_CATEGORIES.map((cat) => {
             const isCatActive = selectedCategory === cat;
             return (
@@ -209,7 +224,7 @@ export const DesignModule: React.FC<DesignModuleProps> = ({ project, onChange })
                 className={`px-3 py-1.5 rounded-xl text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
                   isCatActive
                     ? 'bg-purple-600 text-white shadow-xs'
-                    : 'bg-zinc-100 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-800'
+                    : 'bg-zinc-100 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-800 border border-zinc-200/50 dark:border-zinc-800/50'
                 }`}
               >
                 {cat}
@@ -218,8 +233,8 @@ export const DesignModule: React.FC<DesignModuleProps> = ({ project, onChange })
           })}
         </div>
 
-        {/* Style Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 max-h-[560px] overflow-y-auto pr-1">
+        {/* Style Cards Grid (2 columns on sm+ for maximum readability and zero overlap) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 max-h-[580px] overflow-y-auto pr-1">
           {filteredStyles.map((style) => {
             const isSelected = design.style === style.id;
             const styleColors = getStyleColors(style.id);
@@ -230,36 +245,35 @@ export const DesignModule: React.FC<DesignModuleProps> = ({ project, onChange })
                 onClick={() => handleUpdate({ style: style.id as DesignStyleId })}
                 className={`cursor-pointer rounded-2xl p-4 border transition-all relative overflow-hidden flex flex-col justify-between group ${
                   isSelected
-                    ? 'border-purple-500 bg-purple-500/5 dark:bg-purple-950/25 ring-2 ring-purple-500/30 shadow-md'
+                    ? 'border-purple-500 bg-purple-500/10 dark:bg-purple-950/25 ring-2 ring-purple-500/30 shadow-md'
                     : 'border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900/60 hover:border-zinc-300 dark:hover:border-zinc-700'
                 }`}
               >
-                {/* Top: Category, Title and Checkmark */}
                 <div>
-                  <div className="flex items-start justify-between gap-2 mb-1.5">
-                    <div>
-                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-zinc-100 dark:bg-zinc-800 text-zinc-500 font-semibold">
+                  <div className="flex items-start justify-between gap-2 mb-2">
+                    <div className="min-w-0 flex-1">
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded-md bg-zinc-100 dark:bg-zinc-800 text-zinc-500 font-semibold inline-block mb-1">
                         {style.category}
                       </span>
-                      <h4 className="font-bold text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 mt-1 line-clamp-1">
+                      <h4 className="font-bold text-xs sm:text-sm text-zinc-900 dark:text-zinc-100 leading-tight">
                         {style.name}
                       </h4>
                     </div>
                     {isSelected && (
-                      <span className="w-5 h-5 rounded-full bg-purple-600 text-white flex items-center justify-center shrink-0 shadow-xs">
+                      <span className="w-5 h-5 rounded-full bg-purple-600 text-white flex items-center justify-center shrink-0 shadow-xs mt-1">
                         <Check className="w-3 h-3" />
                       </span>
                     )}
                   </div>
-                  <p className="text-[11px] text-zinc-500 dark:text-zinc-400 mb-2.5 line-clamp-2 leading-relaxed">
+                  <p className="text-xs text-zinc-500 dark:text-zinc-400 mb-3 line-clamp-2 leading-relaxed">
                     {style.subtitle}
                   </p>
                 </div>
 
                 {/* Visual Preview Box */}
-                <div className="space-y-2.5">
+                <div className="space-y-3">
                   <div
-                    className={`p-3 rounded-xl ${style.sampleBg} ${style.sampleBorder} ${style.sampleShadow} transition-all`}
+                    className={`p-3.5 rounded-xl ${style.sampleBg} ${style.sampleBorder} ${style.sampleShadow} transition-all`}
                   >
                     <div className="flex items-center justify-between">
                       <span className={`px-2 py-0.5 text-[10px] ${style.sampleBadgeClass}`}>
@@ -267,22 +281,22 @@ export const DesignModule: React.FC<DesignModuleProps> = ({ project, onChange })
                       </span>
                       <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                     </div>
-                    <div className="mt-2 flex items-center gap-1.5">
-                      <div className="h-1.5 w-12 rounded bg-zinc-400/40" />
-                      <div className="h-1.5 w-6 rounded bg-zinc-400/30" />
+                    <div className="mt-2.5 flex items-center gap-1.5">
+                      <div className="h-1.5 w-14 rounded bg-zinc-400/40" />
+                      <div className="h-1.5 w-8 rounded bg-zinc-400/30" />
                     </div>
                   </div>
 
-                  {/* Palette Sample Dots (reflecting customizations) */}
+                  {/* Palette Sample Dots */}
                   <div className="flex items-center justify-between pt-2 border-t border-zinc-100 dark:border-zinc-800/80">
                     <span className="text-[10px] font-medium text-zinc-400">
                       Paleta ({styleColors.length}):
                     </span>
-                    <div className="flex items-center gap-1">
+                    <div className="flex items-center gap-1.5 flex-wrap">
                       {styleColors.slice(0, 5).map((c, i) => (
                         <div
                           key={i}
-                          className="w-3.5 h-3.5 rounded-full border border-black/10 dark:border-white/20 shadow-2xs"
+                          className="w-4 h-4 rounded-full border border-black/10 dark:border-white/20 shadow-2xs"
                           style={{ backgroundColor: c }}
                           title={c}
                         />
@@ -301,7 +315,7 @@ export const DesignModule: React.FC<DesignModuleProps> = ({ project, onChange })
         </div>
       </div>
 
-      {/* 2. ADVANCED COLOR CONTROL FOR THE SELECTED STYLE */}
+      {/* 3. ADVANCED COLOR CONTROL FOR THE SELECTED STYLE */}
       <div className="bg-gradient-to-br from-purple-500/5 to-cyan-500/5 dark:from-purple-950/20 dark:to-cyan-950/20 p-5 sm:p-6 rounded-2xl border border-purple-500/20 dark:border-purple-500/30 space-y-5">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 border-b border-purple-500/10 dark:border-purple-500/20 pb-4">
           <div>
@@ -312,7 +326,7 @@ export const DesignModule: React.FC<DesignModuleProps> = ({ project, onChange })
               </h3>
             </div>
             <p className="text-xs text-zinc-500 dark:text-zinc-400 mt-1">
-              Personaliza cada color de la paleta asignada a este estilo. Los cambios se reflejarán automáticamente en <code className="text-purple-600 dark:text-purple-400 font-mono">DESIGN.md</code>.
+              Personaliza cada color de la paleta. Se reflejarán automáticamente en <code className="text-purple-600 dark:text-purple-400 font-mono">DESIGN.md</code>.
             </p>
           </div>
 
@@ -331,18 +345,18 @@ export const DesignModule: React.FC<DesignModuleProps> = ({ project, onChange })
         </div>
 
         {/* Detailed Palette Specs info callout */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs bg-white/60 dark:bg-zinc-950/60 p-3.5 rounded-xl border border-zinc-200/80 dark:border-zinc-800/80">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs bg-white/70 dark:bg-zinc-950/70 p-4 rounded-xl border border-zinc-200/80 dark:border-zinc-800/80">
           <div>
-            <span className="font-semibold text-zinc-700 dark:text-zinc-300 block mb-0.5">
-              Pautas de Paleta Original:
+            <span className="font-semibold text-zinc-700 dark:text-zinc-300 block mb-1">
+              Pautas de Paleta del Estilo:
             </span>
             <p className="text-zinc-500 leading-relaxed">
               {currentStyleDef.paletteDescription}
             </p>
           </div>
           <div>
-            <span className="font-semibold text-zinc-700 dark:text-zinc-300 block mb-0.5">
-              Uso Ideal Recomendado:
+            <span className="font-semibold text-zinc-700 dark:text-zinc-300 block mb-1">
+              Uso Recomendado en Interfaz:
             </span>
             <p className="text-zinc-500 leading-relaxed">
               {currentStyleDef.idealUse}
@@ -352,7 +366,7 @@ export const DesignModule: React.FC<DesignModuleProps> = ({ project, onChange })
 
         {/* Color Palette Swatches Editor */}
         <div>
-          <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-2">
+          <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-2.5">
             Muestras de Color Editables ({activeStylePalette.length} colores en la paleta):
           </label>
 
@@ -372,7 +386,7 @@ export const DesignModule: React.FC<DesignModuleProps> = ({ project, onChange })
                       onChange={(e) =>
                         handleUpdateStyleColor(design.style, idx, e.target.value)
                       }
-                      className="w-7 h-7 rounded-lg cursor-pointer border-0 p-0 bg-transparent"
+                      className="w-8 h-8 rounded-lg cursor-pointer border-0 p-0 bg-transparent"
                     />
                   </div>
 
@@ -391,27 +405,24 @@ export const DesignModule: React.FC<DesignModuleProps> = ({ project, onChange })
 
                 {/* Quick actions for each color swatch */}
                 <div className="flex items-center gap-1 shrink-0">
-                  {/* Set as Primary color */}
                   <button
                     type="button"
                     onClick={() => handleUpdate({ primaryColor: colorHex })}
-                    className="p-1 rounded-md text-[10px] font-semibold text-zinc-400 hover:text-purple-600 hover:bg-purple-500/10 transition-colors"
+                    className="px-1.5 py-0.5 rounded-md text-[10px] font-bold text-zinc-400 hover:text-purple-600 hover:bg-purple-500/10 transition-colors"
                     title="Usar como Color Primario"
                   >
                     P
                   </button>
 
-                  {/* Set as Secondary color */}
                   <button
                     type="button"
                     onClick={() => handleUpdate({ secondaryColor: colorHex })}
-                    className="p-1 rounded-md text-[10px] font-semibold text-zinc-400 hover:text-cyan-600 hover:bg-cyan-500/10 transition-colors"
+                    className="px-1.5 py-0.5 rounded-md text-[10px] font-bold text-zinc-400 hover:text-cyan-600 hover:bg-cyan-500/10 transition-colors"
                     title="Usar como Color Secundario"
                   >
                     S
                   </button>
 
-                  {/* Remove color button */}
                   {activeStylePalette.length > 1 && (
                     <button
                       type="button"
@@ -429,17 +440,17 @@ export const DesignModule: React.FC<DesignModuleProps> = ({ project, onChange })
         </div>
 
         {/* Add Color to Palette Bar */}
-        <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-purple-500/10 dark:border-purple-500/20">
+        <div className="flex flex-wrap items-center gap-2.5 pt-3 border-t border-purple-500/10 dark:border-purple-500/20">
           <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
             Añadir nuevo color a esta paleta:
           </span>
-          <div className="flex items-center gap-2 bg-white dark:bg-zinc-950 px-2 py-1 rounded-xl border border-zinc-200 dark:border-zinc-800">
+          <div className="flex items-center gap-2 bg-white dark:bg-zinc-950 px-2.5 py-1 rounded-xl border border-zinc-200 dark:border-zinc-800">
             <input
               type="color"
               aria-label="Seleccionar nuevo color para añadir"
               value={newColorHex}
               onChange={(e) => setNewColorHex(e.target.value)}
-              className="w-5 h-5 rounded cursor-pointer border-0 p-0 bg-transparent"
+              className="w-6 h-6 rounded cursor-pointer border-0 p-0 bg-transparent"
             />
             <input
               type="text"
@@ -452,7 +463,7 @@ export const DesignModule: React.FC<DesignModuleProps> = ({ project, onChange })
           <button
             type="button"
             onClick={() => handleAddStyleColor(design.style)}
-            className="px-3 py-1.5 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-semibold flex items-center gap-1 transition-colors shadow-xs active:scale-98"
+            className="px-3.5 py-1.5 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition-colors shadow-xs active:scale-98"
           >
             <Plus className="w-3.5 h-3.5" />
             <span>Añadir Color</span>
@@ -460,15 +471,23 @@ export const DesignModule: React.FC<DesignModuleProps> = ({ project, onChange })
         </div>
       </div>
 
-      {/* 3. Global Color Tokens & Dark mode */}
+      {/* 4. Global Color Tokens & Dark mode */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Style Framework */}
-        <div className="bg-zinc-50 dark:bg-zinc-900/60 p-5 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-3">
-          <label className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-            <Layers className="w-4 h-4 text-cyan-500" />
-            3. Framework de Estilos CSS / UI Kit
-          </label>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        <div className="bg-zinc-50 dark:bg-zinc-900/60 p-5 sm:p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-4">
+          <div className="flex items-center gap-2.5 pb-2 border-b border-zinc-200/80 dark:border-zinc-800">
+            <div className="w-8 h-8 rounded-xl bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 flex items-center justify-center shrink-0">
+              <Layers className="w-4.5 h-4.5" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+                3. Framework de Estilos CSS / UI Kit
+              </h3>
+              <p className="text-[11px] text-zinc-500">Framework utilitario para maquetación</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
             {STYLE_FRAMEWORKS.map((sf) => {
               const isSelected = design.styleFramework === sf;
               return (
@@ -476,14 +495,14 @@ export const DesignModule: React.FC<DesignModuleProps> = ({ project, onChange })
                   key={sf}
                   type="button"
                   onClick={() => handleUpdate({ styleFramework: sf })}
-                  className={`p-2.5 rounded-xl text-xs font-medium border text-left flex items-center justify-between transition-all cursor-pointer ${
+                  className={`p-3 rounded-xl text-xs font-medium border text-left flex items-center justify-between transition-all cursor-pointer ${
                     isSelected
-                      ? 'border-cyan-500 bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 font-bold'
+                      ? 'border-cyan-500 bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 font-bold ring-1 ring-cyan-500/30'
                       : 'border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-zinc-700 dark:text-zinc-300 hover:border-zinc-300 dark:hover:border-zinc-700'
                   }`}
                 >
                   <span className="truncate">{sf}</span>
-                  {isSelected && <Check className="w-3.5 h-3.5 text-cyan-500 shrink-0 ml-1" />}
+                  {isSelected && <Check className="w-4 h-4 text-cyan-500 shrink-0 ml-1.5" />}
                 </button>
               );
             })}
@@ -491,24 +510,31 @@ export const DesignModule: React.FC<DesignModuleProps> = ({ project, onChange })
         </div>
 
         {/* Primary/Secondary Color Tokens & Dark mode */}
-        <div className="bg-zinc-50 dark:bg-zinc-900/60 p-5 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-4">
-          <label className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-amber-500" />
-            4. Tokens de Acción Principal y Tema
-          </label>
-
-          <div className="grid grid-cols-2 gap-3">
+        <div className="bg-zinc-50 dark:bg-zinc-900/60 p-5 sm:p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-4">
+          <div className="flex items-center gap-2.5 pb-2 border-b border-zinc-200/80 dark:border-zinc-800">
+            <div className="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+              <Sparkles className="w-4.5 h-4.5" />
+            </div>
             <div>
-              <span className="block text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-1">
+              <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+                4. Tokens de Acción Principal y Tema
+              </h3>
+              <p className="text-[11px] text-zinc-500">Colores focales para llamadas a la acción (CTA)</p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-1">
+            <div>
+              <span className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1.5">
                 Color Primario (CTA)
               </span>
-              <div className="flex items-center gap-2 bg-white dark:bg-zinc-950 p-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800">
+              <div className="flex items-center gap-2 bg-white dark:bg-zinc-950 p-2 rounded-xl border border-zinc-200 dark:border-zinc-800">
                 <input
                   type="color"
                   aria-label="Color Primario"
                   value={design.primaryColor}
                   onChange={(e) => handleUpdate({ primaryColor: e.target.value })}
-                  className="w-7 h-7 rounded-lg cursor-pointer border-0 bg-transparent p-0"
+                  className="w-8 h-8 rounded-lg cursor-pointer border-0 bg-transparent p-0"
                 />
                 <input
                   type="text"
@@ -521,16 +547,16 @@ export const DesignModule: React.FC<DesignModuleProps> = ({ project, onChange })
             </div>
 
             <div>
-              <span className="block text-xs font-medium text-zinc-600 dark:text-zinc-400 mb-1">
+              <span className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1.5">
                 Color Secundario / Acento
               </span>
-              <div className="flex items-center gap-2 bg-white dark:bg-zinc-950 p-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800">
+              <div className="flex items-center gap-2 bg-white dark:bg-zinc-950 p-2 rounded-xl border border-zinc-200 dark:border-zinc-800">
                 <input
                   type="color"
                   aria-label="Color Secundario"
                   value={design.secondaryColor}
                   onChange={(e) => handleUpdate({ secondaryColor: e.target.value })}
-                  className="w-7 h-7 rounded-lg cursor-pointer border-0 bg-transparent p-0"
+                  className="w-8 h-8 rounded-lg cursor-pointer border-0 bg-transparent p-0"
                 />
                 <input
                   type="text"
@@ -543,10 +569,10 @@ export const DesignModule: React.FC<DesignModuleProps> = ({ project, onChange })
             </div>
           </div>
 
-          <div className="flex items-center justify-between pt-2 border-t border-zinc-200 dark:border-zinc-800">
+          <div className="flex items-center justify-between pt-3 border-t border-zinc-200 dark:border-zinc-800">
             <div className="flex items-center gap-2">
-              <SunMoon className="w-4 h-4 text-zinc-500" />
-              <span className="text-xs font-medium text-zinc-700 dark:text-zinc-300">
+              <SunMoon className="w-4.5 h-4.5 text-zinc-500" />
+              <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
                 Modo Oscuro Predeterminado (Dark-First)
               </span>
             </div>
@@ -557,65 +583,69 @@ export const DesignModule: React.FC<DesignModuleProps> = ({ project, onChange })
                 onChange={(e) => handleUpdate({ darkModeDefault: e.target.checked })}
                 className="sr-only peer"
               />
-              <div className="w-9 h-5 bg-zinc-300 peer-focus:outline-none rounded-full peer dark:bg-zinc-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-purple-600"></div>
+              <div className="w-10 h-5.5 bg-zinc-300 peer-focus:outline-none rounded-full peer dark:bg-zinc-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2.5px] after:left-[2.5px] after:bg-white after:border-zinc-300 after:border after:rounded-full after:h-4.5 after:w-4.5 after:transition-all peer-checked:bg-purple-600"></div>
             </label>
           </div>
         </div>
       </div>
 
-      {/* 4. Animation Libraries with Repository Links & Install Commands */}
-      <div className="bg-zinc-50 dark:bg-zinc-900/60 p-5 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-4">
-        <label className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-          <Terminal className="w-4 h-4 text-emerald-500" />
-          5. Librerías de Animaciones JavaScript & Repositorios
-        </label>
-        <p className="text-xs text-zinc-500">
-          La aplicación generará automáticamente en <code className="text-cyan-500 font-mono">DESIGN.md</code> los enlaces oficiales al repositorio y los comandos de instalación.
-        </p>
+      {/* 5. Animation Libraries with Repository Links */}
+      <div className="bg-zinc-50 dark:bg-zinc-900/60 p-5 sm:p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-4">
+        <div className="flex items-center gap-2.5 pb-2 border-b border-zinc-200/80 dark:border-zinc-800">
+          <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+            <Terminal className="w-4.5 h-4.5" />
+          </div>
+          <div>
+            <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+              5. Librerías de Animaciones JavaScript & Repositorios
+            </h3>
+            <p className="text-[11px] text-zinc-500">Se generarán comandos e importaciones en DESIGN.md</p>
+          </div>
+        </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 pt-1">
           {ANIMATION_LIBRARIES.map((anim) => {
             const isSelected = design.animationLibraries.includes(anim.name);
             return (
               <div
                 key={anim.name}
-                className={`p-3.5 rounded-xl border transition-all flex flex-col justify-between ${
+                className={`p-4 rounded-xl border transition-all flex flex-col justify-between ${
                   isSelected
                     ? 'border-emerald-500 bg-emerald-500/10 dark:bg-emerald-950/20 ring-1 ring-emerald-500/30'
                     : 'border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 hover:border-zinc-300 dark:hover:border-zinc-700'
                 }`}
               >
                 <div>
-                  <div className="flex items-center justify-between mb-1.5">
-                    <span className="font-bold text-xs text-zinc-900 dark:text-zinc-100">{anim.name}</span>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="font-bold text-xs sm:text-sm text-zinc-900 dark:text-zinc-100">{anim.name}</span>
                     <button
                       type="button"
                       onClick={() => toggleAnimationLib(anim.name)}
-                      className={`px-2 py-0.5 rounded text-[10px] font-semibold flex items-center gap-1 transition-colors ${
+                      className={`px-2.5 py-1 rounded-lg text-[10px] font-bold flex items-center gap-1 transition-colors ${
                         isSelected
-                          ? 'bg-emerald-600 text-white'
+                          ? 'bg-emerald-600 text-white shadow-xs'
                           : 'bg-zinc-100 dark:bg-zinc-800 text-zinc-600 dark:text-zinc-400 hover:bg-zinc-200'
                       }`}
                     >
-                      {isSelected ? <Check className="w-2.5 h-2.5" /> : null}
+                      {isSelected ? <Check className="w-3 h-3" /> : null}
                       {isSelected ? 'Activo' : 'Añadir'}
                     </button>
                   </div>
-                  <p className="text-[11px] text-zinc-500 mb-2 leading-tight">{anim.description}</p>
+                  <p className="text-xs text-zinc-500 mb-3 leading-relaxed">{anim.description}</p>
                 </div>
 
-                <div className="space-y-1.5 pt-2 border-t border-zinc-100 dark:border-zinc-800 text-[10px]">
-                  <div className="flex items-center justify-between text-zinc-400 font-mono">
-                    <span className="truncate">{anim.installCommand}</span>
+                <div className="space-y-1.5 pt-2.5 border-t border-zinc-100 dark:border-zinc-800 text-[11px]">
+                  <div className="text-zinc-400 font-mono text-[10px] truncate">
+                    {anim.installCommand}
                   </div>
                   <a
                     href={anim.repoUrl}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 hover:underline"
+                    className="inline-flex items-center gap-1 text-emerald-600 dark:text-emerald-400 hover:underline font-medium"
                   >
                     <span>Repositorio oficial</span>
-                    <ExternalLink className="w-2.5 h-2.5" />
+                    <ExternalLink className="w-3 h-3" />
                   </a>
                 </div>
               </div>
@@ -624,33 +654,41 @@ export const DesignModule: React.FC<DesignModuleProps> = ({ project, onChange })
         </div>
       </div>
 
-      {/* 5. Icon Libraries */}
-      <div className="bg-zinc-50 dark:bg-zinc-900/60 p-5 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-3">
-        <label className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-          <Code2 className="w-4 h-4 text-blue-500" />
-          6. Librerías de Iconografía Sugeridas
-        </label>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      {/* 6. Icon Libraries */}
+      <div className="bg-zinc-50 dark:bg-zinc-900/60 p-5 sm:p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-4">
+        <div className="flex items-center gap-2.5 pb-2 border-b border-zinc-200/80 dark:border-zinc-800">
+          <div className="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+            <Code2 className="w-4.5 h-4.5" />
+          </div>
+          <div>
+            <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+              6. Librerías de Iconografía Sugeridas
+            </h3>
+            <p className="text-[11px] text-zinc-500">Conjunto visual de iconos consistente</p>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-1">
           {ICON_LIBRARIES.map((iconLib) => {
             const isSelected = design.iconLibraries.includes(iconLib.name);
             return (
               <div
                 key={iconLib.name}
-                className={`p-3 rounded-xl border flex items-center justify-between ${
+                className={`p-4 rounded-xl border flex items-center justify-between gap-3 ${
                   isSelected
-                    ? 'border-blue-500 bg-blue-500/10'
+                    ? 'border-blue-500 bg-blue-500/10 dark:bg-blue-950/20 ring-1 ring-blue-500/30'
                     : 'border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950'
                 }`}
               >
                 <div>
-                  <div className="font-bold text-xs text-zinc-900 dark:text-zinc-100">{iconLib.name}</div>
-                  <div className="text-[10px] text-zinc-500 font-mono">{iconLib.installCommand}</div>
+                  <div className="font-bold text-xs sm:text-sm text-zinc-900 dark:text-zinc-100">{iconLib.name}</div>
+                  <div className="text-[10px] text-zinc-500 font-mono mt-0.5">{iconLib.installCommand}</div>
                 </div>
                 <button
                   type="button"
                   onClick={() => toggleIconLib(iconLib.name)}
-                  className={`px-2.5 py-1 rounded-lg text-xs font-semibold ${
-                    isSelected ? 'bg-blue-600 text-white' : 'bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300'
+                  className={`px-3 py-1.5 rounded-xl text-xs font-bold transition-all ${
+                    isSelected ? 'bg-blue-600 text-white shadow-xs' : 'bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-300'
                   }`}
                 >
                   {isSelected ? 'Incluido' : 'Incluir'}

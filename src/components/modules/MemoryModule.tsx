@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import {
-  History,
   Clock,
   CheckCircle,
   AlertCircle,
@@ -9,6 +8,7 @@ import {
   Pencil,
   Check,
   X,
+  FileClock,
 } from 'lucide-react';
 import type { LibretoProject } from '../../types/libreto';
 
@@ -113,74 +113,94 @@ export const MemoryModule: React.FC<MemoryModuleProps> = ({ project, onChange })
   };
 
   return (
-    <div className="space-y-6 animate-fadeIn">
-      {/* Header */}
-      <div className="flex items-start justify-between border-b border-zinc-200 dark:border-zinc-800 pb-4">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 text-xs font-mono font-semibold rounded bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">
-              MEMORY.md
-            </span>
-            <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-              <History className="w-5 h-5 text-purple-500" />
-              Bitácora Viva de Estado & Memoria
-            </h2>
+    <div className="space-y-7 animate-fadeIn">
+      {/* 1. Module Header */}
+      <div className="space-y-4 border-b border-zinc-200 dark:border-zinc-800 pb-5">
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-2xl bg-purple-500/10 border border-purple-500/25 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0 shadow-xs">
+              <FileClock className="w-5.5 h-5.5" />
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="px-2 py-0.5 text-[10px] font-mono font-bold rounded-md bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/25">
+                  MEMORY.md
+                </span>
+                <span className="text-[11px] text-zinc-400 dark:text-zinc-500 font-medium">
+                  Paso 8 de 8
+                </span>
+              </div>
+              <h2 className="text-lg sm:text-xl font-bold text-zinc-900 dark:text-zinc-100 leading-tight">
+                Bitácora Viva de Estado & Memoria de Sesiones
+              </h2>
+            </div>
           </div>
-          <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 mt-1">
+          <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed">
             Mantiene la memoria persistente del proyecto entre sesiones de IA: sprint activo, hitos completados, tareas en progreso y bloqueos detectados.
           </p>
         </div>
       </div>
 
-      {/* Current State & Active Sprint */}
-      <div className="bg-zinc-50 dark:bg-zinc-900/60 p-5 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-4">
-        <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-          <Clock className="w-4 h-4 text-purple-500" />
-          Estado Actual y Sprint Activo
-        </h3>
+      {/* 2. Current State & Active Sprint */}
+      <div className="bg-zinc-50 dark:bg-zinc-900/60 p-5 sm:p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-4">
+        <div className="flex items-center gap-2.5 pb-2 border-b border-zinc-200/80 dark:border-zinc-800">
+          <div className="w-8 h-8 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
+            <Clock className="w-4.5 h-4.5" />
+          </div>
+          <div>
+            <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+              Estado Actual y Sprint Activo
+            </h3>
+            <p className="text-[11px] text-zinc-500">Punto de anclaje para que la IA retome el contexto sin desviaciones</p>
+          </div>
+        </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
           <div className="sm:col-span-2">
-            <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+            <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1.5">
               Sprint o Hito Activo
             </label>
             <input
               type="text"
               value={memory.activeSprintOrMilestone}
               onChange={(e) => handleUpdateMemory({ activeSprintOrMilestone: e.target.value })}
-              className="w-full text-xs sm:text-sm bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-xl px-3.5 py-2 text-zinc-900 dark:text-zinc-100 outline-none focus:ring-2 focus:ring-purple-500"
+              className="w-full text-xs sm:text-sm bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-xl px-3.5 py-2.5 text-zinc-900 dark:text-zinc-100 outline-none focus:ring-2 focus:ring-purple-500/30 transition-all placeholder:text-zinc-400"
               placeholder="Ej. Fase 1: Setup inicial, repositorio y modelos base"
             />
           </div>
 
           <div className="sm:col-span-2">
-            <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1">
+            <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1.5">
               Descripción del Estado del Proyecto
             </label>
             <textarea
               rows={3}
               value={memory.currentState}
               onChange={(e) => handleUpdateMemory({ currentState: e.target.value })}
-              className="w-full text-xs sm:text-sm bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-xl px-3.5 py-2 text-zinc-900 dark:text-zinc-100 outline-none focus:ring-2 focus:ring-purple-500"
+              className="w-full text-xs sm:text-sm bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-xl px-3.5 py-2.5 text-zinc-900 dark:text-zinc-100 outline-none focus:ring-2 focus:ring-purple-500/30 transition-all placeholder:text-zinc-400 leading-relaxed"
               placeholder="Describe en qué estado se encuentra la base de código para que la IA retome el contexto inmediatamente..."
             />
           </div>
         </div>
       </div>
 
-      {/* Completed & In Progress Milestones Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      {/* 3. Completed & In Progress Milestones Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Completed Milestones */}
-        <div className="bg-zinc-50 dark:bg-zinc-900/60 p-5 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-3">
-          <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 flex items-center justify-between">
-            <span className="flex items-center gap-2">
-              <CheckCircle className="w-4 h-4 text-emerald-500" />
-              Hitos Completados
+        <div className="bg-zinc-50 dark:bg-zinc-900/60 p-5 sm:p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-4">
+          <div className="flex items-center justify-between pb-2 border-b border-zinc-200/80 dark:border-zinc-800">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                <CheckCircle className="w-4 h-4" />
+              </div>
+              <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+                Hitos Completados
+              </h3>
+            </div>
+            <span className="text-[11px] font-mono font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2.5 py-0.5 rounded-lg border border-emerald-500/20">
+              {memory.completedMilestones.length} Completados
             </span>
-            <span className="text-xs font-mono font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2 py-0.5 rounded-full">
-              {memory.completedMilestones.length}
-            </span>
-          </h3>
+          </div>
 
           <div className="flex gap-2">
             <input
@@ -188,23 +208,23 @@ export const MemoryModule: React.FC<MemoryModuleProps> = ({ project, onChange })
               value={newCompletedInput}
               onChange={(e) => setNewCompletedInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleAddCompletedMilestone()}
-              className="flex-1 text-xs bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 text-zinc-900 dark:text-zinc-100 outline-none focus:ring-2 focus:ring-emerald-500"
+              className="flex-1 text-xs sm:text-sm bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-xl px-3.5 py-2.5 text-zinc-900 dark:text-zinc-100 outline-none focus:ring-2 focus:ring-emerald-500/30 transition-all placeholder:text-zinc-400"
               placeholder="Añadir hito completado..."
             />
             <button
               type="button"
               onClick={handleAddCompletedMilestone}
-              className="px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-semibold shrink-0 transition-colors"
+              className="px-3.5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold shrink-0 transition-all shadow-xs active:scale-98"
             >
-              <Plus className="w-3.5 h-3.5" />
+              <Plus className="w-4 h-4" />
             </button>
           </div>
 
-          <div className="space-y-2 max-h-56 overflow-y-auto">
+          <div className="space-y-2.5 max-h-64 overflow-y-auto pr-1">
             {memory.completedMilestones.map((item, idx) => (
               <div
                 key={idx}
-                className="group p-2.5 rounded-xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-xs"
+                className="group p-3 rounded-xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-xs transition-colors hover:border-zinc-300 dark:hover:border-zinc-700"
               >
                 {editingCompleted && editingCompleted.idx === idx ? (
                   <div className="flex items-center gap-2">
@@ -217,44 +237,44 @@ export const MemoryModule: React.FC<MemoryModuleProps> = ({ project, onChange })
                         if (e.key === 'Enter') handleSaveEditCompleted();
                         if (e.key === 'Escape') setEditingCompleted(null);
                       }}
-                      className="flex-1 text-xs bg-white dark:bg-zinc-900 border border-emerald-500 rounded-lg px-2 py-1 outline-none text-zinc-900 dark:text-zinc-100"
+                      className="flex-1 text-xs bg-white dark:bg-zinc-900 border border-emerald-500 rounded-lg px-2.5 py-1.5 outline-none text-zinc-900 dark:text-zinc-100"
                     />
                     <button
                       type="button"
                       onClick={handleSaveEditCompleted}
-                      className="p-1 text-emerald-600 hover:bg-emerald-500/10 rounded-md"
+                      className="p-1.5 text-emerald-600 hover:bg-emerald-500/10 rounded-md"
                     >
-                      <Check className="w-3.5 h-3.5" />
+                      <Check className="w-4 h-4" />
                     </button>
                     <button
                       type="button"
                       onClick={() => setEditingCompleted(null)}
-                      className="p-1 text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-md"
+                      className="p-1.5 text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-md"
                     >
-                      <X className="w-3.5 h-3.5" />
+                      <X className="w-4 h-4" />
                     </button>
                   </div>
                 ) : (
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-zinc-700 dark:text-zinc-300 truncate font-medium">
+                  <div className="flex items-start justify-between gap-3">
+                    <span className="text-zinc-700 dark:text-zinc-300 font-medium leading-relaxed break-words flex-1">
                       ✅ {item}
                     </span>
-                    <div className="flex items-center gap-1 opacity-60 group-hover:opacity-100 shrink-0">
+                    <div className="flex items-center gap-1 opacity-60 group-hover:opacity-100 shrink-0 ml-1">
                       <button
                         type="button"
                         onClick={() => setEditingCompleted({ idx, text: item })}
-                        className="p-1 text-zinc-400 hover:text-emerald-600 rounded-md"
+                        className="w-6 h-6 rounded-md flex items-center justify-center text-zinc-400 hover:text-emerald-600 transition-colors"
                         title="Editar hito"
                       >
-                        <Pencil className="w-3 h-3" />
+                        <Pencil className="w-3.5 h-3.5" />
                       </button>
                       <button
                         type="button"
                         onClick={() => handleRemoveCompletedMilestone(idx)}
-                        className="p-1 text-zinc-400 hover:text-red-500 rounded-md"
+                        className="w-6 h-6 rounded-md flex items-center justify-center text-zinc-400 hover:text-red-500 transition-colors"
                         title="Eliminar"
                       >
-                        <Trash2 className="w-3 h-3" />
+                        <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </div>
                   </div>
@@ -270,16 +290,20 @@ export const MemoryModule: React.FC<MemoryModuleProps> = ({ project, onChange })
         </div>
 
         {/* In Progress Milestones */}
-        <div className="bg-zinc-50 dark:bg-zinc-900/60 p-5 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-3">
-          <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 flex items-center justify-between">
-            <span className="flex items-center gap-2">
-              <Clock className="w-4 h-4 text-amber-500" />
-              Hitos en Progreso
+        <div className="bg-zinc-50 dark:bg-zinc-900/60 p-5 sm:p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-4">
+          <div className="flex items-center justify-between pb-2 border-b border-zinc-200/80 dark:border-zinc-800">
+            <div className="flex items-center gap-2">
+              <div className="w-7 h-7 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+                <Clock className="w-4 h-4" />
+              </div>
+              <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+                Hitos en Progreso
+              </h3>
+            </div>
+            <span className="text-[11px] font-mono font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 px-2.5 py-0.5 rounded-lg border border-amber-500/20">
+              {memory.inProgressMilestones.length} En Curso
             </span>
-            <span className="text-xs font-mono font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 px-2 py-0.5 rounded-full">
-              {memory.inProgressMilestones.length}
-            </span>
-          </h3>
+          </div>
 
           <div className="flex gap-2">
             <input
@@ -287,23 +311,23 @@ export const MemoryModule: React.FC<MemoryModuleProps> = ({ project, onChange })
               value={newInProgressInput}
               onChange={(e) => setNewInProgressInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleAddInProgressMilestone()}
-              className="flex-1 text-xs bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 text-zinc-900 dark:text-zinc-100 outline-none focus:ring-2 focus:ring-amber-500"
+              className="flex-1 text-xs sm:text-sm bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-xl px-3.5 py-2.5 text-zinc-900 dark:text-zinc-100 outline-none focus:ring-2 focus:ring-amber-500/30 transition-all placeholder:text-zinc-400"
               placeholder="Añadir hito activo en curso..."
             />
             <button
               type="button"
               onClick={handleAddInProgressMilestone}
-              className="px-3 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-semibold shrink-0 transition-colors"
+              className="px-3.5 py-2.5 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-bold shrink-0 transition-all shadow-xs active:scale-98"
             >
-              <Plus className="w-3.5 h-3.5" />
+              <Plus className="w-4 h-4" />
             </button>
           </div>
 
-          <div className="space-y-2 max-h-56 overflow-y-auto">
+          <div className="space-y-2.5 max-h-64 overflow-y-auto pr-1">
             {memory.inProgressMilestones.map((item, idx) => (
               <div
                 key={idx}
-                className="group p-2.5 rounded-xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-xs"
+                className="group p-3 rounded-xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-xs transition-colors hover:border-zinc-300 dark:hover:border-zinc-700"
               >
                 {editingInProgress && editingInProgress.idx === idx ? (
                   <div className="flex items-center gap-2">
@@ -316,44 +340,44 @@ export const MemoryModule: React.FC<MemoryModuleProps> = ({ project, onChange })
                         if (e.key === 'Enter') handleSaveEditInProgress();
                         if (e.key === 'Escape') setEditingInProgress(null);
                       }}
-                      className="flex-1 text-xs bg-white dark:bg-zinc-900 border border-amber-500 rounded-lg px-2 py-1 outline-none text-zinc-900 dark:text-zinc-100"
+                      className="flex-1 text-xs bg-white dark:bg-zinc-900 border border-amber-500 rounded-lg px-2.5 py-1.5 outline-none text-zinc-900 dark:text-zinc-100"
                     />
                     <button
                       type="button"
                       onClick={handleSaveEditInProgress}
-                      className="p-1 text-amber-600 hover:bg-amber-500/10 rounded-md"
+                      className="p-1.5 text-amber-600 hover:bg-amber-500/10 rounded-md"
                     >
-                      <Check className="w-3.5 h-3.5" />
+                      <Check className="w-4 h-4" />
                     </button>
                     <button
                       type="button"
                       onClick={() => setEditingInProgress(null)}
-                      className="p-1 text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-md"
+                      className="p-1.5 text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-md"
                     >
-                      <X className="w-3.5 h-3.5" />
+                      <X className="w-4 h-4" />
                     </button>
                   </div>
                 ) : (
-                  <div className="flex items-center justify-between gap-2">
-                    <span className="text-zinc-700 dark:text-zinc-300 truncate font-medium">
+                  <div className="flex items-start justify-between gap-3">
+                    <span className="text-zinc-700 dark:text-zinc-300 font-medium leading-relaxed break-words flex-1">
                       ⏳ {item}
                     </span>
-                    <div className="flex items-center gap-1 opacity-60 group-hover:opacity-100 shrink-0">
+                    <div className="flex items-center gap-1 opacity-60 group-hover:opacity-100 shrink-0 ml-1">
                       <button
                         type="button"
                         onClick={() => setEditingInProgress({ idx, text: item })}
-                        className="p-1 text-zinc-400 hover:text-amber-600 rounded-md"
+                        className="w-6 h-6 rounded-md flex items-center justify-center text-zinc-400 hover:text-amber-600 transition-colors"
                         title="Editar hito"
                       >
-                        <Pencil className="w-3 h-3" />
+                        <Pencil className="w-3.5 h-3.5" />
                       </button>
                       <button
                         type="button"
                         onClick={() => handleRemoveInProgressMilestone(idx)}
-                        className="p-1 text-zinc-400 hover:text-red-500 rounded-md"
+                        className="w-6 h-6 rounded-md flex items-center justify-center text-zinc-400 hover:text-red-500 transition-colors"
                         title="Eliminar"
                       >
-                        <Trash2 className="w-3 h-3" />
+                        <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     </div>
                   </div>
@@ -369,41 +393,48 @@ export const MemoryModule: React.FC<MemoryModuleProps> = ({ project, onChange })
         </div>
       </div>
 
-      {/* Blockers & Technical Debt */}
-      <div className="bg-zinc-50 dark:bg-zinc-900/60 p-5 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-3">
-        <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100 flex items-center justify-between">
-          <span className="flex items-center gap-2">
-            <AlertCircle className="w-4 h-4 text-red-500" />
-            Bloqueos Activos & Deuda Técnica
+      {/* 4. Blockers & Technical Debt */}
+      <div className="bg-zinc-50 dark:bg-zinc-900/60 p-5 sm:p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-4">
+        <div className="flex items-center justify-between pb-2 border-b border-zinc-200/80 dark:border-zinc-800">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-red-500/10 text-red-600 dark:text-red-400 flex items-center justify-center shrink-0">
+              <AlertCircle className="w-4.5 h-4.5" />
+            </div>
+            <div>
+              <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+                Bloqueos Activos & Deuda Técnica
+              </h3>
+              <p className="text-[11px] text-zinc-500">Riesgos o dependencias bloqueantes reportadas</p>
+            </div>
+          </div>
+          <span className="px-2.5 py-0.5 text-xs font-mono font-bold bg-red-500/10 text-red-600 dark:text-red-400 rounded-lg border border-red-500/20">
+            {memory.blockers.length} Bloqueos
           </span>
-          <span className="text-xs font-mono font-bold bg-red-500/10 text-red-600 dark:text-red-400 px-2 py-0.5 rounded-full">
-            {memory.blockers.length}
-          </span>
-        </h3>
+        </div>
 
-        <div className="flex gap-2">
+        <div className="flex flex-col sm:flex-row gap-2 pt-1">
           <input
             type="text"
             value={newBlockerInput}
             onChange={(e) => setNewBlockerInput(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleAddBlocker()}
-            className="flex-1 text-xs bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 text-zinc-900 dark:text-zinc-100 outline-none focus:ring-2 focus:ring-red-500"
+            className="flex-1 text-xs sm:text-sm bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-xl px-3.5 py-2.5 text-zinc-900 dark:text-zinc-100 outline-none focus:ring-2 focus:ring-red-500/30 transition-all placeholder:text-zinc-400"
             placeholder="Añadir bloqueo técnico detectado..."
           />
           <button
             type="button"
             onClick={handleAddBlocker}
-            className="px-3 py-2 bg-red-600 hover:bg-red-500 text-white rounded-xl text-xs font-semibold shrink-0 transition-colors"
+            className="px-4 py-2.5 bg-red-600 hover:bg-red-500 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-xs active:scale-98 shrink-0"
           >
-            <Plus className="w-3.5 h-3.5" />
+            <Plus className="w-4 h-4" /> Añadir Bloqueo
           </button>
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-2.5 max-h-72 overflow-y-auto pr-1">
           {memory.blockers.map((blocker, idx) => (
             <div
               key={idx}
-              className="group p-2.5 rounded-xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-xs"
+              className="group p-3 rounded-xl bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-xs transition-colors hover:border-zinc-300 dark:hover:border-zinc-700"
             >
               {editingBlocker && editingBlocker.idx === idx ? (
                 <div className="flex items-center gap-2">
@@ -416,44 +447,44 @@ export const MemoryModule: React.FC<MemoryModuleProps> = ({ project, onChange })
                       if (e.key === 'Enter') handleSaveEditBlocker();
                       if (e.key === 'Escape') setEditingBlocker(null);
                     }}
-                    className="flex-1 text-xs bg-white dark:bg-zinc-900 border border-red-500 rounded-lg px-2 py-1 outline-none text-zinc-900 dark:text-zinc-100"
+                    className="flex-1 text-xs bg-white dark:bg-zinc-900 border border-red-500 rounded-lg px-2.5 py-1.5 outline-none text-zinc-900 dark:text-zinc-100"
                   />
                   <button
                     type="button"
                     onClick={handleSaveEditBlocker}
-                    className="p-1 text-red-600 hover:bg-red-500/10 rounded-md"
+                    className="p-1.5 text-red-600 hover:bg-red-500/10 rounded-md"
                   >
-                    <Check className="w-3.5 h-3.5" />
+                    <Check className="w-4 h-4" />
                   </button>
                   <button
                     type="button"
                     onClick={() => setEditingBlocker(null)}
-                    className="p-1 text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-md"
+                    className="p-1.5 text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-md"
                   >
-                    <X className="w-3.5 h-3.5" />
+                    <X className="w-4 h-4" />
                   </button>
                 </div>
               ) : (
-                <div className="flex items-center justify-between gap-2">
-                  <span className="text-red-600 dark:text-red-400 font-medium">
+                <div className="flex items-start justify-between gap-3">
+                  <span className="text-red-600 dark:text-red-400 font-medium leading-relaxed break-words flex-1">
                     ⚠️ {blocker}
                   </span>
-                  <div className="flex items-center gap-1 opacity-60 group-hover:opacity-100 shrink-0">
+                  <div className="flex items-center gap-1 opacity-60 group-hover:opacity-100 shrink-0 ml-1">
                     <button
                       type="button"
                       onClick={() => setEditingBlocker({ idx, text: blocker })}
-                      className="p-1 text-zinc-400 hover:text-red-600 rounded-md"
+                      className="w-6 h-6 rounded-md flex items-center justify-center text-zinc-400 hover:text-red-600 transition-colors"
                       title="Editar bloqueo"
                     >
-                      <Pencil className="w-3 h-3" />
+                      <Pencil className="w-3.5 h-3.5" />
                     </button>
                     <button
                       type="button"
                       onClick={() => handleRemoveBlocker(idx)}
-                      className="p-1 text-zinc-400 hover:text-red-500 rounded-md"
+                      className="w-6 h-6 rounded-md flex items-center justify-center text-zinc-400 hover:text-red-500 transition-colors"
                       title="Eliminar"
                     >
-                      <Trash2 className="w-3 h-3" />
+                      <Trash2 className="w-3.5 h-3.5" />
                     </button>
                   </div>
                 </div>
@@ -461,8 +492,8 @@ export const MemoryModule: React.FC<MemoryModuleProps> = ({ project, onChange })
             </div>
           ))}
           {memory.blockers.length === 0 && (
-            <div className="text-zinc-400 text-xs italic py-1">
-              No hay bloqueos activos reportados.
+            <div className="text-zinc-400 text-xs italic py-2">
+              No hay bloqueos activos reportados al momento.
             </div>
           )}
         </div>

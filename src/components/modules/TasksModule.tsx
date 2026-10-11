@@ -273,32 +273,41 @@ export const TasksModule: React.FC<TasksModuleProps> = ({ project, onChange }) =
   return (
     <div className="space-y-6 animate-fadeIn">
       {/* 1. Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 border-b border-zinc-200 dark:border-zinc-800 pb-5">
-        <div>
-          <div className="flex items-center gap-2">
-            <span className="px-2.5 py-0.5 text-xs font-mono font-semibold rounded bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20">
-              TASKS.md
-            </span>
-            <h2 className="text-xl font-bold text-zinc-900 dark:text-zinc-100 flex items-center gap-2">
-              <ListTodo className="w-5 h-5 text-blue-500" />
-              Planificación y Hoja de Ruta de Tareas
-            </h2>
+      <div className="space-y-4 border-b border-zinc-200 dark:border-zinc-800 pb-5">
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-2xl bg-blue-500/10 border border-blue-500/25 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0 shadow-xs">
+              <ListTodo className="w-5.5 h-5.5" />
+            </div>
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="px-2 py-0.5 text-[10px] font-mono font-bold rounded-md bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/25">
+                  TASKS.md
+                </span>
+                <span className="text-[11px] text-zinc-400 dark:text-zinc-500 font-medium">
+                  Paso 7 de 8
+                </span>
+              </div>
+              <h2 className="text-lg sm:text-xl font-bold text-zinc-900 dark:text-zinc-100 leading-tight">
+                Planificación y Hoja de Ruta de Tareas
+              </h2>
+            </div>
           </div>
-          <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 mt-1">
-            Visualiza y edita las tareas secuenciales que la Inteligencia Artificial debe ejecutar fase por fase durante el desarrollo.
-          </p>
-        </div>
-
-        {/* Global Stats pill */}
-        <div className="flex items-center gap-2 bg-zinc-100 dark:bg-zinc-900 px-3.5 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 text-xs shrink-0 self-start sm:self-auto">
-          <div className="flex items-center gap-1.5 font-semibold text-zinc-700 dark:text-zinc-300">
-            <Layers className="w-3.5 h-3.5 text-blue-500" />
-            <span>{tasks.phases.length} Fases</span>
-          </div>
-          <span className="text-zinc-400">•</span>
-          <div className="flex items-center gap-1.5 font-semibold text-blue-600 dark:text-blue-400">
-            <CheckCircle2 className="w-3.5 h-3.5" />
-            <span>{totalTasksCount} Tareas Planificadas</span>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5">
+            <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed">
+              Visualiza y edita las tareas secuenciales que la Inteligencia Artificial debe ejecutar fase por fase durante el desarrollo.
+            </p>
+            <div className="flex items-center gap-2 bg-zinc-100 dark:bg-zinc-900 px-3.5 py-1.5 rounded-xl border border-zinc-200 dark:border-zinc-800 text-xs shrink-0 self-start sm:self-auto">
+              <div className="flex items-center gap-1.5 font-semibold text-zinc-700 dark:text-zinc-300">
+                <Layers className="w-3.5 h-3.5 text-blue-500" />
+                <span>{tasks.phases.length} Fases</span>
+              </div>
+              <span className="text-zinc-400">•</span>
+              <div className="flex items-center gap-1.5 font-semibold text-blue-600 dark:text-blue-400">
+                <CheckCircle2 className="w-3.5 h-3.5" />
+                <span>{totalTasksCount} Tareas</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
