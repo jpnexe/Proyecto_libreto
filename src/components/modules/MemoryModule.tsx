@@ -185,36 +185,37 @@ export const MemoryModule: React.FC<MemoryModuleProps> = ({ project, onChange })
       </div>
 
       {/* 3. Completed & In Progress Milestones Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
         {/* Completed Milestones */}
-        <div className="bg-zinc-50 dark:bg-zinc-900/60 p-5 sm:p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-4">
-          <div className="flex items-center justify-between pb-2 border-b border-zinc-200/80 dark:border-zinc-800">
-            <div className="flex items-center gap-2">
+        <div className="min-w-0 bg-zinc-50 dark:bg-zinc-900/60 p-5 sm:p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-4">
+          <div className="flex items-center justify-between pb-2 border-b border-zinc-200/80 dark:border-zinc-800 gap-2">
+            <div className="flex items-center gap-2 min-w-0">
               <div className="w-7 h-7 rounded-lg bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
                 <CheckCircle className="w-4 h-4" />
               </div>
-              <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+              <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 truncate">
                 Hitos Completados
               </h3>
             </div>
-            <span className="text-[11px] font-mono font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2.5 py-0.5 rounded-lg border border-emerald-500/20">
+            <span className="text-[11px] font-mono font-bold bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2.5 py-0.5 rounded-lg border border-emerald-500/20 shrink-0">
               {memory.completedMilestones.length} Completados
             </span>
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex gap-2 items-center min-w-0">
             <input
               type="text"
               value={newCompletedInput}
               onChange={(e) => setNewCompletedInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleAddCompletedMilestone()}
-              className="flex-1 text-xs sm:text-sm bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-xl px-3.5 py-2.5 text-zinc-900 dark:text-zinc-100 outline-none focus:ring-2 focus:ring-emerald-500/30 transition-all placeholder:text-zinc-400"
+              className="flex-1 min-w-0 text-xs sm:text-sm bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-xl px-3.5 py-2.5 text-zinc-900 dark:text-zinc-100 outline-none focus:ring-2 focus:ring-emerald-500/30 transition-all placeholder:text-zinc-400"
               placeholder="Añadir hito completado..."
             />
             <button
               type="button"
               onClick={handleAddCompletedMilestone}
-              className="px-3.5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold shrink-0 transition-all shadow-xs active:scale-98"
+              className="w-10 h-10 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl flex items-center justify-center shrink-0 transition-all shadow-xs active:scale-98 cursor-pointer"
+              title="Añadir hito completado"
             >
               <Plus className="w-4 h-4" />
             </button>
@@ -242,14 +243,14 @@ export const MemoryModule: React.FC<MemoryModuleProps> = ({ project, onChange })
                     <button
                       type="button"
                       onClick={handleSaveEditCompleted}
-                      className="p-1.5 text-emerald-600 hover:bg-emerald-500/10 rounded-md"
+                      className="p-1.5 text-emerald-600 hover:bg-emerald-500/10 rounded-md cursor-pointer"
                     >
                       <Check className="w-4 h-4" />
                     </button>
                     <button
                       type="button"
                       onClick={() => setEditingCompleted(null)}
-                      className="p-1.5 text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-md"
+                      className="p-1.5 text-zinc-400 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-md cursor-pointer"
                     >
                       <X className="w-4 h-4" />
                     </button>
@@ -263,7 +264,7 @@ export const MemoryModule: React.FC<MemoryModuleProps> = ({ project, onChange })
                       <button
                         type="button"
                         onClick={() => setEditingCompleted({ idx, text: item })}
-                        className="w-6 h-6 rounded-md flex items-center justify-center text-zinc-400 hover:text-emerald-600 transition-colors"
+                        className="w-6 h-6 rounded-md flex items-center justify-center text-zinc-400 hover:text-emerald-600 transition-colors cursor-pointer"
                         title="Editar hito"
                       >
                         <Pencil className="w-3.5 h-3.5" />
@@ -271,7 +272,7 @@ export const MemoryModule: React.FC<MemoryModuleProps> = ({ project, onChange })
                       <button
                         type="button"
                         onClick={() => handleRemoveCompletedMilestone(idx)}
-                        className="w-6 h-6 rounded-md flex items-center justify-center text-zinc-400 hover:text-red-500 transition-colors"
+                        className="w-6 h-6 rounded-md flex items-center justify-center text-zinc-400 hover:text-red-500 transition-colors cursor-pointer"
                         title="Eliminar"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
@@ -290,34 +291,35 @@ export const MemoryModule: React.FC<MemoryModuleProps> = ({ project, onChange })
         </div>
 
         {/* In Progress Milestones */}
-        <div className="bg-zinc-50 dark:bg-zinc-900/60 p-5 sm:p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-4">
-          <div className="flex items-center justify-between pb-2 border-b border-zinc-200/80 dark:border-zinc-800">
-            <div className="flex items-center gap-2">
+        <div className="min-w-0 bg-zinc-50 dark:bg-zinc-900/60 p-5 sm:p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-4">
+          <div className="flex items-center justify-between pb-2 border-b border-zinc-200/80 dark:border-zinc-800 gap-2">
+            <div className="flex items-center gap-2 min-w-0">
               <div className="w-7 h-7 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
                 <Clock className="w-4 h-4" />
               </div>
-              <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+              <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 truncate">
                 Hitos en Progreso
               </h3>
             </div>
-            <span className="text-[11px] font-mono font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 px-2.5 py-0.5 rounded-lg border border-amber-500/20">
+            <span className="text-[11px] font-mono font-bold bg-amber-500/10 text-amber-600 dark:text-amber-400 px-2.5 py-0.5 rounded-lg border border-amber-500/20 shrink-0">
               {memory.inProgressMilestones.length} En Curso
             </span>
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex gap-2 items-center min-w-0">
             <input
               type="text"
               value={newInProgressInput}
               onChange={(e) => setNewInProgressInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleAddInProgressMilestone()}
-              className="flex-1 text-xs sm:text-sm bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-xl px-3.5 py-2.5 text-zinc-900 dark:text-zinc-100 outline-none focus:ring-2 focus:ring-amber-500/30 transition-all placeholder:text-zinc-400"
+              className="flex-1 min-w-0 text-xs sm:text-sm bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-xl px-3.5 py-2.5 text-zinc-900 dark:text-zinc-100 outline-none focus:ring-2 focus:ring-amber-500/30 transition-all placeholder:text-zinc-400"
               placeholder="Añadir hito activo en curso..."
             />
             <button
               type="button"
               onClick={handleAddInProgressMilestone}
-              className="px-3.5 py-2.5 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-bold shrink-0 transition-all shadow-xs active:scale-98"
+              className="w-10 h-10 bg-amber-600 hover:bg-amber-500 text-white rounded-xl flex items-center justify-center shrink-0 transition-all shadow-xs active:scale-98 cursor-pointer"
+              title="Añadir hito en progreso"
             >
               <Plus className="w-4 h-4" />
             </button>

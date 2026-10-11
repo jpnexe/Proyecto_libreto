@@ -347,36 +347,37 @@ export const PrdModule: React.FC<PrdModuleProps> = ({ project, onChange }) => {
       </div>
 
       {/* 5. Non-Functional Requirements & User Stories in 2 columns */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
         {/* NFR */}
-        <div className="bg-zinc-50 dark:bg-zinc-900/60 p-5 sm:p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-4">
-          <div className="flex items-center justify-between pb-2 border-b border-zinc-200/80 dark:border-zinc-800">
-            <div className="flex items-center gap-2">
+        <div className="min-w-0 bg-zinc-50 dark:bg-zinc-900/60 p-5 sm:p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-4">
+          <div className="flex items-center justify-between pb-2 border-b border-zinc-200/80 dark:border-zinc-800 gap-2">
+            <div className="flex items-center gap-2 min-w-0">
               <div className="w-7 h-7 rounded-lg bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
                 <Sparkles className="w-4 h-4" />
               </div>
-              <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+              <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 truncate">
                 Requerimientos No Funcionales
               </h3>
             </div>
-            <span className="text-[11px] font-mono text-zinc-400">
+            <span className="text-[11px] font-mono text-zinc-400 shrink-0">
               {project.prd.nonFunctionalRequirements.length} NFRs
             </span>
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex gap-2 items-center min-w-0">
             <input
               type="text"
               value={newNonFuncReq}
               onChange={(e) => setNewNonFuncReq(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleAddNonFuncReq()}
-              className="flex-1 text-xs bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 text-zinc-900 dark:text-zinc-100 outline-none focus:ring-2 focus:ring-amber-500/30 transition-all placeholder:text-zinc-400"
+              className="flex-1 min-w-0 text-xs bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-xl px-3.5 py-2.5 text-zinc-900 dark:text-zinc-100 outline-none focus:ring-2 focus:ring-amber-500/30 transition-all placeholder:text-zinc-400"
               placeholder="Ej. Tiempo de respuesta API < 200ms"
             />
             <button
               type="button"
               onClick={handleAddNonFuncReq}
-              className="px-3 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-xl text-xs font-semibold shrink-0 transition-colors"
+              className="w-9 h-9 sm:w-10 sm:h-10 bg-amber-600 hover:bg-amber-500 text-white rounded-xl flex items-center justify-center shrink-0 transition-colors shadow-xs active:scale-98 cursor-pointer"
+              title="Añadir requerimiento no funcional"
             >
               <Plus className="w-4 h-4" />
             </button>
@@ -404,34 +405,35 @@ export const PrdModule: React.FC<PrdModuleProps> = ({ project, onChange }) => {
         </div>
 
         {/* User Stories */}
-        <div className="bg-zinc-50 dark:bg-zinc-900/60 p-5 sm:p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-4">
-          <div className="flex items-center justify-between pb-2 border-b border-zinc-200/80 dark:border-zinc-800">
-            <div className="flex items-center gap-2">
+        <div className="min-w-0 bg-zinc-50 dark:bg-zinc-900/60 p-5 sm:p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-4">
+          <div className="flex items-center justify-between pb-2 border-b border-zinc-200/80 dark:border-zinc-800 gap-2">
+            <div className="flex items-center gap-2 min-w-0">
               <div className="w-7 h-7 rounded-lg bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
                 <Users className="w-4 h-4" />
               </div>
-              <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+              <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100 truncate">
                 Historias de Usuario
               </h3>
             </div>
-            <span className="text-[11px] font-mono text-zinc-400">
+            <span className="text-[11px] font-mono text-zinc-400 shrink-0">
               {project.prd.userStories.length} Historias
             </span>
           </div>
 
-          <div className="flex gap-2">
+          <div className="flex gap-2 items-center min-w-0">
             <input
               type="text"
               value={newUserStory}
               onChange={(e) => setNewUserStory(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleAddUserStory()}
-              className="flex-1 text-xs bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-xl px-3 py-2 text-zinc-900 dark:text-zinc-100 outline-none focus:ring-2 focus:ring-blue-500/30 transition-all placeholder:text-zinc-400"
+              className="flex-1 min-w-0 text-xs bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-xl px-3.5 py-2.5 text-zinc-900 dark:text-zinc-100 outline-none focus:ring-2 focus:ring-blue-500/30 transition-all placeholder:text-zinc-400"
               placeholder="Como [rol], quiero [acción] para [beneficio]"
             />
             <button
               type="button"
               onClick={handleAddUserStory}
-              className="px-3 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-semibold shrink-0 transition-colors"
+              className="w-9 h-9 sm:w-10 sm:h-10 bg-blue-600 hover:bg-blue-500 text-white rounded-xl flex items-center justify-center shrink-0 transition-colors shadow-xs active:scale-98 cursor-pointer"
+              title="Añadir historia de usuario"
             >
               <Plus className="w-4 h-4" />
             </button>
