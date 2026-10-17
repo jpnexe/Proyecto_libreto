@@ -43,13 +43,17 @@ export const PrdModule: React.FC<PrdModuleProps> = ({ project, onChange }) => {
     return detectProjectDomain(text);
   }, [project.name, project.description, project.targetAudience, project.prd.functionalRequirements]);
 
-  const handleSyncFromPrd = () => {
+  const handleSyncFromPrd = (forceClean: boolean = true) => {
     if (!detectedDomainResult?.domain) return;
     const domainId = detectedDomainResult.domain.id;
-    const updated = applyDomainBlueprint(project, domainId, { preserveCustomText: true });
+    const updated = applyDomainBlueprint(project, domainId, {
+      preserveCustomText: !forceClean,
+      forceReplaceFactory: forceClean,
+      userCustomIdea: project.description || undefined,
+    });
     const fullyCoherent = autoFixAllCoherence(updated);
     onChange(fullyCoherent);
-    setSyncFeedback(`✨ ¡Sincronizado con éxito! La Arquitectura, Diseño, Decisiones y Reglas se adaptaron coherentemente a: "${detectedDomainResult.domain.name}".`);
+    setSyncFeedback(`✨ ¡Sincronizado con éxito! El proyecto completo se actualizó coherentemente como: "${detectedDomainResult.domain.name}".`);
     setTimeout(() => setSyncFeedback(null), 5000);
   };
 
@@ -245,18 +249,21 @@ export const PrdModule: React.FC<PrdModuleProps> = ({ project, onChange }) => {
                   </span>
                 </div>
                 <p className="text-[11px] text-zinc-600 dark:text-zinc-400">
-                  ¿Quieres sincronizar automáticamente la arquitectura, diseño, reglas, seguridad y tareas coherentes con este dominio?
+                  ¿Quieres reemplazar las opciones de fábrica y armonizar Arquitectura, Diseño, Reglas, Seguridad y Tareas con este dominio?
                 </p>
               </div>
 
-              <button
-                type="button"
-                onClick={handleSyncFromPrd}
-                className="px-3 py-1.5 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white shadow-xs transition-all active:scale-98 flex items-center justify-center gap-1.5 shrink-0 cursor-pointer"
-              >
-                <Wand2 className="w-3.5 h-3.5" />
-                <span>Auto-Completar Resto del Proyecto</span>
-              </button>
+              <div className="flex items-center gap-2 shrink-0">
+                <button
+                  type="button"
+                  onClick={() => handleSyncFromPrd(true)}
+                  className="px-3.5 py-1.5 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white shadow-xs transition-all active:scale-98 flex items-center justify-center gap-1.5 cursor-pointer"
+                  title="Reemplaza opciones de fábrica por las del dominio detectado"
+                >
+                  <Wand2 className="w-3.5 h-3.5" />
+                  <span>Auto-Completar Proyecto</span>
+                </button>
+              </div>
             </div>
           )}
 

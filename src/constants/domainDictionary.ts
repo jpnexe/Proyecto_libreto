@@ -11,6 +11,10 @@ export interface DomainBlueprint {
   name: string;
   tag: string;
   description: string;
+  defaultProjectName: string;
+  defaultDescription: string;
+  defaultAudience: string;
+  suggestedArchitectureNotes: string;
   keywords: string[];
   suggestedPlatform: TargetPlatform;
   isHeadless: boolean;
@@ -51,6 +55,10 @@ export const DOMAIN_BLUEPRINTS: Record<string, DomainBlueprint> = {
     name: 'Análisis de Datos & Ciencia de Datos con Python',
     tag: 'Ciencia de Datos / EDA / ML',
     description: 'Pipeline de datos para ingesta, limpieza vectorizada, análisis exploratorio (EDA), KPIs estadísticos y visualizaciones científicas sin interfaz web.',
+    defaultProjectName: 'DataPulse Analytics & EDA Pipeline',
+    defaultDescription: 'Pipeline modular en Python para ingesta, limpieza vectorizada, análisis exploratorio estadístico (EDA) y exportación de gráficos de alta resolución sin interfaz web.',
+    defaultAudience: 'Científicos de datos, analistas de negocio e ingenieros de machine learning',
+    suggestedArchitectureNotes: 'Arquitectura modular desacoplada: scripts reproducibles en src/ (extractores, transformadores, visualizadores), persistencia columnar eficiente en Parquet y cero dependencia de DOM/HTML.',
     keywords: [
       'datos', 'analisis', 'dataset', 'datasets', 'pandas', 'numpy', 'scikit', 'machine learning',
       'eda', 'csv', 'parquet', 'excel', 'polars', 'estadistica', 'regresion', 'clustering',
@@ -119,6 +127,10 @@ export const DOMAIN_BLUEPRINTS: Record<string, DomainBlueprint> = {
     name: 'Automatización, ETL & Herramientas CLI',
     tag: 'Scripts / ETL / Terminal CLI',
     description: 'Herramientas de línea de comandos, pipelines ETL periódicos, bots de automatización o web scraping ético sin interfaz web.',
+    defaultProjectName: 'TaskForge CLI & ETL Automator',
+    defaultDescription: 'Herramienta de consola profesional para automatización de tareas, procesamiento por lotes y pipelines ETL con interfaces enriquecidas en terminal.',
+    defaultAudience: 'Desarrolladores, administradores de sistemas y operadores de DevOps',
+    suggestedArchitectureNotes: 'Patrón de comandos con Typer y Rich: parseo estricto de banderas, ejecución atómica/idempotente y registro estructurado en logs/ sin interfaz gráfica.',
     keywords: [
       'cli', 'consola', 'terminal', 'script', 'scripts', 'automatizacion', 'etl', 'scraping',
       'scraper', 'cron', 'cronjob', 'batch', 'lotes', 'typer', 'click', 'rich', 'loguru'
@@ -185,6 +197,10 @@ export const DOMAIN_BLUEPRINTS: Record<string, DomainBlueprint> = {
     name: 'SaaS B2B & Dashboards Administrativos',
     tag: 'Next.js + Postgres / Supabase',
     description: 'Plataforma web multi-usuario con autenticación segura, control de acceso por roles (RBAC), dashboards analíticos y reportes.',
+    defaultProjectName: 'NexusFlow SaaS Platform',
+    defaultDescription: 'Plataforma multi-inquilino de gestión empresarial con dashboards analíticos, roles de usuario granulares, auditoría y facturación.',
+    defaultAudience: 'Empresas B2B, gerentes de operaciones, administradores y equipos comerciales',
+    suggestedArchitectureNotes: 'Clean Architecture en capas: separación entre controladores web, casos de uso puros y repositorios transaccionales en PostgreSQL.',
     keywords: [
       'saas', 'dashboard', 'panel', 'admin', 'b2b', 'plataforma', 'metricas', 'kpi', 'usuarios',
       'roles', 'permisos', 'suscripcion', 'stripe', 'multitenant', 'empresa', 'gestion'
@@ -251,6 +267,10 @@ export const DOMAIN_BLUEPRINTS: Record<string, DomainBlueprint> = {
     name: 'E-Commerce, Catálogo & Pasarela de Pagos',
     tag: 'Next.js + Stripe + SQL',
     description: 'Tienda en línea completa con catálogo de productos, carrito de compras reactivo, pasarela de pagos segura y seguimiento de órdenes.',
+    defaultProjectName: 'AuraShop Modern E-Commerce',
+    defaultDescription: 'Tienda en línea de alta conversión con catálogo dinámico, carrito reactivo, pagos seguros con tarjeta y seguimiento de pedidos en tiempo real.',
+    defaultAudience: 'Compradores en línea, clientes finales y administradores de tienda',
+    suggestedArchitectureNotes: 'Arquitectura Server-Driven con Next.js y base relacional PostgreSQL: transacciones atómicas para reservas de stock e idempotencia de pagos.',
     keywords: [
       'tienda', 'ecommerce', 'e-commerce', 'carrito', 'catalogo', 'productos', 'pagos', 'stripe',
       'checkout', 'ordenes', 'pedidos', 'compras', 'venta', 'inventario', 'precio', 'descuento'
@@ -317,6 +337,10 @@ export const DOMAIN_BLUEPRINTS: Record<string, DomainBlueprint> = {
     name: 'Sitio Web Estático, Blog o Documentación Jamstack',
     tag: 'Astro SSG / Jamstack (Sin BD)',
     description: 'Sitio web ultra-rápido basado en archivos Markdown/MDX, optimizado para posicionamiento en motores de búsqueda (SEO) y coste $0 en servidores.',
+    defaultProjectName: 'DevChronicles Tech Blog',
+    defaultDescription: 'Publicación técnica ultrarrápida Jamstack optimizada para SEO, lectura sin distracciones y distribución global por CDN.',
+    defaultAudience: 'Lectores técnicos, desarrolladores de software y creadores de contenido',
+    suggestedArchitectureNotes: 'Generación estática pura (SSG) con Astro: cero base de datos en tiempo de ejecución, contenido en Markdown/MDX y assets cacheados al 100% en el Edge CDN.',
     keywords: [
       'blog', 'sitio estatico', 'landing', 'landing page', 'portafolio', 'portfolio', 'documentacion',
       'docs', 'jamstack', 'ssg', 'astro', 'markdown', 'mdx', 'seo', 'articulos', 'estatico'
@@ -383,6 +407,10 @@ export const DOMAIN_BLUEPRINTS: Record<string, DomainBlueprint> = {
     name: 'Aplicación Móvil Nativa / Híbrida (iOS & Android)',
     tag: 'React Native / Expo + Offline',
     description: 'App para smartphones y tablets con soporte offline, almacenamiento local cifrado, notificaciones push y gestos táctiles.',
+    defaultProjectName: 'Horizon Mobile Experience',
+    defaultDescription: 'Aplicación móvil de alto rendimiento con arquitectura Offline-First, sincronización en segundo plano y experiencia táctil nativa.',
+    defaultAudience: 'Usuarios móviles en iOS y Android que requieren agilidad y funcionamiento sin conexión',
+    suggestedArchitectureNotes: 'Patrón Offline-First con SQLite / WatermelonDB local y cola de mutaciones sincronizadas asíncronamente con el backend.',
     keywords: [
       'movil', 'mobile', 'app movil', 'ios', 'android', 'react native', 'expo', 'flutter',
       'smartphone', 'tactil', 'offline', 'sensores', 'camara', 'notificaciones push'
@@ -449,6 +477,10 @@ export const DOMAIN_BLUEPRINTS: Record<string, DomainBlueprint> = {
     name: 'Sistema de Gestión, Inventario, Facturación & POS',
     tag: 'PostgreSQL + Transacciones ACID',
     description: 'Software de gestión comercial para control de inventario, registro de ventas, emisión de facturas y trazabilidad de productos.',
+    defaultProjectName: 'StockMaster Pro ERP',
+    defaultDescription: 'Sistema integral de gestión de inventarios, almacenes, facturación, proveedores y trazabilidad de lotes con transacciones seguras.',
+    defaultAudience: 'Encargados de almacén, contadores, gerentes de logística y personal de compras',
+    suggestedArchitectureNotes: 'Clean Architecture con control transaccional estricto (ACID), auditoría de cambios inmutable y bloqueos optimistas/pesimistas para control de stock.',
     keywords: [
       'inventario', 'gestion', 'erp', 'pos', 'facturacion', 'caja', 'ventas', 'compras',
       'proveedores', 'stock', 'almacen', 'bodega', 'codigo de barras', 'recibo', 'ticket'
@@ -515,6 +547,10 @@ export const DOMAIN_BLUEPRINTS: Record<string, DomainBlueprint> = {
     name: 'Chat en Tiempo Real & Herramientas Colaborativas',
     tag: 'WebSockets + Redis / Socket.io',
     description: 'Aplicación de mensajería instantánea, salas de chat, presencia de usuarios online y sincronización colaborativa en vivo.',
+    defaultProjectName: 'SyncPulse Realtime Chat',
+    defaultDescription: 'Plataforma de comunicación y colaboración instantánea con canales temáticos, mensajería privada, presencia en vivo y notificaciones push.',
+    defaultAudience: 'Equipos remotos, comunidades en línea y usuarios que requieren interacción en vivo',
+    suggestedArchitectureNotes: 'Arquitectura basada en eventos y WebSockets (Socket.io) con Redis Pub/Sub para escalado horizontal y persistencia en PostgreSQL.',
     keywords: [
       'chat', 'mensajeria', 'tiempo real', 'realtime', 'websockets', 'socket', 'socket.io',
       'mensajes', 'presencia', 'colaboracion', 'canales', 'conversacion', 'notificaciones en vivo'
@@ -581,6 +617,10 @@ export const DOMAIN_BLUEPRINTS: Record<string, DomainBlueprint> = {
     name: 'Sistema de Citas, Reservas Médicas / Servicios & Calendario',
     tag: 'Reservas / Calendario / Turnos',
     description: 'Plataforma para agendamiento de turnos, gestión de agendas de profesionales, confirmación por SMS/Email y prevención de solapamientos.',
+    defaultProjectName: 'CarePoint Salud & Citas Médicas',
+    defaultDescription: 'Sistema de reserva de citas médicas, fichas clínicas digitales, recordatorios automáticos por SMS/WhatsApp y gestión de agendas profesionales.',
+    defaultAudience: 'Pacientes, médicos especialistas, personal de recepción y administradores de clínicas',
+    suggestedArchitectureNotes: 'Separación estricta de dominios clínicos bajo normativas de privacidad (HIPAA/GDPR) con cifrado en reposo y validación de solapamiento de horarios.',
     keywords: [
       'citas', 'reservas', 'reserva', 'turnos', 'calendario', 'agenda', 'medico', 'clinica',
       'pacientes', 'horarios', 'disponibilidad', 'servicios', 'doctor', 'peluqueria', 'consultorio'
@@ -647,6 +687,10 @@ export const DOMAIN_BLUEPRINTS: Record<string, DomainBlueprint> = {
     name: 'Plataforma Educativa, Cursos Online & LMS',
     tag: 'Next.js + Video + Progreso',
     description: 'Portal de aprendizaje virtual con reproducción de lecciones en video, seguimiento de progreso, cuestionarios y emisión de certificados.',
+    defaultProjectName: 'EduSphere Academy LMS',
+    defaultDescription: 'Plataforma educativa para cursos en línea, módulos interactivos, evaluaciones automatizadas, seguimiento de progreso y certificación.',
+    defaultAudience: 'Estudiantes, instructores, tutores académicos y administradores escolares',
+    suggestedArchitectureNotes: 'Arquitectura modular para gestión de contenido multimedia, streaming adaptativo y sistema de tracking de progreso SCORM/xAPI compatible.',
     keywords: [
       'cursos', 'educacion', 'lms', 'estudiantes', 'lecciones', 'profesores', 'aprendizaje',
       'video', 'evaluaciones', 'quizzes', 'certificados', 'academia', 'escuela', 'alumnos'
@@ -713,6 +757,10 @@ export const DOMAIN_BLUEPRINTS: Record<string, DomainBlueprint> = {
     name: 'API REST / GraphQL Pura para Microservicios',
     tag: 'FastAPI / NestJS + Swagger',
     description: 'Servicio backend desacoplado de alto rendimiento con documentación Swagger/OpenAPI automática, autenticación JWT y contratos tipados.',
+    defaultProjectName: 'CoreAPI Enterprise Services',
+    defaultDescription: 'Backend de microservicios y APIs RESTful de alto rendimiento con documentación OpenAPI interactiva, rate limiting y métricas.',
+    defaultAudience: 'Desarrolladores backend, integradores de sistemas y clientes API B2B',
+    suggestedArchitectureNotes: 'Arquitectura Hexagonal (Puertos y Adaptadores): aislamiento total de la lógica de negocio frente a bases de datos y frameworks HTTP.',
     keywords: [
       'api', 'backend', 'microservicio', 'rest', 'graphql', 'endpoints', 'servicio',
       'swagger', 'openapi', 'fastapi', 'nestjs', 'json', 'jwt', 'sin frontend'
@@ -779,6 +827,10 @@ export const DOMAIN_BLUEPRINTS: Record<string, DomainBlueprint> = {
     name: 'Aplicación de Inteligencia Artificial, RAG & Agentes',
     tag: 'Python / LangChain + Vector DB',
     description: 'Sistema inteligente con procesamiento de lenguaje natural, recuperación aumentada de información (RAG), embeddings y asistentes conversacionales.',
+    defaultProjectName: 'OmniBrain Conversational AI',
+    defaultDescription: 'Asistente conversacional inteligente impulsado por LLMs con búsqueda aumentada por recuperación (RAG), embeddings vectoriales e historial contextual.',
+    defaultAudience: 'Usuarios finales que buscan asistencia automatizada, analistas y equipos de soporte al cliente',
+    suggestedArchitectureNotes: 'Pipeline RAG: procesamiento de consultas, búsqueda semántica en base vectorial (pgvector) y generación aumentada con streaming SSE.',
     keywords: [
       'ia', 'inteligencia artificial', 'ai', 'chatbot', 'llm', 'rag', 'embeddings',
       'vector', 'langchain', 'openai', 'gemini', 'groq', 'agente', 'prompt', 'semantica'
@@ -845,6 +897,10 @@ export const DOMAIN_BLUEPRINTS: Record<string, DomainBlueprint> = {
     name: 'Red Social, Foro Comunitario & Feed Interactivo',
     tag: 'Next.js + Feed + Multimedia',
     description: 'Plataforma comunitaria con muro de publicaciones, sistema de votos/likes, comentarios anidados, perfiles de usuario y menciones.',
+    defaultProjectName: 'TribalNet Community Feed',
+    defaultDescription: 'Red social de comunidades con feeds de publicaciones, hilos de comentarios, perfiles de usuario, votaciones y moderación de contenido.',
+    defaultAudience: 'Miembros de comunidades virtuales, creadores de contenido y moderadores',
+    suggestedArchitectureNotes: 'Arquitectura de Feed optimizada con cache distribuida en Redis, subida de medios a S3/CDN y particionado de comentarios por hilos.',
     keywords: [
       'red social', 'comunidad', 'foro', 'feed', 'muro', 'publicaciones', 'posts', 'likes',
       'comentarios', 'perfiles', 'seguidores', 'menciones', 'notificaciones', 'amigos'
@@ -911,6 +967,10 @@ export const DOMAIN_BLUEPRINTS: Record<string, DomainBlueprint> = {
     name: 'Finanzas Personales, Control de Gastos & Cripto',
     tag: 'Next.js + Gráficos Financieros + SQL',
     description: 'Gestor financiero personal con seguimiento de ingresos/gastos, presupuestos por categoría, cálculo de patrimonio neto y gráficos de evolución.',
+    defaultProjectName: 'VaultFin Finanzas & Patrimonio',
+    defaultDescription: 'Gestor financiero y de inversiones con control estricto de presupuestos, balance patrimonial, registro de transacciones e informes contables.',
+    defaultAudience: 'Usuarios particulares, inversores y analistas financieros personales',
+    suggestedArchitectureNotes: 'Patrón de doble partida contable (Double-Entry Bookkeeping) con precisión matemática decimal NUMERIC y libros de transacciones inmutables.',
     keywords: [
       'finanzas', 'gastos', 'ingresos', 'presupuesto', 'dinero', 'billetera', 'patrimonio',
       'ahorro', 'inversiones', 'cripto', 'criptomonedas', 'cartera', 'transacciones', 'fintech'

@@ -36,6 +36,8 @@ export const CoherenceAssistant: React.FC<CoherenceAssistantProps> = ({
   const [ideaText, setIdeaText] = useState('');
   const [selectedDomainId, setSelectedDomainId] = useState<string | null>(null);
 
+  const [replaceMode, setReplaceMode] = useState<'clean' | 'merge'>('clean');
+
   // Validación de coherencia en tiempo real
   const coherenceReport = useMemo(() => {
     return validateProjectCoherence(project);
@@ -60,9 +62,14 @@ export const CoherenceAssistant: React.FC<CoherenceAssistantProps> = ({
     return null;
   }, [selectedDomainId, detectedFromInput, coherenceReport.detectedDomain]);
 
-  // Aplicar arquetipo coherente completo
+  // Aplicar arquetipo coherente completo reemplazando las opciones de fábrica
   const handleApplyDomain = (domainId: string) => {
-    const updated = applyDomainBlueprint(project, domainId, { preserveCustomText: true });
+    const shouldClean = replaceMode === 'clean';
+    const updated = applyDomainBlueprint(project, domainId, {
+      preserveCustomText: !shouldClean,
+      forceReplaceFactory: shouldClean,
+      userCustomIdea: ideaText.trim() ? ideaText.trim() : undefined,
+    });
     // Corregir cualquier detalle residual automáticamente
     const fixed = autoFixAllCoherence(updated);
     onChange(fixed);
@@ -234,35 +241,66 @@ export const CoherenceAssistant: React.FC<CoherenceAssistantProps> = ({
 
             {/* Tarjeta de Vista Previa del Dominio Sugerido */}
             {activeDomain && (
-              <div className="mt-3 p-3.5 rounded-xl border border-cyan-500/30 bg-cyan-500/5 dark:bg-cyan-950/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3 animate-fadeIn">
-                <div className="space-y-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-cyan-900 dark:text-cyan-200">
-                      Dominio Recomendado: {activeDomain.name}
-                    </span>
-                    <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-500/15 text-cyan-700 dark:text-cyan-300 font-bold">
-                      {activeDomain.tag}
-                    </span>
-                  </div>
-                  <p className="text-[11px] text-zinc-600 dark:text-zinc-300 leading-relaxed">
-                    {activeDomain.description}
-                  </p>
-                  <div className="flex flex-wrap gap-2 text-[10px] text-zinc-500 dark:text-zinc-400 pt-0.5">
-                    <span><strong>Stack:</strong> {activeDomain.frontendFramework} + {activeDomain.backendFramework}</span>
-                    <span>• <strong>BD:</strong> {activeDomain.database}</span>
-                    <span>• <strong>Estilo:</strong> {activeDomain.style}</span>
+              <div className="mt-3 p-3.5 rounded-xl border border-cyan-500/30 bg-cyan-500/5 dark:bg-cyan-950/20 flex flex-col gap-3 animate-fadeIn">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-2 border-b border-cyan-500/20">
+                  <div className="space-y-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-bold text-cyan-900 dark:text-cyan-200">
+                        Dominio Recomendado: {activeDomain.name}
+                      </span>
+                      <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-cyan-500/15 text-cyan-700 dark:text-cyan-300 font-bold">
+                        {activeDomain.tag}
+                      </span>
+                    </div>
+                    <p className="text-[11px] text-zinc-600 dark:text-zinc-300 leading-relaxed">
+                      {activeDomain.description}
+                    </p>
+                    <div className="flex flex-wrap gap-2 text-[10px] text-zinc-500 dark:text-zinc-400 pt-0.5">
+                      <span><strong>Stack:</strong> {activeDomain.frontendFramework} + {activeDomain.backendFramework}</span>
+                      <span>• <strong>BD:</strong> {activeDomain.database}</span>
+                      <span>• <strong>Estilo:</strong> {activeDomain.style}</span>
+                    </div>
                   </div>
                 </div>
 
-                <button
-                  type="button"
-                  onClick={() => handleApplyDomain(activeDomain.id)}
-                  className="px-3.5 py-2 rounded-xl text-xs font-bold bg-cyan-600 hover:bg-cyan-500 text-white shadow-xs transition-all active:scale-98 flex items-center justify-center gap-1.5 shrink-0 cursor-pointer"
-                >
-                  <Wand2 className="w-3.5 h-3.5" />
-                  <span>Auto-Configurar Proyecto</span>
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </button>
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pt-0.5">
+                  <div className="flex items-center gap-1.5 bg-white dark:bg-zinc-900 p-1 rounded-lg border border-zinc-200 dark:border-zinc-800 text-[11px]">
+                    <button
+                      type="button"
+                      onClick={() => setReplaceMode('clean')}
+                      className={`px-2.5 py-1 rounded-md font-medium transition-all cursor-pointer ${
+                        replaceMode === 'clean'
+                          ? 'bg-cyan-500 text-white font-bold shadow-xs'
+                          : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'
+                      }`}
+                      title="Reemplaza requerimientos, nombre, directivas y opciones por defecto por las del arquetipo"
+                    >
+                      ✨ Reemplazar opciones de fábrica (Limpio)
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setReplaceMode('merge')}
+                      className={`px-2.5 py-1 rounded-md font-medium transition-all cursor-pointer ${
+                        replaceMode === 'merge'
+                          ? 'bg-cyan-500 text-white font-bold shadow-xs'
+                          : 'text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-zinc-100'
+                      }`}
+                      title="Mantiene los requerimientos existentes y añade los del nuevo arquetipo"
+                    >
+                      Fusionar con existentes
+                    </button>
+                  </div>
+
+                  <button
+                    type="button"
+                    onClick={() => handleApplyDomain(activeDomain.id)}
+                    className="px-4 py-2 rounded-xl text-xs font-bold bg-cyan-600 hover:bg-cyan-500 text-white shadow-xs transition-all active:scale-98 flex items-center justify-center gap-1.5 shrink-0 cursor-pointer"
+                  >
+                    <Wand2 className="w-3.5 h-3.5" />
+                    <span>Auto-Configurar con esta Idea</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
               </div>
             )}
           </div>

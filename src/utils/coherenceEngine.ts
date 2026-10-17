@@ -6,6 +6,7 @@
 
 import type { LibretoProject } from '../types/libreto';
 import { DOMAIN_BLUEPRINTS, type DomainBlueprint } from '../constants/domainDictionary';
+import { generateSuggestedTasks } from './taskGenerator';
 
 export interface CoherenceIssue {
   id: string;
@@ -316,33 +317,138 @@ export function autoFixAllCoherence(project: LibretoProject): LibretoProject {
 }
 
 /**
+ * Comprueba si un proyecto todavía conserva los valores o requerimientos de fábrica del template por defecto
+ */
+export function isDefaultFactoryTemplate(project: LibretoProject): boolean {
+  const isDefaultName =
+    !project.name ||
+    project.name.trim() === 'Mi Proyecto Épico' ||
+    project.name.trim() === 'Nuevo Proyecto' ||
+    project.name.trim() === '';
+
+  const isDefaultDesc =
+    !project.description ||
+    project.description.includes('Aplicación moderna de alto impacto con arquitectura robusta') ||
+    project.description.trim() === '';
+
+  const hasFactoryReqs =
+    Array.isArray(project.prd.functionalRequirements) &&
+    project.prd.functionalRequirements.some((req) =>
+      req.includes('Autenticación y registro de usuarios con validación de credenciales.')
+    );
+
+  const isDefaultAudience =
+    !project.targetAudience ||
+    project.targetAudience.includes('Usuarios finales y desarrolladores');
+
+  return isDefaultName || isDefaultDesc || hasFactoryReqs || isDefaultAudience;
+}
+
+/**
  * 4. APLICAR ARQUETIPO DE DOMINIO COHERENTE
- * Aplica un dominio completo armonizando Arquitectura, Diseño, Reglas, Seguridad y Tareas
- * mientras preserva el nombre, slug y textos personalizados del usuario.
+ * Aplica un dominio completo armonizando Arquitectura, Diseño, Reglas, Seguridad, PRD y Tareas.
+ * Si el proyecto contiene opciones de fábrica, las reemplaza completamente por las del arquetipo.
+ * Si el usuario ya personalizó el proyecto, fusiona o respeta sus valores según se indique.
  */
 export function applyDomainBlueprint(
   project: LibretoProject,
   domainId: string,
-  options?: { preserveCustomText?: boolean }
+  options?: {
+    preserveCustomText?: boolean;
+    forceReplaceFactory?: boolean;
+    userCustomIdea?: string;
+  }
 ): LibretoProject {
   const bp = DOMAIN_BLUEPRINTS[domainId];
   if (!bp) return project;
 
-  const preserve = options?.preserveCustomText ?? true;
+  const isFactory = isDefaultFactoryTemplate(project);
+  const forceReplace = options?.forceReplaceFactory ?? isFactory;
+  const preserve = options?.preserveCustomText ?? !forceReplace;
 
-  return {
+  // 1. Nombre, Descripción y Audiencia
+  let newName = project.name;
+  let newDescription = project.description;
+  let newAudience = project.targetAudience;
+
+  if (forceReplace || isFactory) {
+    newName = bp.defaultProjectName || project.name;
+    newDescription = options?.userCustomIdea?.trim()
+      ? options.userCustomIdea.trim()
+      : (bp.defaultDescription || bp.description || project.description);
+    newAudience = bp.defaultAudience || project.targetAudience;
+  } else if (options?.userCustomIdea?.trim() && (!project.description || project.description.includes('Aplicación moderna de alto impacto'))) {
+    newDescription = options.userCustomIdea.trim();
+  }
+
+  // 2. Requerimientos Funcionales, No Funcionales y User Stories
+  const functionalRequirements = (!preserve || isFactory)
+    ? [...bp.suggestedFunctionalRequirements]
+    : Array.from(new Set([...(project.prd.functionalRequirements || []), ...bp.suggestedFunctionalRequirements]));
+
+  const nonFunctionalRequirements = (!preserve || isFactory)
+    ? [...bp.suggestedNonFunctionalRequirements]
+    : Array.from(new Set([...(project.prd.nonFunctionalRequirements || []), ...bp.suggestedNonFunctionalRequirements]));
+
+  const userStories = (!preserve || isFactory)
+    ? [...bp.suggestedUserStories]
+    : Array.from(new Set([...(project.prd.userStories || []), ...bp.suggestedUserStories]));
+
+  // 3. Notas de Arquitectura
+  const isDefaultArchNotes =
+    !project.architecture.customNotes ||
+    project.architecture.customNotes.includes('Separación modular estricta entre capa de presentación y lógica de dominio.');
+
+  const customNotes = (forceReplace || isDefaultArchNotes)
+    ? bp.suggestedArchitectureNotes
+    : (project.architecture.customNotes || bp.suggestedArchitectureNotes);
+
+  // 4. Notas y directivas de Diseño
+  const isDefaultDesignGuidelines =
+    !project.design.customDesignGuidelines ||
+    project.design.customDesignGuidelines.includes('Diseño limpio, espacios respirables, accesibilidad AA');
+
+  const customDesignGuidelines = (forceReplace || isDefaultDesignGuidelines)
+    ? (bp.writtenDesignNotes || project.design.customDesignGuidelines)
+    : project.design.customDesignGuidelines;
+
+  const writtenNotes = (forceReplace || !project.design.writtenNotes)
+    ? bp.writtenDesignNotes
+    : (preserve && project.design.writtenNotes.trim() !== bp.writtenDesignNotes.trim()
+        ? `${project.design.writtenNotes}\n\n${bp.writtenDesignNotes}`
+        : bp.writtenDesignNotes);
+
+  // 5. Estado de Memoria y Milestones adaptados al dominio
+  const newMemory = (forceReplace || isFactory)
+    ? {
+        currentState: `Arquitectura de "${bp.name}" definida con directivas coherentes. Listo para inicializar.`,
+        activeSprintOrMilestone: bp.isHeadless
+          ? 'Fase 1: Configuración de entorno Python / CLI y datasets de prueba.'
+          : 'Fase 1: Configuración de repositorio, stack base y diseño UI.',
+        completedMilestones: [`Definición del arquetipo coherente: ${bp.name}`],
+        inProgressMilestones: ['Inicialización del proyecto'],
+        blockers: [],
+      }
+    : project.memory;
+
+  // Construir proyecto base actualizado
+  const updatedProject: LibretoProject = {
     ...project,
+    name: newName,
+    description: newDescription,
+    targetAudience: newAudience,
     architecture: {
       ...project.architecture,
       platform: bp.suggestedPlatform,
       isHeadless: bp.isHeadless,
       isStaticSite: bp.isStaticSite,
-      languages: bp.languages,
+      languages: [...bp.languages],
       frontendFramework: bp.frontendFramework,
       backendFramework: bp.backendFramework,
       database: bp.database,
       connectionType: bp.connectionType,
       architecturalPattern: bp.architecturalPattern,
+      customNotes,
     },
     design: {
       ...project.design,
@@ -353,43 +459,33 @@ export function applyDomainBlueprint(
       darkModeDefault: bp.darkModeDefault,
       typography: bp.typography,
       isNoInterface: bp.isHeadless,
-      writtenNotes: preserve && project.design.writtenNotes
-        ? `${project.design.writtenNotes}\n\n${bp.writtenDesignNotes}`
-        : bp.writtenDesignNotes,
-      customObservations: Array.from(
-        new Set([...(project.design.customObservations || []), ...bp.customObservations])
-      ),
+      customDesignGuidelines,
+      writtenNotes,
+      customObservations: (forceReplace || isFactory)
+        ? [...bp.customObservations]
+        : Array.from(new Set([...(project.design.customObservations || []), ...bp.customObservations])),
     },
     rules: {
       ...project.rules,
-      customRules: Array.from(
-        new Set([...(project.rules.customRules || []), ...bp.customRules])
-      ),
+      customRules: (forceReplace || isFactory)
+        ? [...bp.customRules]
+        : Array.from(new Set([...(project.rules.customRules || []), ...bp.customRules])),
     },
     security: {
       ...project.security,
       corsAndSecurityHeaders: !bp.isHeadless,
       csrfProtection: !bp.isHeadless,
       secureAuth: !bp.isHeadless && !bp.isStaticSite,
-      customSecurityPolicies: Array.from(
-        new Set([...(project.security.customSecurityPolicies || []), ...bp.customSecurityPolicies])
-      ),
+      customSecurityPolicies: (forceReplace || isFactory)
+        ? [...bp.customSecurityPolicies]
+        : Array.from(new Set([...(project.security.customSecurityPolicies || []), ...bp.customSecurityPolicies])),
     },
     prd: {
       ...project.prd,
       masterPromptTone: bp.masterPromptTone,
-      functionalRequirements:
-        preserve && project.prd.functionalRequirements?.length > 0
-          ? Array.from(new Set([...project.prd.functionalRequirements, ...bp.suggestedFunctionalRequirements]))
-          : bp.suggestedFunctionalRequirements,
-      nonFunctionalRequirements:
-        preserve && project.prd.nonFunctionalRequirements?.length > 0
-          ? Array.from(new Set([...project.prd.nonFunctionalRequirements, ...bp.suggestedNonFunctionalRequirements]))
-          : bp.suggestedNonFunctionalRequirements,
-      userStories:
-        preserve && project.prd.userStories?.length > 0
-          ? Array.from(new Set([...project.prd.userStories, ...bp.suggestedUserStories]))
-          : bp.suggestedUserStories,
+      functionalRequirements,
+      nonFunctionalRequirements,
+      userStories,
     },
     decisions: {
       ...project.decisions,
@@ -402,5 +498,20 @@ export function applyDomainBlueprint(
         discardedAlternatives: adr.discardedAlternatives,
       })),
     },
+    memory: newMemory,
   };
+
+  // 6. Generar las fases de tareas secuenciales coherentes con el nuevo stack
+  try {
+    const freshTasks = generateSuggestedTasks(updatedProject);
+    if (freshTasks && freshTasks.length > 0) {
+      updatedProject.tasks = {
+        phases: freshTasks,
+      };
+    }
+  } catch (err) {
+    console.warn('Could not auto-generate tasks for domain blueprint:', err);
+  }
+
+  return updatedProject;
 }
