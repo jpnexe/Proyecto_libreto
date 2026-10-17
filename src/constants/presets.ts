@@ -11,6 +11,159 @@ export interface ProjectPreset {
 
 export const PROJECT_PRESETS: ProjectPreset[] = [
   {
+    id: 'python-data-science-headless',
+    title: 'Análisis de Datos Python (Sin Interfaz)',
+    tag: 'Pandas + ETL + Gráficos',
+    description: 'Proyecto sin interfaz web para limpieza de datasets, análisis exploratorio (EDA), modelos predictivos, reportes y gráficos en Python.',
+    badgeColor: 'bg-amber-500/10 text-amber-500 border-amber-500/20',
+    data: {
+      name: 'DataPulse Analytics Pipeline',
+      slug: 'datapulse-analytics-pipeline',
+      description: 'Pipeline modular de ciencia y análisis de datos en Python para ingesta de datasets CSV/Parquet, limpieza automatizada, análisis estadístico exploratorio (EDA), generación de indicadores clave (KPIs) y exportación de gráficos de alta resolución sin interfaz web.',
+      targetAudience: 'Analistas de datos, científicos de datos, ingenieros de BI y tomadores de decisiones.',
+      version: '1.0.0',
+      architecture: {
+        platform: 'headless',
+        isHeadless: true,
+        isStaticSite: false,
+        languages: ['Python', 'SQL'],
+        frontendFramework: 'Ninguno (Sin Interfaz Gráfica / Script / CLI / Notebooks)',
+        backendFramework: 'Python Data Science (Pandas / Polars / NumPy / Scikit-Learn)',
+        database: 'Datasets Locales (CSV / Parquet / Excel / JSON)',
+        connectionType: 'Ejecución Local por Consola / CLI / Notebooks (Sin Red)',
+        architecturalPattern: 'Pipeline de Datos / ETL (Extract - Transform - Load)',
+        customNotes: 'Los datos originales en data/raw/ son estrictamente inmutables. Todo el código de transformación debe estar vectorizado en src/ y probado con pytest.',
+      },
+      design: {
+        style: 'terminal_cli',
+        styleFramework: 'Sin Interfaz Web (Gráficos Matplotlib / Seaborn / Plotly / Terminal)',
+        animationLibraries: [],
+        iconLibraries: [],
+        primaryColor: '#2563EB',
+        secondaryColor: '#F59E0B',
+        darkModeDefault: false,
+        typography: 'Inter & JetBrains Mono',
+        isNoInterface: true,
+        writtenNotes: '• Este proyecto NO tiene interfaz web.\n• Generar todos los gráficos con Matplotlib/Seaborn usando estilo whitegrid, paleta consistente y exportarlos en 300 DPI dentro de reports/figures/.\n• Mostrar el resumen de ejecución y tablas de métricas en la terminal utilizando la librería Rich.',
+        customObservations: [
+          'Incluir título descriptivo, unidades en ejes y tamaño de muestra (n) en cada figura generada.',
+          'Suprimir bordes superior y derecho (sns.despine) en todos los gráficos estadísticos.',
+        ],
+        customDesignGuidelines: 'Priorizar legibilidad editorial en reportes y gráficos científicos exportados.',
+      },
+      rules: {
+        goldenRule: true,
+        atomicModifications: true,
+        strictTyping: true,
+        mandatoryExceptionHandling: true,
+        strictModularity: true,
+        gitCommitConventions: true,
+        testCoverageRequirement: true,
+        customRules: [
+          'Prohibido iterar sobre DataFrames con .iterrows() cuando exista una operación vectorizada en Pandas/NumPy.',
+          'Usar Type Hints de Python en el 100% de las funciones de procesamiento y análisis.',
+        ],
+      },
+      decisions: {
+        strictlyForbidAlternativeStacks: true,
+        customDecisions: [
+          {
+            id: 'adr-data-1',
+            title: 'Ejecución Headless y Almacenamiento Columnar Parquet',
+            context: 'El proyecto se centra en el análisis estadístico y procesamiento reproducible de datos sin necesidad de mantener servidores web ni interfaces DOM.',
+            decision: 'Adoptar arquitectura modular en Python puro con Pandas/Polars y persistencia intermedia en Apache Parquet.',
+            consequences: 'Reducción del 80% en tiempos de lectura/escritura, preservación exacta de tipos de datos y cero sobrecarga de infraestructura web.',
+            discardedAlternatives: 'Construir una SPA web completa con servidor backend solo para ejecutar scripts analíticos locales.',
+          },
+        ],
+      },
+      security: {
+        envVariablesManagement: true,
+        secureAuth: false,
+        inputSanitization: true,
+        sqlInjectionAndXssProtection: true,
+        corsAndSecurityHeaders: false,
+        rateLimiting: false,
+        csrfProtection: false,
+        customSecurityPolicies: [
+          'Nunca subir archivos de datos con Información Personal Identificable (PII) al repositorio Git.',
+          'Validar el esquema y tipos de columnas de cada CSV/Excel antes de procesarlo.',
+        ],
+      },
+      prd: {
+        functionalRequirements: [
+          'Ingesta y validación automática de esquemas sobre datasets crudos en formato CSV, Excel y Parquet.',
+          'Pipeline de limpieza vectorizada: imputación documentada de valores nulos, eliminación de duplicados y detección de outliers (IQR / Z-Score).',
+          'Cálculo automatizado de métricas descriptivas, correlaciones y KPIs de negocio.',
+          'Generación y exportación de gráficos estadísticos en alta resolución (300 DPI) en reports/figures/.',
+          'Exportación de datasets limpios en data/processed/ y resumen ejecutivo en consola con Rich.',
+        ],
+        nonFunctionalRequirements: [
+          'Reproducibilidad determinista del 100% fijando semillas aleatorias (RANDOM_SEED = 42).',
+          'Procesamiento en memoria optimizado mediante tipos adecuados y operaciones vectorizadas.',
+          'Cobertura de pruebas unitarias con pytest para todas las funciones de transformación.',
+        ],
+        userStories: [
+          'Como analista de datos, quiero ejecutar el pipeline completo con un solo comando por consola para actualizar los datasets limpios y todas las gráficas del reporte.',
+          'Como científico de datos, quiero que las funciones de limpieza estén modularizadas en src/ para reutilizarlas desde Jupyter Notebooks sin duplicar código.',
+        ],
+        masterPromptTone: 'strict_senior',
+        customMasterPromptDirectives: 'Escribe código Python idiomático (PEP 8), vectorizado y con Type Hints completos. No propongas ni generes código HTML/CSS/JS; enfócate en la calidad analítica, limpieza de datos y gráficos.',
+      },
+      tasks: {
+        phases: [
+          {
+            id: 'phase-1',
+            name: 'Fase 1: Setup del Entorno & Estructura de Datos',
+            tasks: [
+              'Configurar entorno virtual Python, requirements.txt y estructura src/, data/, notebooks/, reports/',
+              'Configurar módulo src/config.py con rutas pathlib y logging estructurado',
+            ],
+          },
+          {
+            id: 'phase-2',
+            name: 'Fase 2: Ingesta & Validación de Esquemas',
+            tasks: [
+              'Implementar carga segura de datasets desde data/raw/ con validación de columnas y tipos',
+              'Generar reporte diagnóstico inicial de valores faltantes, tipos y cardinalidad',
+            ],
+          },
+          {
+            id: 'phase-3',
+            name: 'Fase 3: Limpieza Vectorizada & Análisis (EDA)',
+            tasks: [
+              'Implementar funciones puras de limpieza, normalización y tratamiento de outliers',
+              'Calcular agregaciones, correlaciones e indicadores clave exportados a data/processed/',
+            ],
+          },
+          {
+            id: 'phase-4',
+            name: 'Fase 4: Visualización de Datos & Salida CLI',
+            tasks: [
+              'Configurar tema visual en Matplotlib/Seaborn acorde a las Notas Escritas de Diseño',
+              'Exportar figuras en 300 DPI y mostrar tablas de resumen en consola con Rich',
+            ],
+          },
+          {
+            id: 'phase-5',
+            name: 'Fase 5: Tests con Pytest & Documentación',
+            tasks: [
+              'Escribir pruebas unitarias en tests/ con datasets sintéticos de prueba',
+              'Documentar diccionario de datos y comandos de ejecución en README.md',
+            ],
+          },
+        ],
+      },
+      memory: {
+        currentState: 'Proyecto de análisis de datos configurado en modo Sin Interfaz Web (Headless Python Data Science).',
+        activeSprintOrMilestone: 'Sprint 1: Ingesta, validación y limpieza del dataset principal',
+        completedMilestones: ['Definición de arquitectura de datos y lineamientos de visualización'],
+        inProgressMilestones: ['Implementación de src/ingestion.py y src/processing.py'],
+        blockers: ['Ninguno'],
+      },
+    },
+  },
+  {
     id: 'saas-b2b-fullstack',
     title: 'SaaS B2B Fullstack',
     tag: 'Next.js + Supabase',

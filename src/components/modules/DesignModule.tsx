@@ -224,6 +224,53 @@ export const DesignModule: React.FC<DesignModuleProps> = ({ project, onChange })
     design.styleColors && design.styleColors[design.style]
   );
 
+  const isNoInterface =
+    Boolean(design.isNoInterface) ||
+    project.architecture?.platform === 'headless' ||
+    Boolean(project.architecture?.isHeadless) ||
+    Boolean(design.styleFramework?.includes('Sin Interfaz'));
+
+  const toggleNoInterfaceMode = () => {
+    const nextVal = !isNoInterface;
+    onChange({
+      architecture: {
+        ...project.architecture,
+        platform: nextVal ? 'headless' : project.architecture.platform === 'headless' ? 'web' : project.architecture.platform,
+        isHeadless: nextVal,
+      },
+      design: {
+        ...design,
+        isNoInterface: nextVal,
+        style: nextVal ? 'terminal_cli' : design.style,
+        styleFramework: nextVal
+          ? 'Sin Interfaz Web (Gráficos Matplotlib / Seaborn / Plotly / Terminal)'
+          : design.styleFramework.includes('Sin Interfaz')
+          ? 'Tailwind CSS v4 / v3'
+          : design.styleFramework,
+      },
+    });
+  };
+
+  const QUICK_DESIGN_NOTES = isNoInterface
+    ? [
+        'Gráficos en Matplotlib/Seaborn con estilo limpio (whitegrid), títulos claros y exportación en 300 DPI.',
+        'Usar paleta daltónico-segura (Viridis / Colorblind) consistente en todas las visualizaciones del proyecto.',
+        'Salida en terminal estructurada con paneles, tablas y barras de progreso usando la librería Rich.',
+        'No generar código HTML/CSS ni servidor web; exportar resultados únicamente en carpetas reports/figures/ y data/outputs/.',
+      ]
+    : [
+        'Priorizar jerarquía visual clara, abundante espacio en blanco (whitespace) y bordes sutiles de 1px.',
+        'Diseño 100% responsivo (Mobile-First) con navegación lateral colapsable en pantallas pequeñas.',
+        'Evitar saturación de colores: usar el color primario exclusivamente en botones CTA y estados activos.',
+        'Incluir estados de carga (Skeletons), estados vacíos ilustrados y feedback claro en formularios.',
+      ];
+
+  const handleAppendQuickNote = (noteText: string) => {
+    const current = (design.writtenNotes || '').trim();
+    const updated = current ? `${current}\n• ${noteText}` : `• ${noteText}`;
+    handleUpdate({ writtenNotes: updated });
+  };
+
   return (
     <div className="space-y-7 animate-fadeIn">
       {/* 1. Module Header */}
@@ -243,19 +290,110 @@ export const DesignModule: React.FC<DesignModuleProps> = ({ project, onChange })
                 </span>
               </div>
               <h2 className="text-lg sm:text-xl font-bold text-zinc-900 dark:text-zinc-100 leading-tight">
-                Sistema de Diseño Visual & 21 Estilos UI
+                {isNoInterface
+                  ? 'Diseño de Salida, Visualización de Datos & Notas Escritas'
+                  : 'Sistema de Diseño Visual, Estilos UI & Notas Escritas'}
               </h2>
             </div>
           </div>
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2.5">
             <p className="text-xs sm:text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed">
-              Selecciona entre 21 estéticas visuales, edita la paleta de colores y define librerías de animación e iconografía.
+              {isNoInterface
+                ? 'Configura el formato de gráficos (Matplotlib/Seaborn/Plotly), reportes, salida en consola (CLI) y escribe notas de diseño a tener en cuenta.'
+                : 'Selecciona entre 21 estéticas visuales, edita la paleta de colores, añade notas escritas a tener en cuenta y define librerías.'}
             </p>
-            <div className="flex items-center gap-2 bg-purple-500/10 border border-purple-500/20 px-3 py-1 rounded-xl text-xs shrink-0 self-start sm:self-auto">
-              <span className="text-zinc-500 font-medium">Estilo Activo:</span>
-              <span className="font-bold text-purple-600 dark:text-purple-400 font-mono">
-                {currentStyleDef.name.split(' (')[0]}
-              </span>
+            <div className="flex items-center gap-2 shrink-0 self-start sm:self-auto">
+              <button
+                type="button"
+                onClick={toggleNoInterfaceMode}
+                className={`px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1.5 border transition-all cursor-pointer ${
+                  isNoInterface
+                    ? 'bg-amber-500/15 border-amber-500/40 text-amber-600 dark:text-amber-400'
+                    : 'bg-zinc-100 dark:bg-zinc-900 border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:border-amber-500/40'
+                }`}
+                title="Activar/Desactivar modo para proyectos sin interfaz web (ej. Análisis de Datos en Python, CLI, ETL)"
+              >
+                <Terminal className="w-3.5 h-3.5" />
+                <span>{isNoInterface ? 'Modo Sin Interfaz Web: ACTIVO' : '¿Proyecto Sin Interfaz Web / Datos Python?'}</span>
+              </button>
+              <div className="flex items-center gap-2 bg-purple-500/10 border border-purple-500/20 px-3 py-1.5 rounded-xl text-xs">
+                <span className="text-zinc-500 font-medium">Estilo:</span>
+                <span className="font-bold text-purple-600 dark:text-purple-400 font-mono">
+                  {currentStyleDef.name.split(' (')[0]}
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Banner Informativo para Modo Sin Interfaz Web (Python Data Analysis / CLI) */}
+      {isNoInterface && (
+        <div className="bg-amber-500/10 dark:bg-amber-950/30 border border-amber-500/30 rounded-2xl p-4.5 flex items-start gap-3.5">
+          <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 mt-0.5">
+            <Terminal className="w-5 h-5" />
+          </div>
+          <div className="text-xs sm:text-sm flex-1 space-y-1">
+            <div className="font-bold text-amber-800 dark:text-amber-300">
+              📊 Diseño Adaptado a Proyectos Sin Interfaz Web (Análisis de Datos Python, Notebooks, ETL o CLI)
+            </div>
+            <p className="text-amber-700/90 dark:text-amber-400/90 leading-relaxed">
+              Al no requerir una interfaz web, el archivo <code className="font-mono font-bold">DESIGN.md</code> utilizará la paleta de colores, tipografía y tus <strong>Notas Escritas de Diseño</strong> para estandarizar la estética de <strong>gráficos estadísticos (Matplotlib, Seaborn, Plotly)</strong>, la estructura de <strong>Jupyter Notebooks / reportes exportados</strong> y el formato de <strong>tablas y logs en consola</strong>.
+            </p>
+          </div>
+        </div>
+      )}
+
+      {/* Tarjeta Principal: Notas Escritas a Tener en Cuenta en el Diseño */}
+      <div className="bg-gradient-to-br from-purple-500/5 via-zinc-50 to-indigo-500/5 dark:from-purple-950/20 dark:via-zinc-900/70 dark:to-indigo-950/20 p-5 sm:p-6 rounded-2xl border border-purple-500/30 space-y-4 shadow-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-purple-500/15 dark:border-purple-500/25">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-purple-500/15 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
+              <MessageSquarePlus className="w-5 h-5" />
+            </div>
+            <div>
+              <h3 className="text-sm sm:text-base font-bold text-zinc-900 dark:text-zinc-100">
+                Notas Escritas a Tener en Cuenta en el Diseño
+              </h3>
+              <p className="text-[11px] sm:text-xs text-zinc-500 dark:text-zinc-400">
+                Escribe cualquier indicación, regla visual, formato de gráficos/reportes o detalle específico que la IA deba respetar obligatoriamente.
+              </p>
+            </div>
+          </div>
+          <span className="px-2.5 py-1 text-[10px] font-mono font-bold rounded-lg bg-purple-500/15 text-purple-700 dark:text-purple-300 border border-purple-500/30 self-start sm:self-auto shrink-0">
+            Inyección Directa en DESIGN.md y PRD.md
+          </span>
+        </div>
+
+        <div className="space-y-2.5">
+          <textarea
+            rows={4}
+            value={design.writtenNotes || ''}
+            onChange={(e) => handleUpdate({ writtenNotes: e.target.value })}
+            placeholder={
+              isNoInterface
+                ? 'Escribe tus notas de diseño para este proyecto sin interfaz web (ej. "Generar gráficos comparativos en Seaborn con fondo blanco y paleta Viridis", "Mostrar resumen de métricas en consola con tablas de Rich", "Exportar reporte final en PDF/HTML limpio", etc.)...'
+                : 'Escribe tus notas escritas a tener en cuenta en el diseño (ej. "Quiero un panel lateral fijo a la izquierda, tarjetas con bordes suaves, evitar colores chillones, que la tabla principal tenga filtros rápidos arriba, inspirarse en el diseño de Linear/Notion", etc.)...'
+            }
+            className="w-full text-xs sm:text-sm bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-xl p-3.5 text-zinc-900 dark:text-zinc-100 outline-none focus:ring-2 focus:ring-purple-500/40 transition-all placeholder:text-zinc-400 leading-relaxed"
+          />
+
+          {/* Sugerencias rápidas con 1 clic */}
+          <div className="space-y-1.5">
+            <span className="text-[11px] font-semibold text-zinc-500 dark:text-zinc-400 block">
+              + Añadir nota rápida sugerida con 1 clic:
+            </span>
+            <div className="flex flex-wrap gap-1.5">
+              {QUICK_DESIGN_NOTES.map((qNote, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => handleAppendQuickNote(qNote)}
+                  className="text-[11px] px-2.5 py-1 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:border-purple-500/50 hover:text-purple-600 dark:hover:text-purple-400 transition-all cursor-pointer text-left"
+                >
+                  + {qNote}
+                </button>
+              ))}
             </div>
           </div>
         </div>

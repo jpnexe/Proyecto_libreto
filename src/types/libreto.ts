@@ -1,4 +1,4 @@
-export type TargetPlatform = 'web' | 'static' | 'mobile' | 'dual';
+export type TargetPlatform = 'web' | 'static' | 'mobile' | 'dual' | 'headless';
 
 export type DesignStyleId =
   // Compatibilidad con proyectos previos
@@ -70,6 +70,7 @@ export interface LibretoProject {
     customNotes: string;
     isStaticSite?: boolean;
     staticHosting?: string;
+    isHeadless?: boolean;
   };
 
   // MÓDULO B: DESIGN
@@ -84,6 +85,8 @@ export interface LibretoProject {
     typography: string;
     customDesignGuidelines: string;
     customObservations?: string[];
+    writtenNotes?: string;
+    isNoInterface?: boolean;
     styleColors?: Record<string, string[]>;
   };
 

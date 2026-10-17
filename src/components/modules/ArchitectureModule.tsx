@@ -16,6 +16,7 @@ import {
   Plus,
   Sparkles,
   RefreshCw,
+  Terminal,
 } from 'lucide-react';
 import type { LibretoProject, TargetPlatform } from '../../types/libreto';
 import {
@@ -70,38 +71,94 @@ export const ArchitectureModule: React.FC<ArchitectureModuleProps> = ({ project,
     });
   };
 
+  const isHeadless =
+    architecture?.platform === 'headless' ||
+    Boolean(architecture?.isHeadless) ||
+    Boolean(architecture?.frontendFramework?.includes('Sin Interfaz')) ||
+    Boolean(architecture?.frontendFramework?.includes('Jupyter')) ||
+    Boolean(architecture?.frontendFramework?.includes('CLI Interactiva'));
+
   const isStaticSite =
-    architecture?.platform === 'static' ||
-    Boolean(architecture?.isStaticSite) ||
-    Boolean(architecture?.database?.includes('Ninguna')) ||
-    Boolean(architecture?.backendFramework?.includes('Ninguno'));
+    !isHeadless &&
+    (architecture?.platform === 'static' ||
+      Boolean(architecture?.isStaticSite) ||
+      Boolean(architecture?.database?.includes('Ninguna')) ||
+      Boolean(architecture?.backendFramework?.includes('Ninguno')));
 
   const applyStaticPreset = () => {
-    handleUpdate({
-      platform: 'static',
-      isStaticSite: true,
-      frontendFramework: 'Astro (SSG / Islands Architecture)',
-      backendFramework: 'Ninguno (Solo Frontend Estático / Jamstack)',
-      database: 'Ninguna (Sitio Estático / Sin BD)',
-      connectionType: 'Archivos Estáticos Locales (Markdown / MDX / JSON)',
-      architecturalPattern: 'SSG (Static Site Generation / Jamstack)',
-      staticHosting: architecture?.staticHosting || 'Cloudflare Pages',
+    onChange({
+      architecture: {
+        ...architecture,
+        platform: 'static',
+        isStaticSite: true,
+        isHeadless: false,
+        frontendFramework: 'Astro (SSG / Islands Architecture)',
+        backendFramework: 'Ninguno (Solo Frontend Estático / Jamstack)',
+        database: 'Ninguna (Sitio Estático / Sin BD)',
+        connectionType: 'Archivos Estáticos Locales (Markdown / MDX / JSON)',
+        architecturalPattern: 'SSG (Static Site Generation / Jamstack)',
+        staticHosting: architecture?.staticHosting || 'Cloudflare Pages',
+      },
+      design: {
+        ...project.design,
+        isNoInterface: false,
+      },
+    });
+  };
+
+  const applyHeadlessDataPreset = () => {
+    onChange({
+      architecture: {
+        ...architecture,
+        platform: 'headless',
+        isStaticSite: false,
+        isHeadless: true,
+        languages: ['Python', 'SQL'],
+        frontendFramework: 'Ninguno (Sin Interfaz Gráfica / Script / CLI / Notebooks)',
+        backendFramework: 'Python Data Science (Pandas / Polars / NumPy / Scikit-Learn)',
+        database: 'Datasets Locales (CSV / Parquet / Excel / JSON)',
+        connectionType: 'Ejecución Local por Consola / CLI / Notebooks (Sin Red)',
+        architecturalPattern: 'Pipeline de Datos / ETL (Extract - Transform - Load)',
+      },
+      design: {
+        ...project.design,
+        isNoInterface: true,
+        style: 'terminal_cli',
+        styleFramework: 'Sin Interfaz Web (Gráficos Matplotlib / Seaborn / Plotly / Terminal)',
+      },
     });
   };
 
   const applyDynamicPreset = () => {
-    handleUpdate({
-      platform: 'web',
-      isStaticSite: false,
-      frontendFramework: 'Next.js (App Router - Fullstack)',
-      backendFramework: 'Node.js (NestJS)',
-      database: 'PostgreSQL',
-      connectionType: 'REST API (JSON)',
-      architecturalPattern: 'Clean Architecture (Domain-Driven / Use Cases)',
+    onChange({
+      architecture: {
+        ...architecture,
+        platform: 'web',
+        isStaticSite: false,
+        isHeadless: false,
+        frontendFramework: 'Next.js (App Router - Fullstack)',
+        backendFramework: 'Node.js (NestJS)',
+        database: 'PostgreSQL',
+        connectionType: 'REST API (JSON)',
+        architecturalPattern: 'Clean Architecture (Domain-Driven / Use Cases)',
+      },
+      design: {
+        ...project.design,
+        isNoInterface: false,
+      },
     });
   };
 
   const QUICK_STACKS = [
+    {
+      id: 'python-data-headless',
+      label: 'Análisis de Datos Python (Sin Interfaz)',
+      badge: 'Pandas + ETL / CLI',
+      icon: Terminal,
+      accentBg: 'bg-amber-500/15 text-amber-500 dark:text-amber-400 border border-amber-500/30',
+      description: 'Proyecto sin interfaz web: pipelines de datos en Python (Pandas/NumPy/Scikit-Learn), CSV/Parquet, Notebooks o CLI.',
+      apply: applyHeadlessDataPreset,
+    },
     {
       id: 'static-jamstack',
       label: 'Web Estática Jamstack',
@@ -122,6 +179,7 @@ export const ArchitectureModule: React.FC<ArchitectureModuleProps> = ({ project,
         handleUpdate({
           platform: 'web',
           isStaticSite: false,
+          isHeadless: false,
           frontendFramework: 'Next.js (App Router - Fullstack)',
           backendFramework: 'Supabase Functions / Edge',
           database: 'Supabase (PostgreSQL BaaS)',
@@ -141,6 +199,7 @@ export const ArchitectureModule: React.FC<ArchitectureModuleProps> = ({ project,
         handleUpdate({
           platform: 'web',
           isStaticSite: false,
+          isHeadless: false,
           frontendFramework: 'React (Vite)',
           backendFramework: 'Node.js (NestJS)',
           database: 'PostgreSQL',
@@ -160,6 +219,7 @@ export const ArchitectureModule: React.FC<ArchitectureModuleProps> = ({ project,
         handleUpdate({
           platform: 'mobile',
           isStaticSite: false,
+          isHeadless: false,
           frontendFramework: 'React Native / Expo',
           backendFramework: 'FastAPI (Python)',
           database: 'PostgreSQL',
@@ -240,24 +300,52 @@ export const ArchitectureModule: React.FC<ArchitectureModuleProps> = ({ project,
           <div className="flex items-center gap-2.5">
             <div
               className={`w-2.5 h-2.5 rounded-full shrink-0 ${
-                isStaticSite ? 'bg-emerald-500 animate-pulse' : 'bg-cyan-500'
+                isHeadless
+                  ? 'bg-amber-500 animate-pulse'
+                  : isStaticSite
+                  ? 'bg-emerald-500 animate-pulse'
+                  : 'bg-cyan-500'
               }`}
             />
             <span className="text-xs font-semibold text-zinc-700 dark:text-zinc-300">
               Modo Actual:{' '}
-              <strong className={isStaticSite ? 'text-emerald-500' : 'text-cyan-500'}>
-                {isStaticSite ? 'Sitio Web Estático (SSG / Jamstack)' : 'Aplicación Web Dinámica / Backend'}
+              <strong
+                className={
+                  isHeadless
+                    ? 'text-amber-500'
+                    : isStaticSite
+                    ? 'text-emerald-500'
+                    : 'text-cyan-500'
+                }
+              >
+                {isHeadless
+                  ? 'Proyecto Sin Interfaz Web (Datos Python / CLI / Scripts)'
+                  : isStaticSite
+                  ? 'Sitio Web Estático (SSG / Jamstack)'
+                  : 'Aplicación Web Dinámica / Backend'}
               </strong>
             </span>
           </div>
 
-          <div>
-            {isStaticSite ? (
+          <div className="flex flex-wrap items-center gap-2">
+            {!isHeadless && (
+              <button
+                type="button"
+                onClick={applyHeadlessDataPreset}
+                className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white shadow-xs shadow-amber-500/20 transition-all active:scale-98 cursor-pointer"
+                title="Configurar proyecto sin interfaz web (Análisis de datos Python, ETL, CLI o Scripts)"
+              >
+                <Terminal className="w-3.5 h-3.5 text-amber-100" />
+                <span>Modo Sin Interfaz (Datos Python / CLI)</span>
+              </button>
+            )}
+
+            {isStaticSite || isHeadless ? (
               <button
                 type="button"
                 onClick={applyDynamicPreset}
-                className="w-full sm:w-auto flex items-center justify-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold bg-zinc-800 hover:bg-zinc-700 text-zinc-100 dark:bg-zinc-800 dark:hover:bg-zinc-750 border border-zinc-700 shadow-xs transition-all active:scale-98 cursor-pointer"
-                title="Cambiar a aplicación dinámica con backend y base de datos"
+                className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-zinc-800 hover:bg-zinc-700 text-zinc-100 dark:bg-zinc-800 dark:hover:bg-zinc-750 border border-zinc-700 shadow-xs transition-all active:scale-98 cursor-pointer"
+                title="Cambiar a aplicación dinámica con interfaz web y backend"
               >
                 <RefreshCw className="w-3.5 h-3.5 text-cyan-400" />
                 <span>Cambiar a Web Dinámica</span>
@@ -266,11 +354,11 @@ export const ArchitectureModule: React.FC<ArchitectureModuleProps> = ({ project,
               <button
                 type="button"
                 onClick={applyStaticPreset}
-                className="w-full sm:w-auto flex items-center justify-center gap-2 px-3 py-1.5 rounded-xl text-xs font-bold bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white shadow-xs shadow-emerald-500/20 transition-all active:scale-98 cursor-pointer"
+                className="flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white shadow-xs shadow-emerald-500/20 transition-all active:scale-98 cursor-pointer"
                 title="Configurar automáticamente como sitio web estático Jamstack sin base de datos"
               >
                 <Zap className="w-3.5 h-3.5 text-emerald-200" />
-                <span>Configurar como Web Estática (Sin BD)</span>
+                <span>Web Estática (Sin BD)</span>
               </button>
             )}
           </div>
@@ -323,6 +411,23 @@ export const ArchitectureModule: React.FC<ArchitectureModuleProps> = ({ project,
         </div>
       </div>
 
+      {/* Headless / No-Interface Mode Banner if active */}
+      {isHeadless && (
+        <div className="bg-amber-500/10 dark:bg-amber-950/30 border border-amber-500/30 rounded-2xl p-4.5 flex items-start gap-3.5 transition-all">
+          <div className="w-9 h-9 rounded-xl bg-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 mt-0.5">
+            <Terminal className="w-5 h-5" />
+          </div>
+          <div className="text-xs sm:text-sm flex-1">
+            <div className="font-bold text-amber-800 dark:text-amber-300">
+              🐍 Modo Proyecto Sin Interfaz Web (Análisis de Datos / CLI / Scripts) Activo
+            </div>
+            <p className="text-amber-700/90 dark:text-amber-400/90 mt-1 leading-relaxed">
+              Este proyecto <strong>no requiere interfaz gráfica web (sin HTML/CSS/DOM)</strong>. Los 8 documentos generados se adaptarán automáticamente a pipelines de datos (Pandas, Polars, NumPy, Scikit-Learn), Jupyter Notebooks, scripts ETL o herramientas de consola (CLI), y en el módulo de Diseño podrás especificar lineamientos de visualización de gráficos (Matplotlib/Seaborn/Plotly), formato de reportes y notas escritas.
+            </p>
+          </div>
+        </div>
+      )}
+
       {/* Static Site Mode Banner if active */}
       {isStaticSite && (
         <div className="bg-emerald-500/10 dark:bg-emerald-950/30 border border-emerald-500/30 rounded-2xl p-4.5 flex items-start gap-3.5 transition-all">
@@ -351,7 +456,7 @@ export const ArchitectureModule: React.FC<ArchitectureModuleProps> = ({ project,
               1. Plataforma Objetivo
             </label>
             <p className="text-[11px] text-zinc-400 dark:text-zinc-500">
-              Tipo de entorno de despliegue principal
+              Tipo de entorno de despliegue o ejecución principal
             </p>
           </div>
         </div>
@@ -366,26 +471,43 @@ export const ArchitectureModule: React.FC<ArchitectureModuleProps> = ({ project,
                 onClick={() => {
                   if (plat.id === 'static') {
                     applyStaticPreset();
+                  } else if (plat.id === 'headless') {
+                    applyHeadlessDataPreset();
                   } else {
-                    handleUpdate({
-                      platform: plat.id as TargetPlatform,
-                      isStaticSite: false,
-                      backendFramework:
-                        architecture?.backendFramework?.includes('Ninguno')
-                          ? 'Node.js (NestJS)'
-                          : architecture?.backendFramework,
-                      database:
-                        architecture?.database?.includes('Ninguna')
-                          ? 'PostgreSQL'
-                          : architecture?.database,
-                      connectionType:
-                        architecture?.connectionType?.includes('Archivos Estáticos')
-                          ? 'REST API (JSON)'
-                          : architecture?.connectionType,
-                      architecturalPattern:
-                        architecture?.architecturalPattern?.includes('SSG')
-                          ? 'Clean Architecture (Domain-Driven / Use Cases)'
-                          : architecture?.architecturalPattern,
+                    onChange({
+                      architecture: {
+                        ...architecture,
+                        platform: plat.id as TargetPlatform,
+                        isStaticSite: false,
+                        isHeadless: false,
+                        frontendFramework:
+                          architecture?.frontendFramework?.includes('Sin Interfaz') ||
+                          architecture?.frontendFramework?.includes('Jupyter')
+                            ? 'React (Vite)'
+                            : architecture?.frontendFramework,
+                        backendFramework:
+                          architecture?.backendFramework?.includes('Ninguno')
+                            ? 'Node.js (NestJS)'
+                            : architecture?.backendFramework,
+                        database:
+                          architecture?.database?.includes('Ninguna')
+                            ? 'PostgreSQL'
+                            : architecture?.database,
+                        connectionType:
+                          architecture?.connectionType?.includes('Archivos Estáticos') ||
+                          architecture?.connectionType?.includes('Ejecución Local')
+                            ? 'REST API (JSON)'
+                            : architecture?.connectionType,
+                        architecturalPattern:
+                          architecture?.architecturalPattern?.includes('SSG') ||
+                          architecture?.architecturalPattern?.includes('Pipeline de Datos')
+                            ? 'Clean Architecture (Domain-Driven / Use Cases)'
+                            : architecture?.architecturalPattern,
+                      },
+                      design: {
+                        ...project.design,
+                        isNoInterface: false,
+                      },
                     });
                   }
                 }}
@@ -401,13 +523,16 @@ export const ArchitectureModule: React.FC<ArchitectureModuleProps> = ({ project,
                       ? 'bg-blue-500/15 text-blue-500'
                       : plat.id === 'static'
                       ? 'bg-emerald-500/15 text-emerald-500'
+                      : plat.id === 'headless'
+                      ? 'bg-amber-500/15 text-amber-500'
                       : plat.id === 'mobile'
                       ? 'bg-purple-500/15 text-purple-500'
-                      : 'bg-amber-500/15 text-amber-500'
+                      : 'bg-cyan-500/15 text-cyan-500'
                   }`}
                 >
                   {plat.id === 'web' && <Globe className="w-5.5 h-5.5" />}
                   {plat.id === 'static' && <FileCode className="w-5.5 h-5.5" />}
+                  {plat.id === 'headless' && <Terminal className="w-5.5 h-5.5" />}
                   {plat.id === 'mobile' && <Smartphone className="w-5.5 h-5.5" />}
                   {plat.id === 'dual' && <Layers className="w-5.5 h-5.5" />}
                 </div>

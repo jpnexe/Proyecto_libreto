@@ -418,9 +418,10 @@ export const DESIGN_CATEGORIES = [
   'Sistemas Nativos',
 ];
 
-export const PLATFORMS: { id: TargetPlatform; label: string; icon: string; description: string; isStatic?: boolean }[] = [
+export const PLATFORMS: { id: TargetPlatform; label: string; icon: string; description: string; isStatic?: boolean; isHeadless?: boolean }[] = [
   { id: 'web', label: 'Web SPA / SSR Dinámica', icon: 'Globe', description: 'Aplicaciones web con servidor, API o rendering dinámico' },
   { id: 'static', label: 'Web Estática / Jamstack (Sin BD)', icon: 'FileCode', description: 'Sitios estáticos (SSG), Landing Pages, Documentación o Blogs sin base de datos ni servidor backend', isStatic: true },
+  { id: 'headless', label: 'Sin Interfaz Web (Datos Python / CLI / Scripts)', icon: 'Terminal', description: 'Análisis de datos (Pandas, Jupyter, ETL, Machine Learning), automatización Python, CLI o API pura sin interfaz web', isHeadless: true },
   { id: 'mobile', label: 'Móvil Nativo / Híbrido', icon: 'Smartphone', description: 'Apps para iOS y Android con acceso a sensores' },
   { id: 'dual', label: 'Dual (Web + Móvil)', icon: 'Layers', description: 'Ecosistema unificado con backend compartido' },
 ];
@@ -429,6 +430,9 @@ export const LANGUAGES = [
   'TypeScript',
   'JavaScript',
   'Python',
+  'SQL',
+  'R',
+  'Bash / Shell',
   'Dart / Flutter',
   'Kotlin',
   'PHP',
@@ -439,6 +443,10 @@ export const LANGUAGES = [
 ];
 
 export const FRONTEND_FRAMEWORKS = [
+  'Ninguno (Sin Interfaz Gráfica / Script / CLI / Notebooks)',
+  'Jupyter Notebooks / Google Colab (Ciencia de Datos)',
+  'CLI Interactiva en Terminal (Rich / Typer / Click)',
+  'Streamlit / Gradio (Dashboard de Datos Ligero)',
   'HTML5 + Vanilla JS + CSS3 (Puro)',
   'Astro (SSG / Islands Architecture)',
   'React (Vite)',
@@ -455,6 +463,8 @@ export const FRONTEND_FRAMEWORKS = [
 ];
 
 export const BACKEND_FRAMEWORKS = [
+  'Python Data Science (Pandas / Polars / NumPy / Scikit-Learn)',
+  'Scripts de Automatización / ETL / Cron Jobs (Python)',
   'Ninguno (Solo Frontend Estático / Jamstack)',
   'Serverless Edge Functions (Vercel / Cloudflare)',
   'Node.js (NestJS)',
@@ -469,6 +479,8 @@ export const BACKEND_FRAMEWORKS = [
 ];
 
 export const DATABASES = [
+  'Datasets Locales (CSV / Parquet / Excel / JSON)',
+  'DuckDB (Analítica SQL In-Process / Olap)',
   'Ninguna (Sitio Estático / Sin BD)',
   'Archivos Locales (Markdown / MDX / JSON)',
   'Headless CMS (Contentful / Sanity / Strapi)',
@@ -483,6 +495,8 @@ export const DATABASES = [
 ];
 
 export const CONNECTION_TYPES = [
+  'Ejecución Local por Consola / CLI / Notebooks (Sin Red)',
+  'Lectura/Escritura de Datasets y Archivos Locales (I/O)',
   'Archivos Estáticos Locales (Markdown / MDX / JSON)',
   'Sin Conexión Externa (Contenido 100% Estático)',
   'APIs Client-Side (fetch bajo demanda / Serviceless)',
@@ -495,6 +509,9 @@ export const CONNECTION_TYPES = [
 ];
 
 export const ARCHITECTURAL_PATTERNS = [
+  'Pipeline de Datos / ETL (Extract - Transform - Load)',
+  'Arquitectura Modular de Ciencia de Datos & Notebooks (Cookiecutter Data Science)',
+  'CLI Modular por Comandos (Command Pattern)',
   'SSG (Static Site Generation / Jamstack)',
   'Arquitectura de Islas (Islands Architecture - Astro)',
   'SPA Estática Client-Side (Vite)',
@@ -517,6 +534,7 @@ export const STATIC_HOSTINGS = [
 ];
 
 export const STYLE_FRAMEWORKS = [
+  'Sin Interfaz Web (Gráficos Matplotlib / Seaborn / Plotly / Terminal)',
   'Tailwind CSS v4 / v3',
   'Shadcn UI + Radix UI',
   'Bootstrap 5',

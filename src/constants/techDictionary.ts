@@ -508,12 +508,247 @@ static/`,
     securityConsiderations: ['Cero vectores de ataque en runtime.'],
     commonPitfalls: ['Sintaxis de plantillas Go/Liquid complejas al extender temas.'],
   },
+
+  'Ninguno (Sin Interfaz Gráfica / Script / CLI / Notebooks)': {
+    name: 'Ninguno (Sin Interfaz Gráfica / Script / CLI / Notebooks)',
+    category: 'Ejecución Headless / Sin Interfaz Web (CLI, Scripts, Datos)',
+    description: 'El proyecto prescinde completamente de una interfaz gráfica web (sin HTML/CSS/DOM). Toda la interacción e inspección ocurre mediante scripts ejecutables, pipelines de datos, línea de comandos (CLI), logs estructurados o generación de reportes/gráficos en archivos.',
+    paradigm: 'Headless Execution + Batch / Pipeline Processing + CLI / Output Artifacts',
+    architectureGuide: `No existe capa de navegador ni componentes UI web. El punto de entrada del sistema es un script principal (\`main.py\`, CLI o notebook reproducible) que orquesta la lectura de entradas/datasets, procesamiento en módulos desacoplados y exportación de resultados (archivos CSV/Parquet, gráficos estáticos PNG/SVG/PDF, modelos entrenados o salida en terminal).`,
+    recommendedFolderStructure: `project_root/
+├── data/
+│   ├── raw/              # Datasets originales inmutables (CSV, Parquet, JSON, Excel)
+│   ├── processed/        # Datos limpios y transformados listos para análisis
+│   └── outputs/          # Reportes finales, tablas exportadas y figuras generadas
+├── notebooks/            # Jupyter Notebooks numerados para exploración (01_eda.ipynb)
+├── src/
+│   ├── __init__.py
+│   ├── config.py         # Rutas, constantes, semillas aleatorias y parámetros
+│   ├── ingestion.py      # Carga y validación de esquemas de datos
+│   ├── processing.py     # Limpieza, transformación y feature engineering
+│   ├── analysis.py       # Modelos estadísticos, ML o reglas de negocio
+│   └── visualization.py  # Generación de gráficos (Matplotlib / Seaborn / Plotly)
+├── tests/                # Pruebas unitarias de funciones de transformación (pytest)
+├── main.py               # Script / CLI orquestador del pipeline completo
+├── requirements.txt      # Dependencias fijadas con versión exacta (o pyproject.toml)
+└── README.md             # Instrucciones de ejecución y diccionario de datos`,
+    cliCommands: [
+      { label: 'Crear Entorno Virtual', command: 'python -m venv .venv && .venv\\Scripts\\activate' },
+      { label: 'Instalar Dependencias', command: 'pip install -r requirements.txt' },
+      { label: 'Ejecutar Pipeline Principal', command: 'python main.py' },
+      { label: 'Ejecutar Suite de Tests', command: 'pytest -v' },
+    ],
+    keyLibraries: ['argparse / typer / click', 'logging / rich', 'pathlib', 'pytest', 'python-dotenv'],
+    performanceDirectives: [
+      'Utilizar operaciones vectorizadas (Pandas/Polars/NumPy) en lugar de bucles for nativos sobre filas de datos.',
+      'Procesar archivos masivos mediante lectura por bloques (chunking) o evaluación perezosa (lazy evaluation) para no saturar la RAM.',
+    ],
+    bestPractices: [
+      'Separar estrictamente los datos crudos (data/raw, solo lectura) de los datos procesados (data/processed).',
+      'Extraer funciones reutilizables hacia módulos en src/ en lugar de duplicar código en múltiples scripts o notebooks.',
+      'Fijar semillas aleatorias (random seed) para garantizar reproducibilidad exacta de resultados.',
+    ],
+    securityConsiderations: [
+      'Nunca subir datasets con Información Personal Identificable (PII) ni credenciales en el repositorio Git (.gitignore estricto).',
+      'Validar rutas de archivos de entrada y esquemas de columnas antes de ejecutar transformaciones destructivas.',
+    ],
+    commonPitfalls: [
+      'Rutas de archivo absolutas hardcodeadas que rompen la ejecución en otras máquinas (usar siempre pathlib.Path relativo a la raíz).',
+      'Mutación silenciosa de DataFrames en memoria sin copia explícita (SettingWithCopyWarning).',
+    ],
+  },
+
+  'Jupyter Notebooks / Google Colab (Ciencia de Datos)': {
+    name: 'Jupyter Notebooks / Google Colab (Ciencia de Datos)',
+    category: 'Entorno Interactivo de Análisis Exploratorio y Ciencia de Datos',
+    description: 'Entorno computacional literario e interactivo que combina código ejecutable (Python/R/SQL), texto narrativo en Markdown, fórmulas matemáticas LaTeX y visualizaciones de datos inline.',
+    paradigm: 'Literate Computing + Exploratory Data Analysis (EDA) + Modular src/',
+    architectureGuide: `Los Notebooks (\`.ipynb\`) actúan como capa narrativa, de experimentación y presentación de hallazgos (EDA, gráficas comparativas, conclusiones), mientras que las funciones pesadas de limpieza y transformación se modularizan en el paquete local \`src/\` e importan con \`%autoreload\`.`,
+    recommendedFolderStructure: `project_root/
+├── data/
+│   ├── raw/              # Datos crudos originales (inmutables)
+│   └── processed/        # Datasets limpios exportados (.parquet / .csv)
+├── notebooks/
+│   ├── 01_exploracion_eda.ipynb
+│   ├── 02_limpieza_transformacion.ipynb
+│   └── 03_modelado_y_resultados.ipynb
+├── reports/
+│   └── figures/          # Gráficos de alta resolución exportados (300 DPI)
+├── src/                  # Módulos Python reutilizables importados desde notebooks
+└── requirements.txt`,
+    cliCommands: [
+      { label: 'Iniciar Jupyter Lab', command: 'jupyter lab' },
+      { label: 'Ejecutar Notebook por CLI', command: 'jupyter nbconvert --to notebook --execute notebooks/01_exploracion_eda.ipynb' },
+      { label: 'Exportar Reporte a HTML/PDF', command: 'jupyter nbconvert --to html notebooks/03_modelado_y_resultados.ipynb' },
+    ],
+    keyLibraries: ['jupyterlab', 'ipykernel', 'pandas', 'numpy', 'matplotlib', 'seaborn', 'plotly'],
+    performanceDirectives: [
+      'Persistir estados intermedios en formato Apache Parquet para recargar tipos y datos 10x más rápido entre notebooks.',
+      'Evitar imprimir DataFrames gigantes completos en celdas para no inflar el tamaño del archivo .ipynb.',
+    ],
+    bestPractices: [
+      'Garantizar que todo Notebook se ejecute sin errores de principio a fin con "Restart Kernel and Run All Cells".',
+      'Numerar los notebooks secuencialmente (01_, 02_, 03_) y documentar cada hallazgo con celdas Markdown.',
+    ],
+    securityConsiderations: [
+      'Limpiar salidas de celdas con datos confidenciales antes de hacer commit en Git (nbstripout).',
+    ],
+    commonPitfalls: [
+      'Ejecutar celdas fuera de orden provocando estados ocultos irreproducibles en memoria.',
+    ],
+  },
+
+  'CLI Interactiva en Terminal (Rich / Typer / Click)': {
+    name: 'CLI Interactiva en Terminal (Rich / Typer / Click)',
+    category: 'Herramienta de Línea de Comandos (CLI) en Consola',
+    description: 'Aplicación ejecutada íntegramente en terminal con subcomandos tipados, validación de argumentos, barras de progreso, tablas formateadas en consola y paneles coloreados ANSI.',
+    paradigm: 'Command-Line Interface + POSIX Arguments + Rich Terminal Formatting',
+    architectureGuide: `La interfaz de usuario es la propia terminal. Los comandos y flags se definen declarativamente mediante decoradores y type hints (Typer/Click), delegando la lógica pesada a servicios puros y presentando resultados con tablas y paneles de Rich.`,
+    recommendedFolderStructure: `src/
+├── cli/
+│   ├── main.py           # Punto de entrada Typer/Click y registro de comandos
+│   ├── commands/         # Subcomandos modulares (analyze, export, clean)
+│   └── console.py        # Instancia compartida de Rich Console y estilos
+├── core/                 # Lógica de negocio y procesamiento
+└── tests/                # Pruebas de CLI con CliRunner`,
+    cliCommands: [
+      { label: 'Mostrar Ayuda CLI', command: 'python -m src.cli.main --help' },
+      { label: 'Ejecutar Comando', command: 'python -m src.cli.main run --input data/input.csv' },
+    ],
+    keyLibraries: ['typer', 'rich', 'click', 'pydantic'],
+    performanceDirectives: [
+      'Mostrar indicadores de progreso (rich.progress) en toda operación que supere 500ms.',
+    ],
+    bestPractices: [
+      'Devolver códigos de salida estándar POSIX (0 para éxito, != 0 para errores controlados).',
+      'Soportar flag --quiet / --json para permitir integración en pipelines automatizados.',
+    ],
+    securityConsiderations: [
+      'Ocultar entradas sensibles con prompts enmascarados (password=True) y nunca imprimir secretos en stdout.',
+    ],
+    commonPitfalls: [
+      'Capturar excepciones sin mostrar mensajes claros ni sugerencias de corrección al usuario de la consola.',
+    ],
+  },
+
+  'Streamlit / Gradio (Dashboard de Datos Ligero)': {
+    name: 'Streamlit / Gradio (Dashboard de Datos Ligero)',
+    category: 'Data Apps y Dashboards Analíticos en Python Puro',
+    description: 'Frameworks en Python puro para transformar scripts de análisis de datos y modelos de Machine Learning en dashboards interactivos sin escribir HTML, CSS ni JavaScript.',
+    paradigm: 'Reactive Data Script Execution + Python-only Widgets',
+    architectureGuide: `El script de Python declara controles interactivos (filtros, sliders, carga de CSV) y renderiza tablas y gráficos (Plotly/Altair/Matplotlib) reactivamente usando decoradores de caché (\`@st.cache_data\`) para evitar recálculos costosos.`,
+    recommendedFolderStructure: `app/
+├── Home.py               # Entrada principal del dashboard
+├── pages/                # Vistas multipágina automáticas
+├── src/                  # Funciones de datos cacheadas y modelos
+└── requirements.txt`,
+    cliCommands: [
+      { label: 'Ejecutar Dashboard', command: 'streamlit run app/Home.py' },
+    ],
+    keyLibraries: ['streamlit / gradio', 'plotly', 'altair', 'pandas'],
+    performanceDirectives: [
+      'Decorar obligatoriamente las funciones de carga de datasets y modelos con @st.cache_data y @st.cache_resource.',
+    ],
+    bestPractices: [
+      'Separar el cálculo de datos pesados en módulos de src/ para mantener el script de UI limpio.',
+    ],
+    securityConsiderations: [
+      'Gestionar credenciales mediante .streamlit/secrets.toml o variables de entorno.',
+    ],
+    commonPitfalls: [
+      'Recargar datasets grandes desde disco en cada interacción de widget por olvidar @st.cache_data.',
+    ],
+  },
 };
 
 // ==========================================
 // 2. DICCIONARIO DE BACKEND FRAMEWORKS
 // ==========================================
 export const BACKEND_TECH_MAP: Record<string, TechDetail> = {
+  'Python Data Science (Pandas / Polars / NumPy / Scikit-Learn)': {
+    name: 'Python Data Science (Pandas / Polars / NumPy / Scikit-Learn)',
+    category: 'Motor de Análisis de Datos, Estadística y Machine Learning en Python',
+    description: 'Ecosistema científico de Python para ingesta, limpieza, transformación tabular de alto rendimiento, análisis estadístico exploratorio (EDA), visualización y modelado predictivo sin necesidad de servidores web.',
+    paradigm: 'Vectorized Tabular Data Processing + Reproducible Analytical Pipelines',
+    architectureGuide: `La arquitectura se estructura como un pipeline modular de datos: 1) Ingesta y validación de tipos desde fuentes crudas (CSV, Parquet, Excel, SQL), 2) Limpieza y transformación vectorizada con Pandas/Polars/NumPy (tratamiento de nulos, outliers, normalización y agregaciones), 3) Análisis estadístico o entrenamiento/evaluación con Scikit-Learn/SciPy, y 4) Generación de artefactos finales (tablas resumen, reportes y gráficos de alta resolución).`,
+    recommendedFolderStructure: `project_root/
+├── data/
+│   ├── raw/              # Datasets crudos originales (inmutables)
+│   ├── interim/          # Transformaciones intermedias
+│   └── processed/        # Datasets limpios finales (.parquet / .csv)
+├── notebooks/            # Notebooks exploratorios y de reporte
+├── src/
+│   ├── data_loader.py    # Lectura segura y validación de esquemas
+│   ├── preprocessing.py  # Limpieza de nulos, duplicados, tipos y outliers
+│   ├── features.py       # Creación de variables e indicadores (KPIs)
+│   ├── models.py         # Análisis estadístico / entrenamiento y métricas
+│   └── plots.py          # Funciones estandarizadas de visualización
+├── reports/
+│   └── figures/          # Gráficos exportados (PNG/SVG/PDF)
+├── tests/                # Pruebas de integridad de datos con pytest
+├── main.py               # Ejecución automatizada de punta a punta
+└── requirements.txt`,
+    cliCommands: [
+      { label: 'Instalar Stack Data Science', command: 'pip install pandas polars numpy scipy scikit-learn matplotlib seaborn plotly pyarrow pytest' },
+      { label: 'Ejecutar Pipeline de Análisis', command: 'python main.py' },
+      { label: 'Ejecutar Pruebas de Datos', command: 'pytest tests/' },
+    ],
+    keyLibraries: ['pandas / polars', 'numpy', 'scipy', 'scikit-learn', 'matplotlib / seaborn / plotly', 'pyarrow (Parquet)', 'pandera / pydantic'],
+    performanceDirectives: [
+      'Prohibido iterar sobre filas con .iterrows() cuando exista una operación vectorizada equivalente en Pandas/NumPy o expresiones en Polars.',
+      'Especificar tipos de datos eficientes (dtype category, int32, float32) o formato Parquet para reducir el consumo de memoria RAM hasta un 70%.',
+    ],
+    bestPractices: [
+      'Encadenar transformaciones de DataFrames mediante .pipe() o métodos inmutables claros y documentados.',
+      'Validar que no existan valores NaN inesperados ni duplicados tras cada cruce (merge/join) de tablas.',
+      'Documentar cada métrica, fórmula estadística y supuesto de negocio en docstrings con Type Hints.',
+    ],
+    securityConsiderations: [
+      'Anonimizar o aplicar hash a columnas con datos personales sensibles antes de exportar reportes o gráficos.',
+      'No cargar archivos .pickle de orígenes no confiables (riesgo de ejecución arbitraria de código); preferir Parquet, CSV, JSON o safetensors.',
+    ],
+    commonPitfalls: [
+      'Fuga de datos (Data Leakage) al calcular medias o escaladores sobre todo el dataset antes de separar train/test.',
+      'Explosionar el número de filas accidentalmente en un pd.merge() por claves duplicadas (usar validate="one_to_one" o "many_to_one").',
+    ],
+  },
+
+  'Scripts de Automatización / ETL / Cron Jobs (Python)': {
+    name: 'Scripts de Automatización / ETL / Cron Jobs (Python)',
+    category: 'Pipelines ETL, Automatización por Lotes y Procesamiento Headless',
+    description: 'Arquitectura de scripts autónomos en Python para extracción, transformación y carga de datos (ETL), web scraping ético, procesamiento de archivos por lotes y tareas programadas sin interfaz gráfica.',
+    paradigm: 'Idempotent Batch Processing + Structured Logging + Fault Tolerance',
+    architectureGuide: `Cada ejecución del script es atómica e idempotente: extrae datos de archivos locales, APIs o bases de datos, aplica reglas de negocio y validaciones con Pydantic, registra trazabilidad detallada en consola/archivo de log con rotación, y deposita los resultados en el destino configurado.`,
+    recommendedFolderStructure: `project_root/
+├── config/               # Configuraciones y variables de entorno (.env)
+├── logs/                 # Archivos de registro de ejecución con rotación
+├── src/
+│   ├── extractors/       # Conectores de entrada (archivos, APIs, scrapers)
+│   ├── transformers/     # Reglas de limpieza y negocio puras
+│   └── loaders/          # Exportadores a CSV, BD, Excel o almacenamiento
+├── tests/                # Tests unitarios con mocks
+└── main.py               # Entrypoint ejecutable por CLI o Cron/Task Scheduler`,
+    cliCommands: [
+      { label: 'Ejecutar Proceso ETL', command: 'python main.py --env prod' },
+      { label: 'Ejecutar en Modo Dry-Run', command: 'python main.py --dry-run' },
+    ],
+    keyLibraries: ['pydantic', 'python-dotenv', 'httpx / requests', 'tenacity (reintentos)', 'schedule / apscheduler', 'rich / loguru'],
+    performanceDirectives: [
+      'Implementar reintentos con backoff exponencial (tenacity) ante fallos de red o lectura de fuentes externas.',
+      'Usar generadores (yield) para procesar flujos de datos grandes con huella de memoria constante O(1).',
+    ],
+    bestPractices: [
+      'Diseñar procesos idempotentes: ejecutar el script dos veces con la misma entrada no debe duplicar ni corromper registros.',
+      'Incluir un modo --dry-run que simule y valide la ejecución sin escribir cambios destructivos.',
+    ],
+    securityConsiderations: [
+      'Cargar credenciales exclusivamente desde variables de entorno (.env) y nunca escribirlas en los archivos de log.',
+    ],
+    commonPitfalls: [
+      'Silenciar excepciones con bloques try/except vacíos que ocultan fallos críticos en tareas automatizadas.',
+    ],
+  },
+
   'Ninguno (Solo Frontend Estático / Jamstack)': {
     name: 'Ninguno (Solo Frontend Estático / Jamstack)',
     category: 'Arquitectura Serverless / Cero Servidores Backend',
@@ -865,6 +1100,66 @@ internal/
 // 3. DICCIONARIO DE BASES DE DATOS
 // ==========================================
 export const DATABASE_TECH_MAP: Record<string, TechDetail> = {
+  'Datasets Locales (CSV / Parquet / Excel / JSON)': {
+    name: 'Datasets Locales (CSV / Parquet / Excel / JSON)',
+    category: 'Almacenamiento Analítico en Archivos de Datos Locales',
+    description: 'Persistencia basada en datasets tabulares y estructurados en disco (CSV, Apache Parquet columnar, Excel .xlsx, JSON/JSONL), ideal para proyectos de análisis de datos en Python, ETL y ciencia de datos sin servidores de base de datos.',
+    paradigm: 'Immutable Raw Datasets + Columnar Processed Storage (Parquet)',
+    architectureGuide: `Los datasets originales se depositan en \`data/raw/\` en modo de solo lectura inmutable. Los pipelines de limpieza y transformación generan nuevos archivos optimizados en \`data/processed/\` (preferiblemente en formato Parquet para conservar tipos de datos exactos y compresión Snappy/Zstd) y tablas o reportes finales en \`data/outputs/\`.`,
+    recommendedFolderStructure: `data/
+├── raw/                  # Archivos CSV/Excel originales (NUNCA modificar directamente)
+├── interim/              # Datos parcialmente transformados o unidos
+├── processed/            # Datasets limpios tipados (.parquet / .csv)
+└── outputs/              # Tablas de resultados, resúmenes estadísticos y reportes`,
+    cliCommands: [
+      { label: 'Inspeccionar Dataset con Python', command: 'python -c "import pandas as pd; df = pd.read_csv(\'data/raw/dataset.csv\'); print(df.info())"' },
+    ],
+    keyLibraries: ['pandas', 'polars', 'pyarrow', 'openpyxl', 'pandera'],
+    performanceDirectives: [
+      'Utilizar Apache Parquet (pyarrow) para datasets intermedios y procesados: reduce el peso en disco hasta un 80% y acelera la lectura 10x frente a CSV.',
+      'Especificar usecols y dtype al leer archivos CSV grandes para cargar únicamente las columnas necesarias en memoria.',
+    ],
+    bestPractices: [
+      'Mantener los datasets crudos (data/raw/) estrictamente inmutables para poder reproducir todo el análisis desde cero.',
+      'Estandarizar nombres de columnas en snake_case sin tildes ni espacios al momento de la ingesta.',
+    ],
+    securityConsiderations: [
+      'Añadir archivos de datos pesados o sensibles al .gitignore y documentar su estructura con un archivo data_dictionary.md o muestra sintética.',
+    ],
+    commonPitfalls: [
+      'Problemas de codificación de caracteres (usar siempre encoding="utf-8" o "utf-8-sig") y pérdida de ceros a la izquierda en códigos/IDs al leer CSV sin especificar dtype=str.',
+    ],
+  },
+
+  'DuckDB (Analítica SQL In-Process / Olap)': {
+    name: 'DuckDB (Analítica SQL In-Process / Olap)',
+    category: 'Motor SQL Analítico Columnar In-Process (OLAP Serverless)',
+    description: 'Sistema de gestión de bases de datos SQL analítico (OLAP) embebido y ultrarrápido que se ejecuta dentro del mismo proceso de Python sin servidores externos, capaz de consultar archivos CSV, Parquet y DataFrames de Pandas/Polars directamente con SQL.',
+    paradigm: 'In-Process Vectorized Columnar OLAP Engine',
+    architectureGuide: `DuckDB opera directamente sobre un archivo local (\`.duckdb\`) o en memoria interrogando archivos Parquet/CSV y DataFrames de Pandas sin copiar datos (Zero-Copy integration). Ideal para agregaciones masivas, joins complejos y ventanas analíticas SQL en proyectos sin interfaz o de ciencia de datos.`,
+    recommendedFolderStructure: `data/
+├── analytics.duckdb      # Base de datos analítica embebida
+├── parquet/              # Archivos Parquet consultados directamente vía SQL
+└── queries/              # Scripts SQL analíticos parametrizados`,
+    cliCommands: [
+      { label: 'Instalar DuckDB en Python', command: 'pip install duckdb' },
+      { label: 'Consulta Directa sobre Parquet', command: 'python -c "import duckdb; duckdb.sql(\'SELECT * FROM \\"data/processed/*.parquet\\" LIMIT 10\').show()"' },
+    ],
+    keyLibraries: ['duckdb', 'pyarrow', 'pandas', 'polars'],
+    performanceDirectives: [
+      'Ejecución vectorizada columnar capaz de agregar decenas de millones de filas en milisegundos en una sola máquina local.',
+    ],
+    bestPractices: [
+      'Combinar la expresividad de SQL (CTEs, Window Functions) en DuckDB con el ecosistema de visualización y ML de Python.',
+    ],
+    securityConsiderations: [
+      'Utilizar consultas parametrizadas (?) al inyectar variables dinámicas en sentencias SQL de DuckDB.',
+    ],
+    commonPitfalls: [
+      'Intentar usar DuckDB para cargas transaccionales web de alta concurrencia de escritura (OLTP) en lugar de cargas analíticas (OLAP).',
+    ],
+  },
+
   'Ninguna (Sitio Estático / Sin BD)': {
     name: 'Ninguna (Sitio Estático / Sin BD)',
     category: 'Sin Persistencia Externa / Contenido en Archivos',
@@ -1151,6 +1446,67 @@ export const DATABASE_TECH_MAP: Record<string, TechDetail> = {
 // 4. DICCIONARIO DE PATRONES ARQUITECTÓNICOS
 // ==========================================
 export const PATTERN_TECH_MAP: Record<string, TechDetail> = {
+  'Pipeline de Datos / ETL (Extract - Transform - Load)': {
+    name: 'Pipeline de Datos / ETL (Extract - Transform - Load)',
+    category: 'Arquitectura de Procesamiento Secuencial de Datos',
+    description: 'Patrón arquitectónico que desacopla el flujo de datos en tres etapas puras y auditables: Extracción desde fuentes crudas, Transformación/Limpieza vectorizada en memoria y Carga/Exportación de artefactos finales.',
+    paradigm: 'Staged Data Pipeline + Functional Transformations',
+    architectureGuide: `Cada etapa recibe un contrato de datos claro (DataFrame / Dataset validado) y produce una salida determinista sin efectos secundarios ocultos. Permite re-ejecutar únicamente la fase de transformación o visualización sin volver a descargar o extraer los datos originales.`,
+    recommendedFolderStructure: `src/
+├── extract/              # Lectores de CSV, Excel, SQL, APIs
+├── transform/            # Limpieza, normalización, cruces y KPIs
+├── load/                 # Exportadores a Parquet, reportes y gráficos
+└── pipeline.py           # Orquestador secuencial con logging de tiempos`,
+    cliCommands: [{ label: 'Ejecutar Pipeline ETL', command: 'python -m src.pipeline' }],
+    keyLibraries: ['pandas', 'polars', 'pyarrow', 'pandera', 'pydantic'],
+    performanceDirectives: ['Ejecución vectorizada por etapas con validación de conteo de filas y memoria en cada transición.'],
+    bestPractices: ['Asegurar que las funciones de transformación sean funciones puras fáciles de probar con pytest.'],
+    securityConsiderations: ['Validar esquemas y tipos en la etapa Extract antes de propagar datos al resto del pipeline.'],
+    commonPitfalls: ['Mezclar lectura de archivos, lógica de limpieza y generación de gráficos en un solo script monolítico.'],
+  },
+
+  'Arquitectura Modular de Ciencia de Datos & Notebooks (Cookiecutter Data Science)': {
+    name: 'Arquitectura Modular de Ciencia de Datos & Notebooks (Cookiecutter Data Science)',
+    category: 'Estándar Industrial para Proyectos de Análisis de Datos y ML',
+    description: 'Organización estandarizada donde los datos siguen un flujo unidireccional (raw -> interim -> processed), los notebooks se usan para exploración y comunicación, y el código productivo reside en un paquete Python modular en src/.',
+    paradigm: 'Reproducible Data Science + Separation of Exploration and Production Code',
+    architectureGuide: `Los datos originales en \`data/raw/\` jamás se editan. Toda función que se utilice más de una vez en un notebook se refactoriza inmediatamente hacia \`src/\` y se prueba con \`pytest\`. Las figuras generadas se exportan de forma programática a \`reports/figures/\`.`,
+    recommendedFolderStructure: `project_root/
+├── data/
+│   ├── raw/              # Datos originales inmutables
+│   ├── interim/          # Datos intermedios transformados
+│   └── processed/        # Datasets finales para análisis/modelado
+├── notebooks/            # Notebooks numerados (01_eda, 02_features, 03_report)
+├── reports/
+│   └── figures/          # Gráficos y tablas exportadas
+├── src/                  # Código fuente modular Python
+└── tests/                # Tests unitarios de transformaciones`,
+    cliCommands: [{ label: 'Instalar Paquete Local en Modo Editable', command: 'pip install -e .' }],
+    keyLibraries: ['pandas', 'numpy', 'matplotlib', 'seaborn', 'scikit-learn', 'jupyterlab', 'pytest'],
+    performanceDirectives: ['Almacenar datasets procesados en Parquet para preservar tipos y acelerar cargas en notebooks.'],
+    bestPractices: ['Mantener los notebooks limpios y apoyados en funciones importadas desde src/.'],
+    securityConsiderations: ['Excluir data/ del control de versiones salvo muestras sintéticas pequeñas.'],
+    commonPitfalls: ['Tener código duplicado y desincronizado entre múltiples archivos .ipynb.'],
+  },
+
+  'CLI Modular por Comandos (Command Pattern)': {
+    name: 'CLI Modular por Comandos (Command Pattern)',
+    category: 'Arquitectura de Herramientas de Consola y Automatización',
+    description: 'Patrón que encapsula cada acción del sistema como un comando independiente ejecutable por terminal con sus propios argumentos, validaciones y códigos de retorno.',
+    paradigm: 'Command Pattern + Subcommand Routing + Core Service Layer',
+    architectureGuide: `La capa CLI actúa únicamente como adaptador de entrada/salida en consola (parseo de flags y formateo de tablas Rich), delegando el trabajo real a servicios de dominio desacoplados.`,
+    recommendedFolderStructure: `src/
+├── cli/                  # Definición de comandos y argumentos
+├── services/             # Lógica de negocio reutilizable
+└── utils/                # Formateadores, logs y manejo de archivos`,
+    cliCommands: [{ label: 'Ejecutar CLI', command: 'python main.py --help' }],
+    keyLibraries: ['typer', 'click', 'rich', 'argparse'],
+    performanceDirectives: ['Importaciones perezosas (lazy imports) de librerías pesadas para que --help responda instantáneamente.'],
+    bestPractices: ['Separar la lógica de consola de la lógica de negocio para poder testear ambas por separado.'],
+    securityConsiderations: ['Sanitizar rutas y argumentos pasados por consola.'],
+    commonPitfalls: ['Acoplar cálculos de negocio directamente dentro de las funciones decoradas de la CLI.'],
+  },
+
   'SSG (Static Site Generation / Jamstack)': {
     name: 'SSG (Static Site Generation / Jamstack)',
     category: 'Generación Estática en Compilación',

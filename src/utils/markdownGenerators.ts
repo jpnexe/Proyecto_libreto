@@ -7,7 +7,7 @@ import {
   getPatternTechInfo,
   getStyleTechInfo,
 } from '../constants/techDictionary';
-import { generateSuggestedTasks, isStaticProject } from './taskGenerator';
+import { generateSuggestedTasks, isHeadlessProject, isStaticProject } from './taskGenerator';
 
 export function slugify(text: string): string {
   return text
@@ -35,6 +35,7 @@ export function generatePRD(p: LibretoProject): string {
   const patInfo = getPatternTechInfo(p.architecture.architecturalPattern);
   const styleInfo = getStyleTechInfo(p.design.style);
   const isStatic = isStaticProject(p);
+  const isHeadless = isHeadlessProject(p);
 
   const reqList = p.prd.functionalRequirements.length > 0
     ? p.prd.functionalRequirements.map((r, i) => {
@@ -43,18 +44,27 @@ export function generatePRD(p: LibretoProject): string {
 - **Prioridad:** ${i === 0 ? 'Crítica (MVP Bloqueante)' : i < 3 ? 'Alta' : 'Media'}
 - **Descripción:** Implementación integral del flujo operativo correspondiente a "${r}".
 - **Criterios de Aceptación (BDD):**
-  - **Dado que** el usuario se encuentra autenticado con los permisos requeridos (o navega en modo público si aplica),
-  - **Cuando** interactúa con los controles de la interfaz para activar esta funcionalidad,
-  - **Entonces** el sistema procesa la solicitud con validación estricta de esquemas y responde en menos de 200ms sin errores visuales ni excepciones no controladas.
+  - **Dado que** ${isHeadless ? 'los datasets o parámetros de entrada han sido provistos y validados' : 'el usuario se encuentra autenticado con los permisos requeridos (o navega en modo público si aplica)'},
+  - **Cuando** ${isHeadless ? 'se ejecuta el pipeline de procesamiento, análisis o comando CLI' : 'interactúa con los controles de la interfaz para activar esta funcionalidad'},
+  - **Entonces** el sistema procesa la operación con validación estricta de esquemas y genera la salida esperada sin excepciones no controladas.
 - **Definición de Terminado (DoD):**
-  - [ ] Interfaz reactiva responsiva según los lineamientos de \`DESIGN.md\`.
-  - [ ] Validación de entradas en frontera (Zod/DTO) y manejo defensivo de errores.
+  - [ ] ${isHeadless ? 'Salidas, gráficos o reportes generados según los lineamientos de `DESIGN.md`.' : 'Interfaz reactiva responsiva según los lineamientos de `DESIGN.md`.'}
+  - [ ] Validación de entradas en frontera y manejo defensivo de errores.
   - [ ] Pruebas unitarias que validen casos de éxito y de borde (edge cases).`;
       }).join('\n\n')
     : '### RF-001: Requerimientos funcionales base en definición.\n- **Descripción:** Definir las capacidades operativas esenciales del MVP.';
 
   const nonFuncList = p.prd.nonFunctionalRequirements.length > 0
-    ? p.prd.nonFunctionalRequirements.map((r, i) => `#### NFR-${i + 1}: ${r}\n- **Estándar:** Cumplimiento estricto en todos los entornos de despliegue.\n- **Métrica de Verificación:** Verificable mediante auditorías automatizadas y pruebas de carga.`).join('\n\n')
+    ? p.prd.nonFunctionalRequirements.map((r, i) => `#### NFR-${i + 1}: ${r}\n- **Estándar:** Cumplimiento estricto en todos los entornos de ejecución.\n- **Métrica de Verificación:** Verificable mediante auditorías automatizadas y pruebas.`).join('\n\n')
+    : isHeadless
+    ? `#### NFR-1: Eficiencia Computacional y Vectorización
+- **Estándar:** Procesamiento tabular vectorizado (Pandas/Polars/NumPy) evitando bucles lentos en Python y optimizando el consumo de RAM.
+
+#### NFR-2: Reproducibilidad Científica y Determinismo
+- **Estándar:** Semillas aleatorias fijadas, datos crudos inmutables en \`data/raw/\` y dependencias fijadas en \`requirements.txt\`.
+
+#### NFR-3: Claridad de Visualizaciones y Logs
+- **Estándar:** Gráficos exportados en alta resolución (≥ 300 DPI) y registros de consola estructurados y legibles.`
     : `#### NFR-1: Rendimiento y Latencia
 - **Estándar:** Time to First Byte (TTFB) < 100ms y First Contentful Paint (FCP) < 1.2s.
 - **Métrica:** Puntuación de Google Lighthouse ≥ 95 en producción.
@@ -69,20 +79,30 @@ export function generatePRD(p: LibretoProject): string {
     ? p.prd.userStories.map((s, i) => `### Historia de Usuario US-${String(i + 1).padStart(3, '0')}
 > **Enunciado:** "${s}"
 - **Actor Principal:** ${p.targetAudience}
-- **Valor de Negocio:** Garantiza una experiencia intuitiva, fluida y predecible que incrementa la retención y reduce la tasa de abandono.
-- **Condiciones Previas:** La sesión y el estado de la aplicación deben estar sincronizados.
-- **Flujo Principal:** El usuario ejecuta la acción prevista recibiendo retroalimentación háptica o visual inmediata (skeletons / spinners / toast notifications).`).join('\n\n')
+- **Valor de Negocio:** Garantiza resultados confiables, reproducibles y accionables.
+- **Condiciones Previas:** Entorno configurado y fuentes de datos / parámetros disponibles.
+- **Flujo Principal:** El actor ejecuta o consume el proceso recibiendo trazabilidad clara y salidas validadas.`).join('\n\n')
     : `### Historia de Usuario US-001
-> **Enunciado:** "Como ${p.targetAudience}, quiero acceder a una interfaz fluida, rápida y coherente para gestionar mis tareas eficientemente sin fricciones técnicas."
+> **Enunciado:** "Como ${p.targetAudience}, quiero contar con un sistema ${isHeadless ? 'reproducible, automatizado y bien documentado para procesar datos y obtener conclusiones precisas' : 'fluido, rápido y coherente para gestionar mis tareas eficientemente'} sin fricciones técnicas."
 - **Actor Principal:** ${p.targetAudience}
 - **Valor de Negocio:** Facilidad de adopción y máxima productividad.`;
+
+  const designSummaryNotes = [
+    p.design.writtenNotes ? `Notas Escritas de Diseño: ${p.design.writtenNotes}` : '',
+    p.design.customObservations && p.design.customObservations.length > 0
+      ? `Observaciones Puntuales de Diseño: ${p.design.customObservations.join(' | ')}`
+      : '',
+    p.design.customDesignGuidelines ? `Directrices Adicionales de Diseño: ${p.design.customDesignGuidelines}` : '',
+  ]
+    .filter(Boolean)
+    .join('\n');
 
   return `# PRD & ESPECIFICACIÓN DE REQUERIMIENTOS: ${p.name.toUpperCase()}
 
 > **Documento:** Product Requirements Document (PRD) & Master Prompt
 > **Versión del Producto:** \`${p.version}\` | **Fecha de Emisión:** ${new Date(p.createdAt).toLocaleDateString()} | **Última Revisión:** ${new Date(p.updatedAt).toLocaleDateString()}
 > **Público Objetivo:** ${p.targetAudience}
-> **Plataforma:** \`${p.architecture.platform.toUpperCase()}\` ${isStatic ? '(⚡ Sitio Estático Jamstack / SSG)' : ''}
+> **Plataforma:** \`${p.architecture.platform.toUpperCase()}\` ${isHeadless ? '(🐍 Proyecto Sin Interfaz Web / Datos Python / CLI / Scripts)' : isStatic ? '(⚡ Sitio Estático Jamstack / SSG)' : ''}
 
 ---
 
@@ -93,9 +113,9 @@ ${p.description}
 
 ### 1.2 Objetivos Estratégicos & Factores Críticos de Éxito
 - **Alineación Tecnológica:** Construido sobre la base de **${feInfo.name}**, **${beInfo.name}** y persistencia en **${dbInfo.name}**.
-- **Identidad Visual Distintiva:** Interfaz gobernada por el estilo **${styleInfo.name}** (${styleInfo.category}) bajo el framework **${p.design.styleFramework}**.
+- **${isHeadless ? 'Formato de Salida, Gráficos y Reportes' : 'Identidad Visual Distintiva'}:** ${isHeadless ? `Proyecto sin interfaz web gobernado por lineamientos de visualización/salida (${p.design.styleFramework}) y paleta (${p.design.primaryColor} / ${p.design.secondaryColor}).` : `Interfaz gobernada por el estilo **${styleInfo.name}** (${styleInfo.category}) bajo el framework **${p.design.styleFramework}**.`}
 - **Time-to-Market:** Desarrollo incremental por fases estructuradas en \`TASKS.md\` con verificación continua de calidad.
-- **Rendimiento de Clase Mundial:** Cumplimiento de los SLAs de latencia y disponibilidad definidos en los requerimientos no funcionales.
+- **Rendimiento de Clase Mundial:** Cumplimiento de los SLAs y criterios técnicos definidos en los requerimientos no funcionales.
 
 ---
 
@@ -112,9 +132,9 @@ ${reqList}
 ${nonFuncList}
 
 ### 3.1 Directivas de Rendimiento del Stack Tecnológico
-- **Frontend (${feInfo.name}):** ${feInfo.performanceDirectives.join(' ')}
-- **Backend (${beInfo.name}):** ${beInfo.performanceDirectives.join(' ')}
-- **Persistencia (${dbInfo.name}):** ${dbInfo.performanceDirectives.join(' ')}
+- **Capa de Interacción / Entrada (${feInfo.name}):** ${feInfo.performanceDirectives.join(' ')}
+- **Motor / Procesamiento (${beInfo.name}):** ${beInfo.performanceDirectives.join(' ')}
+- **Persistencia / Datasets (${dbInfo.name}):** ${dbInfo.performanceDirectives.join(' ')}
 
 ---
 
@@ -152,28 +172,28 @@ Actúa como el **Arquitecto de Software Principal y Desarrollador Senior Líder*
 - **Nombre del Producto:** ${p.name}
 - **Descripción:** ${p.description}
 - **Audiencia Objetivo:** ${p.targetAudience}
-- **Plataforma:** ${p.architecture.platform.toUpperCase()}
+- **Plataforma:** ${p.architecture.platform.toUpperCase()} ${isHeadless ? '(PROYECTO SIN INTERFAZ WEB / HEADLESS / DATOS / CLI)' : ''}
 - **Pila Tecnológica Ratificada:**
-  - Frontend: ${p.architecture.frontendFramework} (${feInfo.paradigm})
-  - Backend: ${p.architecture.backendFramework}
-  - Base de Datos: ${p.architecture.database}
+  - Capa de Interfaz / Ejecución: ${p.architecture.frontendFramework} (${feInfo.paradigm})
+  - Motor Backend / Procesamiento: ${p.architecture.backendFramework}
+  - Persistencia / Datasets: ${p.architecture.database}
   - Patrón Arquitectónico: ${p.architecture.architecturalPattern}
-  - Conectividad: ${p.architecture.connectionType}
-- **Sistema de Diseño:** ${p.design.style} (${p.design.styleFramework}) con paleta: Primario (${p.design.primaryColor}), Secundario (${p.design.secondaryColor}), Tipografía (${p.design.typography})
+  - Conectividad / E/S: ${p.architecture.connectionType}
+- **Diseño y Formato de Salida:** ${isHeadless ? `Modo Sin Interfaz Web (${p.design.styleFramework})` : `${p.design.style} (${p.design.styleFramework})`} con paleta: Primario (${p.design.primaryColor}), Secundario (${p.design.secondaryColor}), Tipografía (${p.design.typography})
 - **Tono y Filosofía Operativa:** ${toneDescriptions[p.prd.masterPromptTone] || toneDescriptions.strict_senior}
 
 #### 2. CONTRATO DE TRABAJO Y CUMPLIMIENTO DOCUMENTAL OBLIGATORIO:
 Antes de generar código, instalar dependencias o proponer cambios, DEBES leer e internalizar los 8 archivos maestros:
 1. \`RULES.md\`: **REGLA DE ORO INAMOVIBLE**. Solicitar aprobación explícita antes de ejecutar comandos, crear archivos o instalar librerías.
-2. \`ARCHITECTURE.md\`: Obedecer la estructura de carpetas, separación de capas y contratos de API ratificados.
-3. \`DESIGN.md\`: Utilizar estrictamente los tokens de color, componentes y librerías visuales autorizadas.
+2. \`ARCHITECTURE.md\`: Obedecer la estructura de carpetas, separación de módulos y contratos ratificados.
+3. \`DESIGN.md\`: Respetar las notas escritas de diseño, ${isHeadless ? 'el estilo de gráficos/reportes/consola' : 'los tokens de color, componentes y librerías visuales'} autorizados.
 4. \`DECISIONS.md\`: Respetar los registros ADR y abstenerse de proponer tecnologías descartadas.
-5. \`SECURITY.md\`: Aplicar validación de esquemas Zod en frontera, mitigación de OWASP y cero secretos en Git.
+5. \`SECURITY.md\`: Aplicar validación de entradas, protección de datos sensibles y cero secretos en Git.
 6. \`TASKS.md\`: Avanzar fase por fase de forma secuencial sin saltar requerimientos ni omitir pruebas.
 7. \`MEMORY.md\`: Consultar y actualizar la bitácora tras cada hito completado.
 
-${p.prd.customMasterPromptDirectives ? `#### 3. DIRECTIVAS ESPECIALES DEL USUARIO:\n${p.prd.customMasterPromptDirectives}\n` : ''}${p.prd.customNotes ? `#### OBSERVACIONES ADICIONALES DEL PRODUCTO:\n${p.prd.customNotes}\n` : ''}
-#### 4. PROTOCOLO OBLIGATORIO DE PRIMERA RESPUESTA:
+${p.prd.customMasterPromptDirectives ? `#### 3. DIRECTIVAS ESPECIALES DEL USUARIO:\n${p.prd.customMasterPromptDirectives}\n` : ''}${p.prd.customNotes ? `#### OBSERVACIONES ADICIONALES DEL PRODUCTO:\n${p.prd.customNotes}\n` : ''}${designSummaryNotes ? `#### NOTAS ESCRITAS A TENER EN CUENTA EN EL DISEÑO:\n${designSummaryNotes}\n` : ''}
+#### 4. PROTOCOLO OBLIGIO DE PRIMERA RESPUESTA:
 En tu primera interacción, debes:
 1. Confirmar la asimilación completa de este PRD y los archivos directivos.
 2. Resumir la pila técnica seleccionada y los requerimientos funcionales críticos de la Fase 1 en \`TASKS.md\`.
@@ -191,14 +211,15 @@ export function generateArchitecture(p: LibretoProject): string {
   const dbInfo = getDatabaseTechInfo(p.architecture.database);
   const patInfo = getPatternTechInfo(p.architecture.architecturalPattern);
   const isStatic = isStaticProject(p);
+  const isHeadless = isHeadlessProject(p);
 
   const techRows = [
-    `| **Plataforma Objetivo** | \`${p.architecture.platform.toUpperCase()}\` | ${isStatic ? '⚡ Jamstack / SSG (Cero Servidores Backend)' : 'Web / Móvil Dinámico'} |`,
-    `| **Lenguajes** | \`${(p.architecture.languages || []).join(', ') || 'TypeScript'}\` | Tipado estricto sin uso de \`any\` ni conversiones ambiguas |`,
-    `| **Capa de Frontend** | \`${p.architecture.frontendFramework}\` | ${feInfo.category} (\`${feInfo.paradigm}\`) |`,
-    `| **Capa de Backend** | \`${p.architecture.backendFramework}\` | ${beInfo.category} |`,
-    `| **Persistencia / BD** | \`${p.architecture.database}\` | ${dbInfo.category} |`,
-    `| **Protocolo de Enlace** | \`${p.architecture.connectionType}\` | ${isStatic ? 'Archivos locales / Build-time fetch' : 'Comunicación cliente-servidor estructurada'} |`,
+    `| **Plataforma Objetivo** | \`${p.architecture.platform.toUpperCase()}\` | ${isHeadless ? '🐍 Sin Interfaz Web (Análisis de Datos Python / CLI / Scripts)' : isStatic ? '⚡ Jamstack / SSG (Cero Servidores Backend)' : 'Web / Móvil Dinámico'} |`,
+    `| **Lenguajes** | \`${(p.architecture.languages || []).join(', ') || 'TypeScript'}\` | Tipado estricto (Type Hints / TypeScript) sin conversiones ambiguas |`,
+    `| **Capa de Interfaz / Ejecución** | \`${p.architecture.frontendFramework}\` | ${feInfo.category} (\`${feInfo.paradigm}\`) |`,
+    `| **Motor de Procesamiento / Backend** | \`${p.architecture.backendFramework}\` | ${beInfo.category} |`,
+    `| **Persistencia / Datasets** | \`${p.architecture.database}\` | ${dbInfo.category} |`,
+    `| **Protocolo de Enlace / E/S** | \`${p.architecture.connectionType}\` | ${isHeadless ? 'Ejecución local / Lectura y escritura de datasets y reportes' : isStatic ? 'Archivos locales / Build-time fetch' : 'Comunicación cliente-servidor estructurada'} |`,
     `| **Patrón Arquitectónico** | \`${p.architecture.architecturalPattern}\` | ${patInfo.category} |`,
   ];
 
@@ -210,7 +231,7 @@ export function generateArchitecture(p: LibretoProject): string {
 
 > **Proyecto:** ${p.name}
 > **Versión:** \`${p.version}\`
-> **Plataforma:** \`${p.architecture.platform.toUpperCase()}\` ${isStatic ? '(⚡ Jamstack SSG)' : ''}
+> **Plataforma:** \`${p.architecture.platform.toUpperCase()}\` ${isHeadless ? '(🐍 Sin Interfaz Web / Datos / CLI)' : isStatic ? '(⚡ Jamstack SSG)' : ''}
 > **Patrón Arquitectónico:** \`${p.architecture.architecturalPattern}\`
 
 ---
@@ -225,7 +246,7 @@ ${techRows.join('\n')}
 
 ## 2. FICHAS TÉCNICAS PROFUNDAS DE TECNOLOGÍAS SELECCIONADAS
 
-### 2.1 Frontend: ${feInfo.name}
+### 2.1 Capa de Interacción / Ejecución: ${feInfo.name}
 - **Categoría:** ${feInfo.category}
 - **Paradigma Operativo:** \`${feInfo.paradigm}\`
 - **Descripción:** ${feInfo.description}
@@ -245,7 +266,7 @@ ${feInfo.commonPitfalls.map((cp) => `  - ⚠️ ${cp}`).join('\n')}
 
 ---
 
-### 2.2 Backend: ${beInfo.name}
+### 2.2 Motor de Procesamiento / Backend: ${beInfo.name}
 - **Categoría:** ${beInfo.category}
 - **Paradigma Operativo:** \`${beInfo.paradigm}\`
 - **Descripción:** ${beInfo.description}
@@ -258,7 +279,7 @@ ${beInfo.cliCommands.map((c) => `# ${c.label}\n${c.command}`).join('\n\n')}
 - **Librerías Clave:** ${beInfo.keyLibraries.join(', ')}
 - **Directivas de Rendimiento:**
 ${beInfo.performanceDirectives.map((d) => `  - ${d}`).join('\n')}
-- **Seguridad en Backend:**
+- **Seguridad en Procesamiento / Backend:**
 ${beInfo.securityConsiderations.map((s) => `  - 🛡️ ${s}`).join('\n')}
 
 ---
@@ -282,78 +303,22 @@ ${dbInfo.performanceDirectives.map((d) => `  - ${d}`).join('\n')}
 
 ## 3. FLUJO DE DATOS DE EXTREMO A EXTREMO (END-TO-END DATA FLOW)
 
-El ciclo de vida de una petición dentro del sistema sigue un flujo unidireccional y predecible:
+El ciclo de vida de ejecución dentro del sistema sigue un flujo unidireccional y predecible:
 
 \`\`\`mermaid
 flowchart TD
-    A[Usuario / Interfaz Cliente] -->|1. Evento / Petición Tipada| B[Capa de Presentación / UI Components]
-    B -->|2. Validación de Entrada Zod| C[Servicios de API / State Store]
-    C -->|3. ${p.architecture.connectionType}| D[Controladores / Route Handlers]
-    D -->|4. Casos de Uso / Servicios de Negocio| E[Lógica de Dominio Pura]
-    E -->|5. Repositorio / Abstracción de Datos| F[${dbInfo.name}]
-    F -->|6. Datos Crudos Persistidos| E
-    E -->|7. DTOs Sanitizados| D
-    D -->|8. Carga Útil Estandarizada| C
-    C -->|9. Renderizado Reactivo| B
-    B -->|10. Retroalimentación Visual| A
-\`\`\`
-
-1. **Interacción del Usuario:** El usuario dispara una acción en un componente visual gobernado por los tokens de \`DESIGN.md\`.
-2. **Validación en Frontera:** Los datos del formulario o acción se validan mediante esquemas antes de salir del cliente.
-3. **Transporte de Red:** La petición se emite mediante **${p.architecture.connectionType}** con cabeceras de autorización y trazabilidad.
-4. **Capa de Control:** El backend (o función serverless/handler) valida la carga útil y la pasa a la capa de servicios.
-5. **Dominio Empresarial:** Se ejecutan las reglas invariantes de negocio desacopladas de frameworks.
-6. **Persistencia:** Se consulta o muta la base de datos **${dbInfo.name}** utilizando transacciones atómicas si aplica.
-7. **Respuesta Serializada:** Se devuelve un payload normalizado con metadatos de paginación y tiempo de procesamiento.
-
----
-
-## 4. CONTRATO DE RESPUESTAS Y PROTOCOLO DE CONECTIVIDAD
-
-Toda comunicación a través de **${p.architecture.connectionType}** debe cumplir el siguiente formato estándar:
-
-### 4.1 Respuesta Exitosa Estándar (HTTP 200 / 201)
-\`\`\`json
-{
-  "success": true,
-  "data": {
-    "id": "uuid-v4",
-    "attributes": {}
-  },
-  "error": null,
-  "meta": {
-    "timestamp": "2026-10-11T00:00:00Z",
-    "version": "${p.version}",
-    "executionTimeMs": 24
-  }
-}
-\`\`\`
-
-### 4.2 Respuesta de Error Estandarizada (RFC 7807 Problem Details)
-\`\`\`json
-{
-  "success": false,
-  "data": null,
-  "error": {
-    "code": "VALIDATION_ERROR",
-    "message": "Los parámetros suministrados no cumplen las restricciones del esquema.",
-    "details": [
-      {
-        "field": "email",
-        "issue": "Formato de correo electrónico inválido"
-      }
-    ]
-  },
-  "meta": {
-    "timestamp": "2026-10-11T00:00:00Z",
-    "traceId": "req-987654321"
-  }
-}
+    A[${isHeadless ? 'Entrada: Datasets Crudos / Argumentos CLI' : 'Usuario / Interfaz Cliente'}] -->|1. Ingesta / Petición Tipada| B[${isHeadless ? 'Validación de Esquemas (Pandera / Pydantic)' : 'Capa de Presentación / UI Components'}]
+    B -->|2. Datos Validados| C[${isHeadless ? 'Limpieza y Transformación Vectorizada' : 'Servicios de API / State Store'}]
+    C -->|3. ${p.architecture.connectionType}| D[${isHeadless ? 'Análisis Estadístico / Modelos / Reglas' : 'Controladores / Route Handlers'}]
+    D -->|4. Operaciones de Dominio| E[${isHeadless ? 'Agregación de KPIs y Resultados' : 'Lógica de Dominio Pura'}]
+    E -->|5. Lectura / Escritura| F[${dbInfo.name}]
+    F -->|6. Persistencia Confirmada| E
+    E -->|7. Salida Estandarizada| G[${isHeadless ? 'Exportación: Gráficos (300 DPI), Parquet/CSV y Consola Rich' : 'Renderizado Reactivo en Cliente'}]
 \`\`\`
 
 ---
 
-## 5. ESTRUCTURA CANÓNICA DE DIRECTORIOS: ${patInfo.name}
+## 4. ESTRUCTURA CANÓNICA DE DIRECTORIOS: ${patInfo.name}
 
 La base de código DEBE organizarse estrictamente según el siguiente árbol de carpetas comentado:
 
@@ -363,35 +328,117 @@ ${patInfo.recommendedFolderStructure}
 
 ---
 
-## 6. NORMAS DE NOMENCLATURA & ESTILO DE CÓDIGO
+## 5. NORMAS DE NOMENCLATURA & ESTILO DE CÓDIGO
 
-- **Archivos de Componentes:** \`PascalCase.tsx\` (ej. \`UserProfileCard.tsx\`).
+${isHeadless
+  ? `- **Módulos y Scripts Python:** \`snake_case.py\` cumpliendo estrictamente PEP 8 y Type Hints (\`typing\`).
+- **Funciones y Variables:** \`snake_case\` descriptivo (ej. \`clean_sales_dataframe\`, \`calculate_churn_rate\`).
+- **Clases y Esquemas Pydantic/Pandera:** \`PascalCase\` (ej. \`CustomerTransactionSchema\`).
+- **Constantes Globales y Variables de Entorno:** \`SCREAMING_SNAKE_CASE\` en \`src/config.py\` (ej. \`RAW_DATA_DIR\`, \`RANDOM_SEED = 42\`).
+- **Columnas de DataFrames y Tablas:** \`snake_case\` en minúsculas, sin espacios ni caracteres especiales.`
+  : `- **Archivos de Componentes:** \`PascalCase.tsx\` (ej. \`UserProfileCard.tsx\`).
 - **Archivos de Utilidades y Servicios:** \`camelCase.ts\` (ej. \`authService.ts\`, \`formatCurrency.ts\`).
 - **Variables y Funciones:** \`camelCase\` explícito, auto-documentado y libre de abreviaturas crípticas.
 - **Tipos, Interfaces y Clases:** \`PascalCase\` sin prefijo "I" húngaro (ej. \`UserProfile\` en lugar de \`IUserProfile\`).
 - **Variables de Entorno:** \`SCREAMING_SNAKE_CASE\` (ej. \`DATABASE_URL\`, \`API_SECRET_KEY\`).
-- **Tablas y Columnas en Base de Datos:** \`snake_case\` en minúsculas y plural (ej. \`user_profiles\`, \`created_at\`).
+- **Tablas y Columnas en Base de Datos:** \`snake_case\` en minúsculas y plural (ej. \`user_profiles\`, \`created_at\`).`}
 
 ---
 
-## 7. DIRECTIVAS ARQUITECTÓNICAS VINCULANTES PARA LA IA
+## 6. DIRECTIVAS ARQUITECTÓNICAS VINCULANTES PARA LA IA
 
-1. **Separación Estricta de Capas:** La capa de presentación visual nunca debe ejecutar consultas directas de base de datos ni contener lógica SQL embebida.
-2. **Inyección y Desacoplamiento:** Favorecer contratos e interfaces sobre implementaciones concretas para facilitar la sustitución de componentes y la ejecución de pruebas automatizadas.
-3. **Manejo Centralizado de Excepciones:** Todas las fallas de infraestructura deben capturarse y traducirse a excepciones de dominio legibles.
-4. **Cero Secretos en el Cliente:** Jamás exponer variables de entorno sensibles en componentes que compilen al navegador del usuario.
+1. **Separación Estricta de Responsabilidades:** ${isHeadless ? 'Separar estrictamente la ingesta de datos (`data/raw` inmutable), el procesamiento vectorizado (`src/`) y la generación de reportes/gráficos (`reports/`).' : 'La capa de presentación visual nunca debe ejecutar consultas directas de base de datos ni contener lógica SQL embebida.'}
+2. **Modularidad y Reutilización:** Favorecer funciones puras, tipadas y desacopladas para facilitar la ejecución de pruebas automatizadas (\`pytest\` / \`vitest\`).
+3. **Manejo Centralizado de Excepciones:** Todas las fallas de lectura, red o validación deben capturarse con mensajes diagnósticos claros.
+4. **Cero Secretos en Código Fuente:** Jamás exponer credenciales ni rutas absolutas locales hardcodeadas en el repositorio.
 
-${p.architecture.customNotes ? `\n### Directivas Particulares del Proyecto:\n${p.architecture.customNotes}\n` : ''}
+${p.architecture.customNotes ? `\n### Directivas Particulares de Arquitectura:\n${p.architecture.customNotes}\n` : ''}
 `;
 }
 
 /**
- * 3. DESIGN.md - Sistema de Diseño, Tokens Visuales & UI/UX
+ * 3. DESIGN.md - Sistema de Diseño, Tokens Visuales, Visualización de Datos & Notas Escritas
  */
 export function generateDesign(p: LibretoProject): string {
   const currentStyle = DESIGN_STYLES.find((s) => s.id === p.design.style) || DESIGN_STYLES[0];
   const activePalette = p.design.styleColors?.[p.design.style] || currentStyle.colors;
   const styleInfo = getStyleTechInfo(p.design.style);
+  const isHeadless = isHeadlessProject(p);
+
+  const writtenNotesSection =
+    p.design.writtenNotes ||
+    (p.design.customObservations && p.design.customObservations.length > 0) ||
+    p.design.customDesignGuidelines
+      ? `## 1. NOTAS ESCRITAS A TENER EN CUENTA EN EL DISEÑO (PRIORIDAD MÁXIMA)
+
+> **Directiva Vinculante:** Las siguientes notas y observaciones escritas por el autor del proyecto tienen prioridad sobre cualquier ajuste predeterminado y deben respetarse rigurosamente:
+
+${p.design.writtenNotes ? `### 1.1 Notas Escritas de Diseño\n${p.design.writtenNotes}\n\n` : ''}${p.design.customObservations && p.design.customObservations.length > 0 ? `### 1.2 Observaciones Puntuales de Diseño\n${p.design.customObservations.map((obs, i) => `${i + 1}. **${obs}**`).join('\n')}\n\n` : ''}${p.design.customDesignGuidelines ? `### 1.3 Directrices Detalladas y Especificaciones Adicionales\n${p.design.customDesignGuidelines}\n\n` : ''}---\n`
+      : '';
+
+  if (isHeadless) {
+    return `# ESPECIFICACIÓN DE DISEÑO DE SALIDA, VISUALIZACIÓN DE DATOS & REPORTES (PROYECTO SIN INTERFAZ WEB)
+
+> **Proyecto:** ${p.name}
+> **Modo de Diseño:** **Proyecto Sin Interfaz Web (Headless / Análisis de Datos Python / CLI / Reportes)**
+> **Motor de Salida / Gráficos:** \`${p.design.styleFramework}\`
+> **Tipografía para Gráficos y Reportes:** \`${p.design.typography}\`
+> **Tema de Fondo en Gráficos / Consola:** ${p.design.darkModeDefault ? 'Fondo Oscuro (Dark Theme / Terminal)' : 'Fondo Claro Editorial (Whitegrid / Paper)'}
+
+---
+
+${writtenNotesSection}## 2. LINEAMIENTOS PARA PROYECTOS SIN INTERFAZ WEB (DATA SCIENCE / CLI / BACKEND PURO)
+
+Este proyecto **NO requiere la construcción de una interfaz web (sin HTML, CSS ni componentes DOM)**. El "Diseño" en este contexto rige la calidad visual, legibilidad y estandarización de:
+1. **Visualizaciones de Datos y Gráficos Estadísticos** (\`Matplotlib\`, \`Seaborn\`, \`Plotly\`, \`Altair\`).
+2. **Estructura y Presentación de Jupyter Notebooks / Reportes Exportados** (Markdown, PDF, tablas resumen).
+3. **Interfaz de Línea de Comandos (CLI) y Logs Estructurados en Terminal** (\`Rich\`, \`Typer\`, \`Tabulate\`).
+
+---
+
+## 3. PALETA CROMÁTICA PARA GRÁFICOS, SERIES DE DATOS Y CONSOLA
+
+Todas las figuras generadas programáticamente deben aplicar de manera consistente la siguiente paleta de colores para mantener identidad visual y legibilidad:
+
+| Rol en Gráficos / Salida | Código Hexadecimal | Uso en Visualizaciones (Matplotlib / Seaborn / Plotly) y CLI |
+| :--- | :--- | :--- |
+| **Color Primario (Serie Principal)** | \`${p.design.primaryColor}\` | Serie de datos principal, barras destacadas, línea de tendencia focal |
+| **Color Secundario (Comparativo / Alerta)** | \`${p.design.secondaryColor}\` | Serie secundaria de contraste, umbrales (thresholds), anomalías o outliers |
+${activePalette.map((c, i) => `| **Color de Paleta Secuencial #${i + 1}** | \`${c}\` | Categoría adicional #${i + 1} en gráficos multivariados o fondo/superficie |`).join('\n')}
+
+### 3.1 Configuración Base Recomendada para Matplotlib / Seaborn (\`src/visualization.py\`)
+\`\`\`python
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Paleta oficial del proyecto
+PROJECT_PALETTE = ["${p.design.primaryColor}", "${p.design.secondaryColor}", ${activePalette.map((c) => `"${c}"`).join(', ')}]
+
+def configure_plot_style() -> None:
+    """Configura el tema visual estandarizado para todos los gráficos del proyecto."""
+    sns.set_theme(style="${p.design.darkModeDefault ? 'darkgrid' : 'whitegrid'}", palette=PROJECT_PALETTE)
+    plt.rcParams.update({
+        "figure.figsize": (10, 6),
+        "figure.dpi": 150,
+        "savefig.dpi": 300,
+        "savefig.bbox": "tight",
+        "axes.titlesize": 14,
+        "axes.titleweight": "bold",
+        "axes.labelsize": 11,
+        "axes.spines.top": False,
+        "axes.spines.right": False,
+    })
+\`\`\`
+
+---
+
+## 4. ESTÁNDARES DE CALIDAD EN VISUALIZACIÓN DE DATOS Y REPORTES
+
+1. **Autonomía Explicativa:** Todo gráfico exportado a \`reports/figures/\` debe incluir título descriptivo claro, subtítulo o nota al pie con el tamaño de muestra ($n$), etiquetas de ejes con unidades explícitas y leyenda sin solapamientos.
+2. **Eliminación de Ruido Visual (Data-Ink Ratio):** Suprimir bordes superiores y derechos innecesarios (\`sns.despine()\`), evitar gráficos 3D distorsionados y usar rejillas sutiles.
+3. **Salida en Consola (CLI):** Utilizar tablas formateadas, paneles de resumen y barras de progreso limpias para informar el avance de cada etapa del pipeline sin saturar la terminal.
+`;
+  }
 
   const animLibrariesDetails = p.design.animationLibraries.length > 0
     ? p.design.animationLibraries.map((libName) => {
@@ -449,12 +496,12 @@ ${found.sampleCode}
 
 ---
 
-## 1. FILOSOFÍA VISUAL Y LENGUAJE DE DISEÑO
+${writtenNotesSection}## 2. FILOSOFÍA VISUAL Y LENGUAJE DE DISEÑO
 
-### 1.1 Declaración Estética
+### 2.1 Declaración Estética
 ${styleInfo.philosophy}
 
-### 1.2 Reglas de CSS Mandatorias del Estilo
+### 2.2 Reglas de CSS Mandatorias del Estilo
 Para reproducir fielmente la estética **${styleInfo.name}**, la IA y el equipo deben emplear obligatoriamente las siguientes reglas CSS:
 \`\`\`css
 /* Reglas fundamentales de ${styleInfo.name} */
@@ -463,7 +510,7 @@ ${styleInfo.cssRules.map((r) => `${r};`).join('\n')}
 
 ---
 
-## 2. ARQUITECTURA DE COLOR & TOKENS SEMÁNTICOS
+## 3. ARQUITECTURA DE COLOR & TOKENS SEMÁNTICOS
 
 La interfaz utiliza un sistema de diseño con nombres de tokens semánticos desacoplados de los valores hexadecimales para facilitar temas y coherencia:
 
@@ -473,19 +520,19 @@ La interfaz utiliza un sistema de diseño con nombres de tokens semánticos desa
 | **Color Secundario / Acento** | \`${p.design.secondaryColor}\` | Badges, indicadores de estado, bordes focales, microdestellos |
 ${activePalette.map((c, i) => `| **Paleta del Estilo #${i + 1}** | \`${c}\` | Superficie, fondo, contraste o tarjeta de ${styleInfo.name} |`).join('\n')}
 
-### 2.1 Tokens Específicos del Estilo ${styleInfo.name}
+### 3.1 Tokens Específicos del Estilo ${styleInfo.name}
 | Token Específico | Valor CSS | Función en Componentes |
 | :--- | :--- | :--- |
 ${styleInfo.colorTokens.map((t) => `| **${t.token}** | \`${t.hex}\` | ${t.role} |`).join('\n')}
 
 ---
 
-## 3. SISTEMA TIPOGRÁFICO Y ESCALA MODULAR
+## 4. SISTEMA TIPOGRÁFICO Y ESCALA MODULAR
 
 - **Familia Tipográfica:** \`${p.design.typography}\`
 - **Pauta Tipográfica del Estilo:** ${styleInfo.typographyGuideline}
 
-### 3.1 Escala Modular de Texto
+### 4.1 Escala Modular de Texto
 | Nivel | Tamaño (rem / px) | Peso (Font Weight) | Tracking / Interletrado | Uso en Interfaz |
 | :--- | :--- | :--- | :--- | :--- |
 | **Display** | \`3.0rem / 48px\` | 800 (Bold / Black) | \`-0.025em\` | Héroes visuales y grandes cifras |
@@ -498,13 +545,13 @@ ${styleInfo.colorTokens.map((t) => `| **${t.token}** | \`${t.hex}\` | ${t.role} 
 
 ---
 
-## 4. ESPECIFICACIÓN DE COMPONENTES ATÓMICOS
+## 5. ESPECIFICACIÓN DE COMPONENTES ATÓMICOS
 
 Las directivas de maquetación para los componentes clave son:
 
-${styleInfo.componentDirectives.map((d, i) => `### 4.${i + 1} Directiva de Componente: ${d}`).join('\n\n')}
+${styleInfo.componentDirectives.map((d, i) => `### 5.${i + 1} Directiva de Componente: ${d}`).join('\n\n')}
 
-### 4.4 Estados Interactivos Obligatorios
+### 5.4 Estados Interactivos Obligatorios
 Todo componente accionable (botones, enlaces, filas interactivas) DEBE implementar 4 estados visuales distintos:
 1. **Estado Normal (\`default\`):** Cumple los tokens de color y elevación base.
 2. **Estado Hover (\`:hover\`):** Cambio sutil de luminosidad (escala 1.02x o desplazamiento -2px según estilo).
@@ -514,7 +561,7 @@ Todo componente accionable (botones, enlaces, filas interactivas) DEBE implement
 
 ---
 
-## 5. PERFIL DE ANIMACIÓN Y MICROINTERACCIONES
+## 6. PERFIL DE ANIMACIÓN Y MICROINTERACCIONES
 
 - **Perfil Dinámico del Estilo:** ${styleInfo.animationProfile}
 - **Duraciones Estándar:**
@@ -525,7 +572,7 @@ Todo componente accionable (botones, enlaces, filas interactivas) DEBE implement
 
 ---
 
-## 6. LIBRERÍAS DE ANIMACIÓN E ICONOGRAFÍA SELECCIONADAS
+## 7. LIBRERÍAS DE ANIMACIÓN E ICONOGRAFÍA SELECCIONADAS
 
 ${animLibrariesDetails}
 
@@ -535,7 +582,7 @@ ${iconLibrariesDetails}
 
 ---
 
-## 7. CRITERIOS DE ACCESIBILIDAD Y RESPONSIVIDAD (WCAG 2.1 AA)
+## 8. CRITERIOS DE ACCESIBILIDAD Y RESPONSIVIDAD (WCAG 2.1 AA)
 
 1. **Ratio de Contraste:** Todo texto debe mantener un ratio de contraste mínimo de 4.5:1 respecto a su fondo (o 3:1 para titulares grandes).
 2. **Soporte de Movimiento Reducido:** Respetar la preferencia del sistema \`prefers-reduced-motion: reduce\` suprimiendo traslaciones y rebotes exagerados.
@@ -545,8 +592,7 @@ ${iconLibrariesDetails}
    - \`lg\` (≥ 1024px): Laptops y tabletas en horizontal.
    - \`xl\` (≥ 1280px): Monitores de escritorio estándar.
    - \`2xl\` (≥ 1536px): Pantallas panorámicas (contenedor centrado con \`max-w-7xl\`).
-
-${(p.design.customObservations && p.design.customObservations.length > 0) || p.design.customDesignGuidelines ? `\n---\n\n## 8. OBSERVACIONES Y ESPECIFICACIONES PARTICULARES DE DISEÑO\n\n${p.design.customObservations && p.design.customObservations.length > 0 ? `### 8.1 Requerimientos y Observaciones Visuales Puntuales\n${p.design.customObservations.map((obs, i) => `${i + 1}. **${obs}**`).join('\n')}\n\n` : ''}${p.design.customDesignGuidelines ? `### 8.2 Directrices Detalladas y Notas de Layout\n${p.design.customDesignGuidelines}\n` : ''}` : ''}`;
+`;
 }
 
 /**

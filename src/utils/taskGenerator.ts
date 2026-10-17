@@ -1,9 +1,26 @@
 import type { LibretoProject, TaskPhase } from '../types/libreto';
 
 /**
+ * Determina si el proyecto es un proyecto sin interfaz web (Análisis de Datos Python, ETL, CLI, Notebooks o Scripts)
+ */
+export function isHeadlessProject(p: LibretoProject): boolean {
+  return (
+    p.architecture.platform === 'headless' ||
+    Boolean(p.architecture.isHeadless) ||
+    Boolean(p.design.isNoInterface) ||
+    Boolean(p.architecture.frontendFramework?.includes('Sin Interfaz')) ||
+    Boolean(p.architecture.frontendFramework?.includes('Jupyter')) ||
+    Boolean(p.architecture.frontendFramework?.includes('CLI Interactiva')) ||
+    Boolean(p.architecture.backendFramework?.includes('Python Data Science')) ||
+    Boolean(p.architecture.backendFramework?.includes('Scripts de Automatización'))
+  );
+}
+
+/**
  * Determina si el proyecto está configurado como sitio estático Jamstack / SSG sin backend
  */
 export function isStaticProject(p: LibretoProject): boolean {
+  if (isHeadlessProject(p)) return false;
   return (
     p.architecture.platform === 'static' ||
     Boolean(p.architecture.isStaticSite) ||
@@ -44,6 +61,8 @@ export function getStackFingerprint(p: LibretoProject): string {
     p.architecture.architecturalPattern,
     p.architecture.staticHosting || '',
     Boolean(p.architecture.isStaticSite),
+    Boolean(p.architecture.isHeadless),
+    Boolean(p.design.isNoInterface),
     p.design.style,
     p.design.styleFramework,
     (p.design.animationLibraries || []).join(','),
@@ -55,6 +74,12 @@ export function getStackFingerprint(p: LibretoProject): string {
  * Genera tareas específicas adaptadas a la base de datos seleccionada
  */
 function getDatabaseSetupTask(database: string): string {
+  if (database.includes('Datasets Locales')) {
+    return 'Estructurar directorios de datos (data/raw, data/interim, data/processed) con esquemas validados para CSV, Parquet y Excel';
+  }
+  if (database.includes('DuckDB')) {
+    return 'Configurar motor analítico DuckDB in-process para consultas SQL vectorizadas sobre archivos Parquet y DataFrames';
+  }
   if (database.includes('Supabase')) {
     return 'Inicializar proyecto en Supabase con migraciones SQL, tipos automáticos y políticas de Row Level Security (RLS) en todas las tablas';
   }
@@ -80,6 +105,12 @@ function getDatabaseSetupTask(database: string): string {
  * Genera tareas específicas adaptadas al framework de backend seleccionado
  */
 function getBackendSetupTask(backend: string, connection: string, pattern: string): string {
+  if (backend.includes('Python Data Science')) {
+    return `Implementar módulos vectorizados de procesamiento y análisis en Python (Pandas / Polars / NumPy / Scikit-Learn) bajo ${pattern}`;
+  }
+  if (backend.includes('Scripts de Automatización')) {
+    return `Desarrollar pipeline de automatización / ETL idempotente en Python con logging estructurado y manejo de errores para ${connection}`;
+  }
   if (backend.includes('FastAPI')) {
     return `Desarrollar controladores modulares en FastAPI con enrutadores APIRouter, esquemas Pydantic v2 y endpoints ${connection}`;
   }
@@ -115,6 +146,7 @@ function getBackendSetupTask(backend: string, connection: string, pattern: strin
  * a la arquitectura, diseño, plataforma y requerimientos del proyecto.
  */
 export function generateSuggestedTasks(p: LibretoProject): TaskPhase[] {
+  const isHeadless = isHeadlessProject(p);
   const isStatic = isStaticProject(p);
   const isMobile = isMobileProject(p);
   const isDual = isDualProject(p);
@@ -140,6 +172,63 @@ export function generateSuggestedTasks(p: LibretoProject): TaskPhase[] {
 
   const dbTask = getDatabaseSetupTask(database);
   const beTask = getBackendSetupTask(backend, connection, pattern);
+
+  // 0. ARQUETIPO: PROYECTO SIN INTERFAZ WEB / ANÁLISIS DE DATOS PYTHON / CLI / ETL
+  if (isHeadless) {
+    return [
+      {
+        id: 'phase-1',
+        name: 'Fase 1: Setup del Entorno & Estructura Modular (Sin Interfaz Web)',
+        tasks: [
+          `Inicializar entorno aislado (${languages}) con dependencias fijadas (requirements.txt / pyproject.toml) y tipado estricto`,
+          `Estructurar arquitectura ${pattern} separando código fuente (src/), datos (data/raw, data/processed) y reportes/salidas`,
+          `Configurar módulo central de configuración (src/config.py), semillas de reproducibilidad y sistema de logging estructurado`,
+          `Configurar .gitignore estricto para proteger datasets sensibles, archivos temporales y variables de entorno (.env)`,
+        ],
+      },
+      {
+        id: 'phase-2',
+        name: 'Fase 2: Ingesta de Datos, Validación de Esquemas & Almacenamiento',
+        tasks: [
+          dbTask,
+          `Implementar conectores de carga y validación de tipos de columnas, rangos esperados y detección temprana de datos corruptos`,
+          `Estandarizar nombres de variables en snake_case, codificación UTF-8 y parseo seguro de fechas/series temporales`,
+          `Registrar resumen de diagnóstico de ingesta (conteo de filas, memoria consumida y porcentaje de valores nulos por columna)`,
+        ],
+      },
+      {
+        id: 'phase-3',
+        name: 'Fase 3: Limpieza, Transformación Vectorizada & Lógica Analítica',
+        tasks: [
+          beTask,
+          `Implementar funciones puras y vectorizadas para tratamiento de valores faltantes (imputación/filtrado), duplicados y outliers`,
+          ...(primaryReq ? [`Implementar lógica analítica / procesamiento para: "${primaryReq}"`] : []),
+          `Construir indicadores clave (KPIs), agregaciones estadísticas, cruces validados (joins/merges) o modelos predictivos`,
+          `Exportar datasets procesados limpios en formato eficiente (Parquet / CSV) listos para consumo reproducible`,
+        ],
+      },
+      {
+        id: 'phase-4',
+        name: 'Fase 4: Visualización de Datos, Gráficos, CLI & Reportes de Salida',
+        tasks: [
+          `Configurar tema visual consistente de gráficos y reportes aplicando la paleta definida (${p.design.primaryColor} / ${p.design.secondaryColor}) y las Notas Escritas de Diseño`,
+          `Generar visualizaciones estadísticas de alta resolución (Matplotlib / Seaborn / Plotly) exportadas en reports/figures/`,
+          `Formatear salida en consola (tablas resumen, métricas clave y barras de progreso en CLI) o estructurar Jupyter Notebooks ejecutables`,
+          `Generar tablas finales de hallazgos y métricas de evaluación exportadas en data/outputs/`,
+        ],
+      },
+      {
+        id: 'phase-5',
+        name: 'Fase 5: Pruebas de Integridad de Datos, Reproducibilidad & Documentación',
+        tasks: [
+          `Escribir suite de pruebas unitarias (pytest) validando funciones de transformación con datasets sintéticos y casos borde`,
+          `Verificar que el pipeline completo o los Notebooks se ejecuten de principio a fin con un solo comando sin intervención manual`,
+          `Auditar rendimiento de memoria y ausencia de bucles lentos o fugas de datos (Data Leakage)`,
+          `Documentar diccionario de datos, parámetros de CLI y guía de ejecución paso a paso en README.md`,
+        ],
+      },
+    ];
+  }
 
   // 1. ARQUETIPO: SITIO WEB ESTÁTICO / JAMSTACK (Astro, 11ty, Hugo, SSG)
   if (isStatic) {
