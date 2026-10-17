@@ -979,6 +979,30 @@ export const TasksModule: React.FC<TasksModuleProps> = ({ project, onChange }) =
           })}
         </div>
       )}
+
+      {/* Observaciones y Especificaciones Adicionales de Ejecución */}
+      <div className="bg-zinc-50 dark:bg-zinc-900/60 p-5 sm:p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-3">
+        <div className="flex items-center gap-2.5 pb-2 border-b border-zinc-200/80 dark:border-zinc-800">
+          <div className="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+            <Pencil className="w-4.5 h-4.5" />
+          </div>
+          <div>
+            <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+              Observaciones y Especificaciones del Plan de Tareas (Opcional)
+            </h3>
+            <p className="text-[11px] text-zinc-500">
+              Agrega notas sobre prioridades de entrega, dependencias entre fases o criterios especiales de validación
+            </p>
+          </div>
+        </div>
+        <textarea
+          rows={3}
+          value={tasks.customNotes || ''}
+          onChange={(e) => handleUpdateTasks({ customNotes: e.target.value })}
+          placeholder="Ej. Priorizar una versión funcional del login y dashboard en la Fase 1 antes de integrar pasarelas de pago; validar cada vista en móvil antes de cerrar la tarea..."
+          className="w-full text-xs sm:text-sm bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-xl p-3.5 text-zinc-900 dark:text-zinc-100 outline-none focus:ring-2 focus:ring-blue-500/30 transition-all placeholder:text-zinc-400 leading-relaxed"
+        />
+      </div>
     </div>
   );
 };

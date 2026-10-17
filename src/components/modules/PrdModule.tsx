@@ -460,6 +460,35 @@ export const PrdModule: React.FC<PrdModuleProps> = ({ project, onChange }) => {
           </div>
         </div>
       </div>
+
+      {/* 6. Observaciones y Especificaciones Adicionales del Producto */}
+      <div className="bg-zinc-50 dark:bg-zinc-900/60 p-5 sm:p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-3">
+        <div className="flex items-center gap-2.5 pb-2 border-b border-zinc-200/80 dark:border-zinc-800">
+          <div className="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shrink-0">
+            <MessageSquare className="w-4.5 h-4.5" />
+          </div>
+          <div>
+            <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+              Observaciones y Especificaciones Adicionales del Producto (Opcional)
+            </h3>
+            <p className="text-[11px] text-zinc-500">
+              Añade notas de negocio, reglas de dominio, integraciones externas o aclaraciones sobre el alcance del producto
+            </p>
+          </div>
+        </div>
+
+        <textarea
+          rows={3}
+          value={project.prd.customNotes || ''}
+          onChange={(e) =>
+            onChange({
+              prd: { ...project.prd, customNotes: e.target.value },
+            })
+          }
+          className="w-full text-xs sm:text-sm bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-xl p-3.5 text-zinc-900 dark:text-zinc-100 outline-none focus:ring-2 focus:ring-blue-500/30 transition-all placeholder:text-zinc-400 leading-relaxed"
+          placeholder="Ej. El sistema debe operar en moneda local y USD, permitir exportación a Excel/PDF de todos los reportes y soportar multi-sucursal..."
+        />
+      </div>
     </div>
   );
 };

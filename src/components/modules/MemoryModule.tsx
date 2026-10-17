@@ -500,6 +500,30 @@ export const MemoryModule: React.FC<MemoryModuleProps> = ({ project, onChange })
           )}
         </div>
       </div>
+
+      {/* 5. Observaciones Generales y Notas de Sesión */}
+      <div className="bg-zinc-50 dark:bg-zinc-900/60 p-5 sm:p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-3">
+        <div className="flex items-center gap-2.5 pb-2 border-b border-zinc-200/80 dark:border-zinc-800">
+          <div className="w-8 h-8 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
+            <Pencil className="w-4.5 h-4.5" />
+          </div>
+          <div>
+            <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+              Observaciones Generales y Notas de Bitácora (Opcional)
+            </h3>
+            <p className="text-[11px] text-zinc-500">
+              Anota recordatorios para próximas sesiones, configuraciones pendientes o contexto importante para el asistente IA
+            </p>
+          </div>
+        </div>
+        <textarea
+          rows={3}
+          value={memory.customNotes || ''}
+          onChange={(e) => handleUpdateMemory({ customNotes: e.target.value })}
+          placeholder="Ej. Queda pendiente configurar las credenciales de producción de AWS S3; recordar mantener compatibilidad con los endpoints v1..."
+          className="w-full text-xs sm:text-sm bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-xl p-3.5 text-zinc-900 dark:text-zinc-100 outline-none focus:ring-2 focus:ring-purple-500/30 transition-all placeholder:text-zinc-400 leading-relaxed"
+        />
+      </div>
     </div>
   );
 };

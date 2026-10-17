@@ -527,6 +527,30 @@ export const RulesModule: React.FC<RulesModuleProps> = ({ project, onChange }) =
           })}
         </div>
       </div>
+
+      {/* 6. Observaciones y Notas Adicionales sobre Reglas de la IA */}
+      <div className="bg-zinc-50 dark:bg-zinc-900/60 p-5 sm:p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-3">
+        <div className="flex items-center gap-2.5 pb-2 border-b border-zinc-200/80 dark:border-zinc-800">
+          <div className="w-8 h-8 rounded-xl bg-red-500/10 text-red-600 dark:text-red-400 flex items-center justify-center shrink-0">
+            <Pencil className="w-4.5 h-4.5" />
+          </div>
+          <div>
+            <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+              6. Observaciones y Especificaciones Adicionales de Reglas (Opcional)
+            </h3>
+            <p className="text-[11px] text-zinc-500">
+              Espacio libre para detallar convenciones de código del equipo, idioma de comentarios/variables o flujo de trabajo con la IA
+            </p>
+          </div>
+        </div>
+        <textarea
+          rows={3}
+          value={rules.customNotes || ''}
+          onChange={(e) => handleUpdate({ customNotes: e.target.value })}
+          placeholder="Ej. Todos los nombres de variables y funciones deben estar en inglés, pero los comentarios, mensajes de error al usuario y documentación en español..."
+          className="w-full text-xs sm:text-sm bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-xl p-3.5 text-zinc-900 dark:text-zinc-100 outline-none focus:ring-2 focus:ring-red-500/30 transition-all placeholder:text-zinc-400 leading-relaxed"
+        />
+      </div>
     </div>
   );
 };

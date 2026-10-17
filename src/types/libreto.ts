@@ -83,6 +83,7 @@ export interface LibretoProject {
     darkModeDefault: boolean;
     typography: string;
     customDesignGuidelines: string;
+    customObservations?: string[];
     styleColors?: Record<string, string[]>;
   };
 
@@ -96,12 +97,14 @@ export interface LibretoProject {
     gitCommitConventions: boolean;
     testCoverageRequirement: boolean;
     customRules: string[];
+    customNotes?: string;
   };
 
   // MÓDULO D: DECISIONS (ADRs)
   decisions: {
     strictlyForbidAlternativeStacks: boolean;
     customDecisions: CustomADR[];
+    customNotes?: string;
   };
 
   // MÓDULO E: SECURITY
@@ -114,6 +117,7 @@ export interface LibretoProject {
     rateLimiting: boolean;
     csrfProtection: boolean;
     customSecurityPolicies: string[];
+    customNotes?: string;
   };
 
   // MÓDULO F: PRD & MASTER PROMPT
@@ -123,6 +127,7 @@ export interface LibretoProject {
     userStories: string[];
     masterPromptTone: MasterPromptTone;
     customMasterPromptDirectives: string;
+    customNotes?: string;
   };
 
   // MÓDULO G: TASKS & MEMORY
@@ -130,6 +135,7 @@ export interface LibretoProject {
     phases: TaskPhase[];
     autoSync?: boolean;
     customEdited?: boolean;
+    customNotes?: string;
   };
   memory: {
     currentState: string;
@@ -137,6 +143,7 @@ export interface LibretoProject {
     completedMilestones: string[];
     inProgressMilestones: string[];
     blockers: string[];
+    customNotes?: string;
   };
 }
 

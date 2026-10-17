@@ -13,6 +13,10 @@ import {
   Plus,
   Trash2,
   Sliders,
+  MessageSquarePlus,
+  Type,
+  Pencil,
+  X,
 } from 'lucide-react';
 import type { DesignStyleId, LibretoProject } from '../../types/libreto';
 import {
@@ -28,6 +32,17 @@ interface DesignModuleProps {
   onChange: (updated: Partial<LibretoProject>) => void;
 }
 
+const TYPOGRAPHY_SUGGESTIONS = [
+  'Inter, system-ui, sans-serif',
+  'Inter & JetBrains Mono',
+  'Plus Jakarta Sans & Fira Code',
+  'Space Grotesk & Clash Display',
+  'Geist Sans & Geist Mono',
+  'Poppins & Roboto Mono',
+  'Playfair Display & Source Sans 3',
+  'System Font (San Francisco / Roboto)',
+];
+
 export const DesignModule: React.FC<DesignModuleProps> = ({ project, onChange }) => {
   const { design } = project;
 
@@ -39,6 +54,17 @@ export const DesignModule: React.FC<DesignModuleProps> = ({ project, onChange })
   const [animSearch, setAnimSearch] = useState('');
   const [iconSearch, setIconSearch] = useState('');
 
+  // Custom framework, animation and icon library inputs
+  const [showAddFramework, setShowAddFramework] = useState(false);
+  const [customFrameworkInput, setCustomFrameworkInput] = useState('');
+  const [customAnimInput, setCustomAnimInput] = useState('');
+  const [customIconInput, setCustomIconInput] = useState('');
+
+  // Observations list state (add & inline edit)
+  const [newObservation, setNewObservation] = useState('');
+  const [editingObsIdx, setEditingObsIdx] = useState<number | null>(null);
+  const [editingObsText, setEditingObsText] = useState('');
+
   // New color input in custom palette
   const [newColorHex, setNewColorHex] = useState('#6366F1');
 
@@ -49,6 +75,53 @@ export const DesignModule: React.FC<DesignModuleProps> = ({ project, onChange })
         ...fields,
       },
     });
+  };
+
+  const observations = design.customObservations || [];
+
+  const handleAddObservation = () => {
+    if (!newObservation.trim()) return;
+    handleUpdate({
+      customObservations: [...observations, newObservation.trim()],
+    });
+    setNewObservation('');
+  };
+
+  const handleRemoveObservation = (idx: number) => {
+    const next = [...observations];
+    next.splice(idx, 1);
+    handleUpdate({ customObservations: next });
+    if (editingObsIdx === idx) {
+      setEditingObsIdx(null);
+      setEditingObsText('');
+    }
+  };
+
+  const handleSaveEditObservation = (idx: number) => {
+    if (!editingObsText.trim()) return;
+    const next = [...observations];
+    next[idx] = editingObsText.trim();
+    handleUpdate({ customObservations: next });
+    setEditingObsIdx(null);
+    setEditingObsText('');
+  };
+
+  const handleAddCustomAnim = () => {
+    const trimmed = customAnimInput.trim();
+    if (!trimmed) return;
+    if (!design.animationLibraries.includes(trimmed)) {
+      handleUpdate({ animationLibraries: [...design.animationLibraries, trimmed] });
+    }
+    setCustomAnimInput('');
+  };
+
+  const handleAddCustomIcon = () => {
+    const trimmed = customIconInput.trim();
+    if (!trimmed) return;
+    if (!design.iconLibraries.includes(trimmed)) {
+      handleUpdate({ iconLibraries: [...design.iconLibraries, trimmed] });
+    }
+    setCustomIconInput('');
   };
 
   const currentStyleDef =
@@ -475,45 +548,108 @@ export const DesignModule: React.FC<DesignModuleProps> = ({ project, onChange })
         </div>
       </div>
 
-      {/* 4. Global Color Tokens & Dark mode */}
+      {/* 4. Global Color Tokens, Typography & Dark mode */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Style Framework */}
-        <div className="bg-zinc-50 dark:bg-zinc-900/60 p-5 sm:p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-4">
-          <div className="flex items-center gap-2.5 pb-2 border-b border-zinc-200/80 dark:border-zinc-800">
-            <div className="w-8 h-8 rounded-xl bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 flex items-center justify-center shrink-0">
-              <Layers className="w-4.5 h-4.5" />
+        <div className="bg-zinc-50 dark:bg-zinc-900/60 p-5 sm:p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-4 flex flex-col justify-between">
+          <div className="space-y-4">
+            <div className="flex items-center gap-2.5 pb-2 border-b border-zinc-200/80 dark:border-zinc-800">
+              <div className="w-8 h-8 rounded-xl bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 flex items-center justify-center shrink-0">
+                <Layers className="w-4.5 h-4.5" />
+              </div>
+              <div>
+                <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+                  3. Framework de Estilos CSS / UI Kit
+                </h3>
+                <p className="text-[11px] text-zinc-500">Framework utilitario para maquetación</p>
+              </div>
             </div>
-            <div>
-              <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
-                3. Framework de Estilos CSS / UI Kit
-              </h3>
-              <p className="text-[11px] text-zinc-500">Framework utilitario para maquetación</p>
+
+            {design.styleFramework && (
+              <div className="px-3 py-1.5 rounded-xl bg-cyan-500/10 border border-cyan-500/20 text-cyan-700 dark:text-cyan-300 text-xs font-medium flex items-center justify-between">
+                <span className="text-[11px] text-zinc-500 dark:text-zinc-400">Seleccionado:</span>
+                <span className="font-bold truncate ml-2">{design.styleFramework}</span>
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
+              {STYLE_FRAMEWORKS.map((sf) => {
+                const isSelected = design.styleFramework === sf;
+                return (
+                  <button
+                    key={sf}
+                    type="button"
+                    onClick={() => handleUpdate({ styleFramework: sf })}
+                    className={`p-3 rounded-xl text-xs font-medium border text-left flex items-center justify-between transition-all cursor-pointer ${
+                      isSelected
+                        ? 'border-cyan-500 bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 font-bold ring-1 ring-cyan-500/30'
+                        : 'border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-zinc-700 dark:text-zinc-300 hover:border-zinc-300 dark:hover:border-zinc-700'
+                    }`}
+                  >
+                    <span className="truncate">{sf}</span>
+                    {isSelected && <Check className="w-4 h-4 text-cyan-500 shrink-0 ml-1.5" />}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 pt-1">
-            {STYLE_FRAMEWORKS.map((sf) => {
-              const isSelected = design.styleFramework === sf;
-              return (
+          {/* Custom Style Framework input */}
+          <div className="pt-3 border-t border-zinc-200 dark:border-zinc-800/80">
+            {!showAddFramework ? (
+              <button
+                type="button"
+                onClick={() => setShowAddFramework(true)}
+                className="text-xs text-cyan-600 dark:text-cyan-400 hover:underline flex items-center gap-1.5 cursor-pointer"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Especificar otro framework CSS / UI Kit personalizado...</span>
+              </button>
+            ) : (
+              <div className="flex items-center gap-2">
+                <input
+                  type="text"
+                  value={customFrameworkInput}
+                  onChange={(e) => setCustomFrameworkInput(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && customFrameworkInput.trim()) {
+                      handleUpdate({ styleFramework: customFrameworkInput.trim() });
+                      setCustomFrameworkInput('');
+                      setShowAddFramework(false);
+                    } else if (e.key === 'Escape') {
+                      setShowAddFramework(false);
+                    }
+                  }}
+                  placeholder="Ej. Tailwind CSS + DaisyUI, Panda CSS, UnoCSS..."
+                  className="flex-1 text-xs px-3 py-2 bg-white dark:bg-zinc-950 border border-cyan-500 rounded-xl outline-none text-zinc-900 dark:text-zinc-100"
+                  autoFocus
+                />
                 <button
-                  key={sf}
                   type="button"
-                  onClick={() => handleUpdate({ styleFramework: sf })}
-                  className={`p-3 rounded-xl text-xs font-medium border text-left flex items-center justify-between transition-all cursor-pointer ${
-                    isSelected
-                      ? 'border-cyan-500 bg-cyan-500/10 text-cyan-700 dark:text-cyan-300 font-bold ring-1 ring-cyan-500/30'
-                      : 'border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-zinc-700 dark:text-zinc-300 hover:border-zinc-300 dark:hover:border-zinc-700'
-                  }`}
+                  onClick={() => {
+                    if (customFrameworkInput.trim()) {
+                      handleUpdate({ styleFramework: customFrameworkInput.trim() });
+                      setCustomFrameworkInput('');
+                      setShowAddFramework(false);
+                    }
+                  }}
+                  className="px-3 py-2 text-xs font-bold bg-cyan-600 text-white rounded-xl cursor-pointer"
                 >
-                  <span className="truncate">{sf}</span>
-                  {isSelected && <Check className="w-4 h-4 text-cyan-500 shrink-0 ml-1.5" />}
+                  OK
                 </button>
-              );
-            })}
+                <button
+                  type="button"
+                  onClick={() => setShowAddFramework(false)}
+                  className="text-xs text-zinc-500 hover:text-zinc-300 cursor-pointer px-1"
+                >
+                  ✕
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Primary/Secondary Color Tokens & Dark mode */}
+        {/* Primary/Secondary Color Tokens, Typography & Dark mode */}
         <div className="bg-zinc-50 dark:bg-zinc-900/60 p-5 sm:p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-4">
           <div className="flex items-center gap-2.5 pb-2 border-b border-zinc-200/80 dark:border-zinc-800">
             <div className="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
@@ -521,9 +657,9 @@ export const DesignModule: React.FC<DesignModuleProps> = ({ project, onChange })
             </div>
             <div>
               <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
-                4. Tokens de Acción Principal y Tema
+                4. Tokens de Acción, Tema y Tipografía
               </h3>
-              <p className="text-[11px] text-zinc-500">Colores focales para llamadas a la acción (CTA)</p>
+              <p className="text-[11px] text-zinc-500">Colores focales (CTA), modo oscuro y fuentes tipográficas</p>
             </div>
           </div>
 
@@ -570,6 +706,40 @@ export const DesignModule: React.FC<DesignModuleProps> = ({ project, onChange })
                   className="w-full text-xs font-mono uppercase bg-transparent text-zinc-900 dark:text-zinc-100 outline-none"
                 />
               </div>
+            </div>
+          </div>
+
+          {/* Typography Input & Quick Presets */}
+          <div className="pt-3 border-t border-zinc-200 dark:border-zinc-800 space-y-2">
+            <label className="text-xs font-semibold text-zinc-700 dark:text-zinc-300 flex items-center gap-1.5">
+              <Type className="w-3.5 h-3.5 text-purple-500" />
+              <span>Tipografía Principal y de Código (Editable)</span>
+            </label>
+            <input
+              type="text"
+              value={design.typography}
+              onChange={(e) => handleUpdate({ typography: e.target.value })}
+              placeholder="Ej. Inter & JetBrains Mono, Plus Jakarta Sans..."
+              className="w-full text-xs bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 rounded-xl px-3 py-2 text-zinc-900 dark:text-zinc-100 outline-none focus:ring-2 focus:ring-purple-500/30 transition-all"
+            />
+            <div className="flex items-center gap-1.5 flex-wrap pt-0.5">
+              {TYPOGRAPHY_SUGGESTIONS.map((font) => {
+                const isActiveFont = design.typography === font;
+                return (
+                  <button
+                    key={font}
+                    type="button"
+                    onClick={() => handleUpdate({ typography: font })}
+                    className={`px-2 py-0.5 rounded-lg text-[10px] font-medium transition-all cursor-pointer ${
+                      isActiveFont
+                        ? 'bg-purple-600 text-white font-bold'
+                        : 'bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 text-zinc-500 hover:text-zinc-800 dark:hover:text-zinc-200'
+                    }`}
+                  >
+                    {font.split(',')[0]}
+                  </button>
+                );
+              })}
             </div>
           </div>
 
@@ -680,6 +850,52 @@ export const DesignModule: React.FC<DesignModuleProps> = ({ project, onChange })
             );
           })}
         </div>
+
+        {/* Custom Animation Libraries Input & Active Custom Pills */}
+        <div className="pt-3 border-t border-zinc-200 dark:border-zinc-800 space-y-2.5">
+          {design.animationLibraries.filter((lib) => !ANIMATION_LIBRARIES.some((a) => a.name === lib)).length > 0 && (
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-[11px] font-semibold text-zinc-500">Personalizadas añadidas:</span>
+              {design.animationLibraries
+                .filter((lib) => !ANIMATION_LIBRARIES.some((a) => a.name === lib))
+                .map((customLib) => (
+                  <span
+                    key={customLib}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-emerald-600 text-white shadow-2xs"
+                  >
+                    <span>{customLib}</span>
+                    <button
+                      type="button"
+                      onClick={() => toggleAnimationLib(customLib)}
+                      className="hover:text-red-200 cursor-pointer"
+                      title="Quitar librería"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </span>
+                ))}
+            </div>
+          )}
+
+          <div className="flex flex-col sm:flex-row gap-2">
+            <input
+              type="text"
+              value={customAnimInput}
+              onChange={(e) => setCustomAnimInput(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleAddCustomAnim()}
+              placeholder="Especificar otra librería o efecto de animación personalizado (ej. Barba.js, Curtains.js, View Transitions API)..."
+              className="flex-1 text-xs bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-xl px-3.5 py-2 text-zinc-900 dark:text-zinc-100 outline-none focus:ring-2 focus:ring-emerald-500/30"
+            />
+            <button
+              type="button"
+              onClick={handleAddCustomAnim}
+              className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all shrink-0 cursor-pointer"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Añadir Animación</span>
+            </button>
+          </div>
+        </div>
       </div>
 
       {/* 6. Icon Libraries */}
@@ -751,6 +967,217 @@ export const DesignModule: React.FC<DesignModuleProps> = ({ project, onChange })
               </div>
             );
           })}
+        </div>
+
+        {/* Custom Icon Libraries Input & Active Custom Pills */}
+        <div className="pt-3 border-t border-zinc-200 dark:border-zinc-800 space-y-2.5">
+          {design.iconLibraries.filter((lib) => !ICON_LIBRARIES.some((i) => i.name === lib)).length > 0 && (
+            <div className="flex items-center gap-2 flex-wrap">
+              <span className="text-[11px] font-semibold text-zinc-500">Personalizadas añadidas:</span>
+              {design.iconLibraries
+                .filter((lib) => !ICON_LIBRARIES.some((i) => i.name === lib))
+                .map((customIcon) => (
+                  <span
+                    key={customIcon}
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-bold bg-blue-600 text-white shadow-2xs"
+                  >
+                    <span>{customIcon}</span>
+                    <button
+                      type="button"
+                      onClick={() => toggleIconLib(customIcon)}
+                      className="hover:text-red-200 cursor-pointer"
+                      title="Quitar librería de iconos"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </span>
+                ))}
+            </div>
+          )}
+
+          <div className="flex flex-col sm:flex-row gap-2">
+            <input
+              type="text"
+              value={customIconInput}
+              onChange={(e) => setCustomIconInput(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleAddCustomIcon()}
+              placeholder="Especificar otra librería de iconos o SVGs personalizados (ej. FontAwesome Pro, IconPark, SVGs propios)..."
+              className="flex-1 text-xs bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-xl px-3.5 py-2 text-zinc-900 dark:text-zinc-100 outline-none focus:ring-2 focus:ring-blue-500/30"
+            />
+            <button
+              type="button"
+              onClick={handleAddCustomIcon}
+              className="px-3.5 py-2 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all shrink-0 cursor-pointer"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Añadir Iconos</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* 7. OBSERVACIONES, ESPECIFICACIONES Y DIRECTRICES PERSONALIZADAS DE DISEÑO */}
+      <div className="bg-gradient-to-br from-purple-500/5 via-zinc-50 to-cyan-500/5 dark:from-purple-950/20 dark:via-zinc-900/60 dark:to-cyan-950/20 p-5 sm:p-6 rounded-2xl border border-purple-500/25 dark:border-purple-500/30 space-y-5 shadow-xs">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-purple-500/15 dark:border-purple-500/25">
+          <div className="flex items-center gap-2.5">
+            <div className="w-9 h-9 rounded-xl bg-purple-500/15 text-purple-600 dark:text-purple-400 flex items-center justify-center shrink-0">
+              <MessageSquarePlus className="w-5 h-5" />
+            </div>
+            <div>
+              <div className="flex items-center gap-2">
+                <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+                  7. Observaciones y Especificaciones Adicionales de Diseño
+                </h3>
+                <span className="px-2 py-0.5 text-[10px] font-mono font-bold rounded-md bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20">
+                  {observations.length} puntuales
+                </span>
+              </div>
+              <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+                Escribe aquí cualquier detalle visual, comportamiento de layout, referencias o restricciones de UI/UX para especificar más a la IA.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* 7.1 Lista de observaciones puntuales */}
+        <div className="space-y-3">
+          <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+            A) Observaciones o Requerimientos Visuales Puntuales (Lista Editable):
+          </label>
+
+          <div className="flex flex-col sm:flex-row gap-2">
+            <input
+              type="text"
+              value={newObservation}
+              onChange={(e) => setNewObservation(e.target.value)}
+              onKeyDown={(e) => e.key === 'Enter' && handleAddObservation()}
+              placeholder="Ej. El navbar debe ser flotante con blur; las cards deben tener bordes de 1px y radio de 16px..."
+              className="flex-1 text-xs sm:text-sm bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-xl px-3.5 py-2.5 text-zinc-900 dark:text-zinc-100 outline-none focus:ring-2 focus:ring-purple-500/30 transition-all placeholder:text-zinc-400"
+            />
+            <button
+              type="button"
+              onClick={handleAddObservation}
+              className="px-4 py-2.5 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-bold flex items-center justify-center gap-1.5 transition-all shadow-xs active:scale-98 shrink-0 cursor-pointer"
+            >
+              <Plus className="w-4 h-4" />
+              <span>Añadir Observación</span>
+            </button>
+          </div>
+
+          {observations.length > 0 ? (
+            <div className="space-y-2 max-h-64 overflow-y-auto pr-1">
+              {observations.map((obs, idx) => {
+                const isEditing = editingObsIdx === idx;
+                return (
+                  <div
+                    key={idx}
+                    className={`p-3 rounded-xl border text-xs sm:text-sm transition-all ${
+                      isEditing
+                        ? 'border-purple-500 bg-purple-500/5 dark:bg-purple-950/20 ring-1 ring-purple-500/30'
+                        : 'bg-white dark:bg-zinc-950 border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700'
+                    }`}
+                  >
+                    {isEditing ? (
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="text"
+                          autoFocus
+                          value={editingObsText}
+                          onChange={(e) => setEditingObsText(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') handleSaveEditObservation(idx);
+                            if (e.key === 'Escape') {
+                              setEditingObsIdx(null);
+                              setEditingObsText('');
+                            }
+                          }}
+                          className="flex-1 text-xs sm:text-sm bg-white dark:bg-zinc-900 border border-purple-500 rounded-lg px-3 py-1.5 text-zinc-900 dark:text-zinc-100 outline-none"
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleSaveEditObservation(idx)}
+                          className="px-3 py-1.5 bg-purple-600 hover:bg-purple-500 text-white rounded-lg text-xs font-bold flex items-center gap-1 cursor-pointer"
+                        >
+                          <Check className="w-3.5 h-3.5" />
+                          <span>Guardar</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setEditingObsIdx(null);
+                            setEditingObsText('');
+                          }}
+                          className="px-2.5 py-1.5 bg-zinc-200 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 rounded-lg text-xs cursor-pointer"
+                        >
+                          <X className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex items-start gap-2.5 min-w-0 flex-1">
+                          <span className="w-5 h-5 rounded-md bg-purple-500/10 text-purple-600 dark:text-purple-400 font-mono text-[11px] font-bold flex items-center justify-center shrink-0 mt-0.5">
+                            {idx + 1}
+                          </span>
+                          <span
+                            onClick={() => {
+                              setEditingObsIdx(idx);
+                              setEditingObsText(obs);
+                            }}
+                            className="text-zinc-800 dark:text-zinc-200 leading-relaxed break-words cursor-pointer hover:text-purple-600 dark:hover:text-purple-400 transition-colors"
+                            title="Haz clic para editar esta observación"
+                          >
+                            {obs}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-1 shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setEditingObsIdx(idx);
+                              setEditingObsText(obs);
+                            }}
+                            className="p-1 text-zinc-400 hover:text-purple-600 hover:bg-purple-500/10 rounded-md transition-colors cursor-pointer"
+                            title="Editar observación"
+                          >
+                            <Pencil className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveObservation(idx)}
+                            className="p-1 text-zinc-400 hover:text-red-500 hover:bg-red-500/10 rounded-md transition-colors cursor-pointer"
+                            title="Eliminar observación"
+                          >
+                            <Trash2 className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="text-xs text-zinc-400 italic py-1">
+              No hay observaciones puntuales añadidas aún. Escribe arriba y presiona Enter o &ldquo;Añadir Observación&rdquo;.
+            </div>
+          )}
+        </div>
+
+        {/* 7.2 Pautas y Observaciones Generales en Texto Libre (customDesignGuidelines) */}
+        <div className="space-y-2 pt-3 border-t border-purple-500/15 dark:border-purple-500/25">
+          <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300">
+            B) Directrices Detalladas, Notas de Layout y Especificaciones Libres de Diseño:
+          </label>
+          <textarea
+            rows={4}
+            value={design.customDesignGuidelines || ''}
+            onChange={(e) => handleUpdate({ customDesignGuidelines: e.target.value })}
+            placeholder="Describe con total libertad detalles como: estructura del layout (sidebar fija, header pegajoso, bento de 3 columnas), referencias estéticas (ej. estilo Linear / Vercel / Stripe), comportamiento en móviles, uso de sombras, bordes, gradientes o microinteracciones específicas..."
+            className="w-full text-xs sm:text-sm bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-xl p-3.5 text-zinc-900 dark:text-zinc-100 outline-none focus:ring-2 focus:ring-purple-500/30 transition-all placeholder:text-zinc-400 leading-relaxed"
+          />
+          <p className="text-[11px] text-zinc-500 dark:text-zinc-400">
+            💡 Todo lo que especifiques aquí se inyectará directamente en <code className="font-mono text-purple-600 dark:text-purple-400">DESIGN.md</code> y en el Prompt Maestro de <code className="font-mono text-purple-600 dark:text-purple-400">PRD.md</code>.
+          </p>
         </div>
       </div>
     </div>

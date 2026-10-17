@@ -235,6 +235,30 @@ export const SecurityModule: React.FC<SecurityModuleProps> = ({ project, onChang
           )}
         </div>
       </div>
+
+      {/* 4. Observaciones y Especificaciones Adicionales de Seguridad */}
+      <div className="bg-zinc-50 dark:bg-zinc-900/60 p-5 sm:p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-3">
+        <div className="flex items-center gap-2.5 pb-2 border-b border-zinc-200/80 dark:border-zinc-800">
+          <div className="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+            <ShieldCheck className="w-4.5 h-4.5" />
+          </div>
+          <div>
+            <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+              Observaciones y Especificaciones de Seguridad (Opcional)
+            </h3>
+            <p className="text-[11px] text-zinc-500">
+              Detalla normativas de privacidad (GDPR / LOPD), manejo de datos sensibles, auditorías o permisos de roles
+            </p>
+          </div>
+        </div>
+        <textarea
+          rows={3}
+          value={security.customNotes || ''}
+          onChange={(e) => handleUpdate({ customNotes: e.target.value })}
+          placeholder="Ej. Los datos personales de los clientes deben cifrarse en reposo (AES-256); los logs de auditoría no deben registrar contraseñas ni números de tarjeta..."
+          className="w-full text-xs sm:text-sm bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-xl p-3.5 text-zinc-900 dark:text-zinc-100 outline-none focus:ring-2 focus:ring-emerald-500/30 transition-all placeholder:text-zinc-400 leading-relaxed"
+        />
+      </div>
     </div>
   );
 };

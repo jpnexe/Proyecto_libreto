@@ -122,6 +122,7 @@ ${nonFuncList}
 
 ${storiesList}
 
+${p.prd.customNotes ? `\n---\n\n## 4.1 OBSERVACIONES Y ESPECIFICACIONES ADICIONALES DEL PRODUCTO\n\n${p.prd.customNotes}\n` : ''}
 ---
 
 ## 5. DICCIONARIO TÉCNICO & GLOSARIO DE CONCEPTOS DEL SISTEMA
@@ -158,7 +159,7 @@ Actúa como el **Arquitecto de Software Principal y Desarrollador Senior Líder*
   - Base de Datos: ${p.architecture.database}
   - Patrón Arquitectónico: ${p.architecture.architecturalPattern}
   - Conectividad: ${p.architecture.connectionType}
-- **Sistema de Diseño:** ${p.design.style} (${p.design.styleFramework}) con paleta: Primario (${p.design.primaryColor}), Secundario (${p.design.secondaryColor})
+- **Sistema de Diseño:** ${p.design.style} (${p.design.styleFramework}) con paleta: Primario (${p.design.primaryColor}), Secundario (${p.design.secondaryColor}), Tipografía (${p.design.typography})
 - **Tono y Filosofía Operativa:** ${toneDescriptions[p.prd.masterPromptTone] || toneDescriptions.strict_senior}
 
 #### 2. CONTRATO DE TRABAJO Y CUMPLIMIENTO DOCUMENTAL OBLIGATORIO:
@@ -171,7 +172,7 @@ Antes de generar código, instalar dependencias o proponer cambios, DEBES leer e
 6. \`TASKS.md\`: Avanzar fase por fase de forma secuencial sin saltar requerimientos ni omitir pruebas.
 7. \`MEMORY.md\`: Consultar y actualizar la bitácora tras cada hito completado.
 
-${p.prd.customMasterPromptDirectives ? `#### 3. DIRECTIVAS ESPECIALES DEL USUARIO:\n${p.prd.customMasterPromptDirectives}\n` : ''}
+${p.prd.customMasterPromptDirectives ? `#### 3. DIRECTIVAS ESPECIALES DEL USUARIO:\n${p.prd.customMasterPromptDirectives}\n` : ''}${p.prd.customNotes ? `#### OBSERVACIONES ADICIONALES DEL PRODUCTO:\n${p.prd.customNotes}\n` : ''}
 #### 4. PROTOCOLO OBLIGATORIO DE PRIMERA RESPUESTA:
 En tu primera interacción, debes:
 1. Confirmar la asimilación completa de este PRD y los archivos directivos.
@@ -545,8 +546,7 @@ ${iconLibrariesDetails}
    - \`xl\` (≥ 1280px): Monitores de escritorio estándar.
    - \`2xl\` (≥ 1536px): Pantallas panorámicas (contenedor centrado con \`max-w-7xl\`).
 
-${p.design.customDesignGuidelines ? `\n### Directrices Específicas de Diseño:\n${p.design.customDesignGuidelines}\n` : ''}
-`;
+${(p.design.customObservations && p.design.customObservations.length > 0) || p.design.customDesignGuidelines ? `\n---\n\n## 8. OBSERVACIONES Y ESPECIFICACIONES PARTICULARES DE DISEÑO\n\n${p.design.customObservations && p.design.customObservations.length > 0 ? `### 8.1 Requerimientos y Observaciones Visuales Puntuales\n${p.design.customObservations.map((obs, i) => `${i + 1}. **${obs}**`).join('\n')}\n\n` : ''}${p.design.customDesignGuidelines ? `### 8.2 Directrices Detalladas y Notas de Layout\n${p.design.customDesignGuidelines}\n` : ''}` : ''}`;
 }
 
 /**
@@ -629,7 +629,7 @@ ${langRules ? `\n${langRules}\n` : ''}
 
 ${uiRules}
 
-${customRulesList ? `\n---\n${customRulesList}\n` : ''}
+${customRulesList ? `\n---\n${customRulesList}\n` : ''}${p.rules.customNotes ? `\n---\n### Observaciones y Especificaciones Adicionales de Reglas:\n${p.rules.customNotes}\n` : ''}
 
 ---
 
@@ -774,7 +774,7 @@ ${adrList.map((adr) => `
 - **Alternativas Descartadas:** ${adr.discarded}
 `).join('\n---\n')}
 
-${customAdrs ? `\n---\n## ADRs ADICIONALES ESPECÍFICOS DEL PROYECTO\n${customAdrs}` : ''}
+${customAdrs ? `\n---\n## ADRs ADICIONALES ESPECÍFICOS DEL PROYECTO\n${customAdrs}` : ''}${p.decisions.customNotes ? `\n---\n## OBSERVACIONES Y ESPECIFICACIONES SOBRE DECISIONES TÉCNICAS\n\n${p.decisions.customNotes}\n` : ''}
 `;
 }
 
@@ -1017,7 +1017,7 @@ ${techSecurityDirectives}
 
 ${policies.join('\n\n')}
 
-${customSec ? `\n---\n${customSec}\n` : ''}
+${customSec ? `\n---\n${customSec}\n` : ''}${p.security.customNotes ? `\n---\n### Observaciones y Especificaciones Adicionales de Seguridad\n${p.security.customNotes}\n` : ''}
 
 ---
 
@@ -1088,7 +1088,7 @@ ${feInfo.cliCommands[1]?.command || 'npm run build'}
 
 ---
 
-${phasesOutput}
+${phasesOutput}${p.tasks.customNotes ? `\n---\n\n## 📝 OBSERVACIONES Y ESPECIFICACIONES DEL PLAN DE EJECUCIÓN\n\n${p.tasks.customNotes}\n` : ''}
 `;
 }
 
@@ -1145,7 +1145,7 @@ ${inProgressList}
 
 ${blockersList}
 
----
+${p.memory.customNotes ? `\n---\n\n## 4.1 OBSERVACIONES GENERALES Y NOTAS DE BITÁCORA\n\n${p.memory.customNotes}\n` : ''}---
 
 ## 5. PROTOCOLO DE TRASPASO ENTRE SESIONES DE IA
 

@@ -334,6 +334,30 @@ export const DecisionsModule: React.FC<DecisionsModuleProps> = ({ project, onCha
           )}
         </div>
       </div>
+
+      {/* 5. Observaciones Generales sobre Decisiones Técnicas */}
+      <div className="bg-zinc-50 dark:bg-zinc-900/60 p-5 sm:p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-3">
+        <div className="flex items-center gap-2.5 pb-2 border-b border-zinc-200/80 dark:border-zinc-800">
+          <div className="w-8 h-8 rounded-xl bg-amber-500/10 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0">
+            <GitBranch className="w-4.5 h-4.5" />
+          </div>
+          <div>
+            <h3 className="text-sm font-bold text-zinc-900 dark:text-zinc-100">
+              Observaciones y Especificaciones sobre Decisiones Técnicas (Opcional)
+            </h3>
+            <p className="text-[11px] text-zinc-500">
+              Escribe aquí cualquier observación sobre librerías descartadas, motivos de negocio o restricciones técnicas sin necesidad de crear un ADR formal
+            </p>
+          </div>
+        </div>
+        <textarea
+          rows={3}
+          value={decisions.customNotes || ''}
+          onChange={(e) => handleUpdate({ customNotes: e.target.value })}
+          placeholder="Ej. Se descarta el uso de ORMs pesados en rutas de analítica para priorizar consultas SQL optimizadas; no utilizar librerías de fechas deprecadas como Moment.js..."
+          className="w-full text-xs sm:text-sm bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-xl p-3.5 text-zinc-900 dark:text-zinc-100 outline-none focus:ring-2 focus:ring-amber-500/30 transition-all placeholder:text-zinc-400 leading-relaxed"
+        />
+      </div>
     </div>
   );
 };

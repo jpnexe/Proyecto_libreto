@@ -1133,24 +1133,34 @@ export const ArchitectureModule: React.FC<ArchitectureModuleProps> = ({ project,
             </div>
           </div>
         )}
+      </div>
 
-        {/* Custom Notes */}
-        <div className="pt-3 border-t border-zinc-200 dark:border-zinc-800">
-          <label className="block text-xs font-semibold text-zinc-700 dark:text-zinc-300 mb-1.5">
-            Notas Arquitectónicas Particulares (Opcional)
-          </label>
-          <textarea
-            rows={2}
-            value={architecture?.customNotes || ''}
-            onChange={(e) => handleUpdate({ customNotes: e.target.value })}
-            className="w-full text-xs bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-xl p-3 text-zinc-900 dark:text-zinc-100 outline-none focus:ring-2 focus:ring-cyan-500 leading-relaxed"
-            placeholder={
-              isStaticSite
-                ? 'Ej. Generación de sitio estático con Astro en carpeta dist/ y despliegue continuo en Cloudflare Pages.'
-                : 'Ej. Uso de Docker Compose para orquestar la BD local y Redis para colas de mensajería BullMQ.'
-            }
-          />
+      {/* 8. Observaciones y Especificaciones Adicionales de Arquitectura */}
+      <div className="bg-zinc-50 dark:bg-zinc-900/60 p-5 sm:p-6 rounded-2xl border border-zinc-200 dark:border-zinc-800 space-y-3">
+        <div className="flex items-center gap-2.5 pb-2 border-b border-zinc-200/80 dark:border-zinc-800">
+          <div className="w-8 h-8 rounded-xl bg-cyan-500/10 text-cyan-600 dark:text-cyan-400 flex items-center justify-center shrink-0">
+            <FileCode className="w-4.5 h-4.5" />
+          </div>
+          <div>
+            <label className="text-sm font-bold text-zinc-900 dark:text-zinc-100 block">
+              8. Observaciones y Especificaciones Adicionales de Arquitectura
+            </label>
+            <p className="text-[11px] text-zinc-500">
+              Especifica detalles sobre estructura de carpetas, Docker, servicios externos, colas, caché o despliegues particulares
+            </p>
+          </div>
         </div>
+        <textarea
+          rows={4}
+          value={architecture?.customNotes || ''}
+          onChange={(e) => handleUpdate({ customNotes: e.target.value })}
+          className="w-full text-xs sm:text-sm bg-white dark:bg-zinc-950 border border-zinc-300 dark:border-zinc-700 rounded-xl p-3.5 text-zinc-900 dark:text-zinc-100 outline-none focus:ring-2 focus:ring-cyan-500/30 leading-relaxed placeholder:text-zinc-400"
+          placeholder={
+            isStaticSite
+              ? 'Ej. Generación de sitio estático con Astro en carpeta dist/, colecciones de contenido tipadas en src/content/ y despliegue continuo en Cloudflare Pages.'
+              : 'Ej. Uso de Docker Compose para orquestar la BD local, Redis para colas de mensajería BullMQ y estructura de monorepo con Turborepo.'
+          }
+        />
       </div>
     </div>
   );
