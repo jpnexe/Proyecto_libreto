@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import {
   Plus,
   Trash2,
@@ -10,8 +10,16 @@ import {
   Check,
   FileText,
   MessageSquare,
+  Wand2,
+  Lightbulb,
+  CheckCircle2,
 } from 'lucide-react';
 import type { LibretoProject, MasterPromptTone } from '../../types/libreto';
+import {
+  detectProjectDomain,
+  applyDomainBlueprint,
+  autoFixAllCoherence,
+} from '../../utils/coherenceEngine';
 
 interface PrdModuleProps {
   project: LibretoProject;
@@ -22,6 +30,28 @@ export const PrdModule: React.FC<PrdModuleProps> = ({ project, onChange }) => {
   const [newFuncReq, setNewFuncReq] = useState('');
   const [newNonFuncReq, setNewNonFuncReq] = useState('');
   const [newUserStory, setNewUserStory] = useState('');
+  const [syncFeedback, setSyncFeedback] = useState<string | null>(null);
+
+  // Inferencia del dominio en base al nombre y descripción actual
+  const detectedDomainResult = useMemo(() => {
+    const text = [
+      project.name,
+      project.description,
+      project.targetAudience,
+      ...(project.prd.functionalRequirements || []),
+    ].join(' ');
+    return detectProjectDomain(text);
+  }, [project.name, project.description, project.targetAudience, project.prd.functionalRequirements]);
+
+  const handleSyncFromPrd = () => {
+    if (!detectedDomainResult?.domain) return;
+    const domainId = detectedDomainResult.domain.id;
+    const updated = applyDomainBlueprint(project, domainId, { preserveCustomText: true });
+    const fullyCoherent = autoFixAllCoherence(updated);
+    onChange(fullyCoherent);
+    setSyncFeedback(`✨ ¡Sincronizado con éxito! La Arquitectura, Diseño, Decisiones y Reglas se adaptaron coherentemente a: "${detectedDomainResult.domain.name}".`);
+    setTimeout(() => setSyncFeedback(null), 5000);
+  };
 
   const tones: { id: MasterPromptTone; label: string; desc: string; icon: string; badge: string }[] = [
     {
@@ -200,6 +230,43 @@ export const PrdModule: React.FC<PrdModuleProps> = ({ project, onChange }) => {
               placeholder="Explica en 2 o 3 líneas qué problema resuelve tu proyecto..."
             />
           </div>
+
+          {/* Banner y Botón de Auto-Sincronización Inteligente según el PRD */}
+          {detectedDomainResult && (
+            <div className="sm:col-span-2 p-3.5 rounded-xl border border-blue-500/30 bg-blue-500/5 dark:bg-blue-950/20 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+              <div className="space-y-0.5 min-w-0">
+                <div className="flex items-center gap-2">
+                  <Lightbulb className="w-4 h-4 text-amber-500 shrink-0" />
+                  <span className="text-xs font-bold text-blue-900 dark:text-blue-200">
+                    Dominio detectado: {detectedDomainResult.domain.name}
+                  </span>
+                  <span className="text-[10px] font-mono px-2 py-0.5 rounded bg-blue-500/15 text-blue-700 dark:text-blue-300 font-bold">
+                    {detectedDomainResult.domain.tag}
+                  </span>
+                </div>
+                <p className="text-[11px] text-zinc-600 dark:text-zinc-400">
+                  ¿Quieres sincronizar automáticamente la arquitectura, diseño, reglas, seguridad y tareas coherentes con este dominio?
+                </p>
+              </div>
+
+              <button
+                type="button"
+                onClick={handleSyncFromPrd}
+                className="px-3 py-1.5 rounded-xl text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white shadow-xs transition-all active:scale-98 flex items-center justify-center gap-1.5 shrink-0 cursor-pointer"
+              >
+                <Wand2 className="w-3.5 h-3.5" />
+                <span>Auto-Completar Resto del Proyecto</span>
+              </button>
+            </div>
+          )}
+
+          {/* Feedback de Sincronización Exitosa */}
+          {syncFeedback && (
+            <div className="sm:col-span-2 p-3 rounded-xl border border-emerald-500/30 bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 text-xs flex items-center gap-2 animate-fadeIn">
+              <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+              <span>{syncFeedback}</span>
+            </div>
+          )}
         </div>
       </div>
 

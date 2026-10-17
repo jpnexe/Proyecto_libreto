@@ -13,6 +13,7 @@ import { LivePreview } from './components/preview/LivePreview';
 import { HistoryDrawer } from './components/HistoryDrawer';
 import { PresetSelectorModal } from './components/PresetSelectorModal';
 import { ExportSuccessModal } from './components/ExportSuccessModal';
+import { CoherenceAssistant } from './components/common/CoherenceAssistant';
 import {
   loadCurrentProject,
   saveCurrentProject,
@@ -243,6 +244,13 @@ export function App() {
 
       {/* Main Workspace Body */}
       <main className="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 lg:p-8">
+        {/* Asistente de Predicción, Inferencia y Coherencia en Tiempo Real */}
+        <CoherenceAssistant
+          project={project}
+          onChange={handleUpdateProject}
+          onToast={showToast}
+        />
+
         <div
           className={`h-full ${
             viewMode === 'split'
